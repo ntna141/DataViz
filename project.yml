@@ -1,0 +1,11 @@
+name: DSAgame
+options:
+  bundleIdPrefix: moji.education
+  deploymentTarget:
+    iOS: 15.0
+targets:
+  DSAgame:
+    type: application
+    platform: iOS
+    sources: 
+      - path: DSAgame
