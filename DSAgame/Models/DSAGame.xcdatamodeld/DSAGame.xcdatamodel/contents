@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23E224" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23D60" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="LevelAttemptEntity" representedClassName="LevelAttemptEntity" syncable="YES" codeGenerationType="class">
         <attribute name="completionTime" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -16,6 +16,27 @@
         <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="attempts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LevelAttemptEntity" inverseName="level" inverseEntity="LevelAttemptEntity"/>
         <relationship name="questions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="QuestionEntity" inverseName="level" inverseEntity="QuestionEntity"/>
+    </entity>
+    <entity name="NodeEntity" representedClassName="NodeEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="isHighlighted" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="positionX" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="positionY" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="value" optional="YES" attributeType="String"/>
+        <relationship name="incomingConnections" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="NodeConnectionEntity" inverseName="toNode" inverseEntity="NodeConnectionEntity"/>
+        <relationship name="outgoingConnections" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="NodeConnectionEntity" inverseName="fromNode" inverseEntity="NodeConnectionEntity"/>
+        <relationship name="step" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VisualizationStepEntity" inverseName="nodes" inverseEntity="VisualizationStepEntity"/>
+    </entity>
+    <entity name="NodeConnectionEntity" representedClassName="NodeConnectionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="isHighlighted" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isSelfPointing" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="style" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="fromNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeEntity" inverseName="outgoingConnections" inverseEntity="NodeEntity"/>
+        <relationship name="step" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VisualizationStepEntity" inverseName="connections" inverseEntity="VisualizationStepEntity"/>
+        <relationship name="toNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeEntity" inverseName="incomingConnections" inverseEntity="NodeEntity"/>
     </entity>
     <entity name="QuestionAttemptEntity" representedClassName="QuestionAttemptEntity" syncable="YES" codeGenerationType="class">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -36,5 +57,31 @@
         <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="level" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LevelEntity" inverseName="questions" inverseEntity="LevelEntity"/>
         <relationship name="questionAttempts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="QuestionAttemptEntity" inverseName="question" inverseEntity="QuestionAttemptEntity"/>
+        <relationship name="visualization" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="VisualizationQuestionEntity" inverseName="question" inverseEntity="VisualizationQuestionEntity"/>
+    </entity>
+    <entity name="VisualizationQuestionEntity" representedClassName="VisualizationQuestionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="code" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VisualizationQuestionLineEntity" inverseName="question" inverseEntity="VisualizationQuestionLineEntity"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="QuestionEntity" inverseName="visualization" inverseEntity="QuestionEntity"/>
+        <relationship name="steps" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VisualizationStepEntity" inverseName="question" inverseEntity="VisualizationStepEntity"/>
+    </entity>
+    <entity name="VisualizationQuestionLineEntity" representedClassName="VisualizationQuestionLineEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="content" optional="YES" attributeType="String"/>
+        <attribute name="lineNumber" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VisualizationQuestionEntity" inverseName="code" inverseEntity="VisualizationQuestionEntity"/>
+    </entity>
+    <entity name="VisualizationStepEntity" representedClassName="VisualizationStepEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="availableElements" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
+        <attribute name="codeHighlightedLine" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lineComment" optional="YES" attributeType="String"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="userInputRequired" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="connections" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="NodeConnectionEntity" inverseName="step" inverseEntity="NodeConnectionEntity"/>
+        <relationship name="nodes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="NodeEntity" inverseName="step" inverseEntity="NodeEntity"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VisualizationQuestionEntity" inverseName="steps" inverseEntity="VisualizationQuestionEntity"/>
     </entity>
 </model>

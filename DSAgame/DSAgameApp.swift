@@ -5,6 +5,7 @@ struct DSAgameApp: App {
     let persistenceController = PersistenceController.shared
     
     init() {
+        // Initialize game data
         GameProgressionManager.shared.initializeGameLevels()
     }
     

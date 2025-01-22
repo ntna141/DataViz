@@ -15,46 +15,53 @@ class GameProgressionManager {
         let fetchRequest: NSFetchRequest<LevelEntity> = LevelEntity.fetchRequest()
         
         do {
-            let count = try context.count(for: fetchRequest)
-            if count > 0 {
-                return // Levels already initialized
-            }
-            
-            // Create 100 levels
-            for levelNumber in 1...100 {
-                let level = LevelEntity(context: context)
-                level.uuid = UUID()
-                level.number = Int32(levelNumber)
-                level.isUnlocked = levelNumber == 1 // Only first level is unlocked
-                level.topic = "Topic \(levelNumber)" // You can customize this later
-                level.desc = "Level \(levelNumber) description" // You can customize this later
-                level.requiredStars = Int32((levelNumber - 1) * 8) // Requires previous level completion
-                
-                // Create 4 questions for each level
-                for questionNumber in 1...4 {
-                    let question = QuestionEntity(context: context)
-                    question.uuid = UUID()
-                    question.title = "Question \(questionNumber)"
-                    question.desc = "Question \(questionNumber) description"
-                    question.type = getQuestionType(questionNumber) // Different types of questions
-                    question.difficulty = 1 // We'll remove this since we're using types instead
-                    question.isCompleted = false
-                    question.stars = 0
-                    question.attempts = 0
-                    question.level = level
+            let existingLevels = try context.fetch(fetchRequest)
+            if existingLevels.isEmpty {
+                print("Initializing game levels...")
+                // Create initial levels
+                for i in 1...10 {
+                    let level = LevelEntity(context: context)
+                    level.uuid = UUID()
+                    level.number = Int32(i)
+                    level.isUnlocked = i == 1
+                    level.requiredStars = Int32((i - 1) * 3) // Each level requires 3 stars from previous level
+                    
+                    // Set specific topic and description for first level
+                    if i == 1 {
+                        level.topic = "Linked Lists"
+                        level.desc = "Learn about linked lists and how to build them step by step."
+                        
+                        // Create visualization question for first level
+                        let question = QuestionEntity(context: context)
+                        question.uuid = UUID()
+                        question.level = level
+                        question.type = "visualization"
+                        question.title = "Building a Linked List"
+                        question.desc = "Learn how to build a linked list by following the code and completing the visualization"
+                        question.difficulty = 1
+                        question.isCompleted = false
+                        question.stars = 0
+                        question.attempts = 0
+                    }
                 }
+                
+                // Save the context to ensure levels and questions are created
+                try context.save()
+                print("Game levels initialized successfully")
+                
+                // Initialize visualization for first level's question
+                VisualizationManager.shared.initializeExampleVisualization()
+            } else {
+                print("Game levels already exist, skipping initialization")
             }
-            
-            try context.save()
-            
         } catch {
-            print("Error initializing levels: \(error)")
+            print("Error initializing game levels: \(error)")
         }
     }
     
     private func getQuestionType(_ number: Int) -> String {
         switch number {
-            case 1: return "multiple_choice"
+            case 1: return "visualization"
             case 2: return "coding"
             case 3: return "fill_blank"
             case 4: return "matching"
