@@ -32,20 +32,18 @@
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
-                                    { "value": "" },
+                                    { "value": "", "label": "head" },
                                     { "value": "" },
                                     { "value": "" }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1,
-                                        "label": "next"
+                                        "to": 1
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2,
-                                        "label": "next"
+                                        "to": 2
                                     }
                                 ]
                             },
@@ -55,20 +53,18 @@
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
-                                    { "value": "5" },
+                                    { "value": "5", "label": "head" },
                                     { "value": "" },
                                     { "value": "" }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1,
-                                        "label": "next"
+                                        "to": 1
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2,
-                                        "label": "next"
+                                        "to": 2
                                     }
                                 ]
                             },
@@ -78,20 +74,18 @@
                                 "userInputRequired": true,
                                 "availableElements": ["3", "7", "9"],
                                 "nodes": [
-                                    { "value": "5" },
+                                    { "value": "5", "label": "head" },
                                     { "value": "" },
                                     { "value": "" }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1,
-                                        "label": "next"
+                                        "to": 1
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2,
-                                        "label": "next"
+                                        "to": 2
                                     }
                                 ]
                             },
@@ -101,20 +95,18 @@
                                 "userInputRequired": true,
                                 "availableElements": ["7"],
                                 "nodes": [
-                                    { "value": "5" },
+                                    { "value": "5", "label": "head" },
                                     { "value": "3" },
                                     { "value": "" }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1,
-                                        "label": "next"
+                                        "to": 1
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2,
-                                        "label": "next"
+                                        "to": 2
                                     }
                                 ]
                             }

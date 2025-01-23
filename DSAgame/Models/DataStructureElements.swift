@@ -2,21 +2,25 @@ import SwiftUI
 
 // Layout manager for different data structure types
 enum DataStructureLayoutManager {
-    static let nodeRadius: CGFloat = 40
-    static let horizontalSpacing: CGFloat = 50
-    static let verticalSpacing: CGFloat = 50
+    static let nodeRadius: CGFloat = 24
+    static let horizontalSpacing: CGFloat = 30
+    static let verticalSpacing: CGFloat = 30
     
     static func calculateLinkedListLayout(nodes: [DSNode], in frame: CGRect) -> [DSNode] {
         guard !nodes.isEmpty else { return [] }
         
-        let totalWidth = CGFloat(nodes.count - 1) * (nodeRadius * 2 + horizontalSpacing)
-        let startX = (frame.width - totalWidth) / 2
+        // Calculate total width needed for all nodes
+        let nodeWidth = nodeRadius * 2
+        let totalWidth = CGFloat(nodes.count) * nodeWidth + CGFloat(nodes.count - 1) * horizontalSpacing
+        
+        // Calculate starting X position to center the list horizontally
+        let startX = (frame.width - totalWidth) / 2 + nodeRadius
         let centerY = frame.height / 2
         
         return nodes.enumerated().map { index, node in
             var newNode = node
             newNode.position = CGPoint(
-                x: startX + CGFloat(index) * (nodeRadius * 2 + horizontalSpacing) + nodeRadius,
+                x: startX + CGFloat(index) * (nodeWidth + horizontalSpacing),
                 y: centerY
             )
             return newNode
@@ -27,19 +31,24 @@ enum DataStructureLayoutManager {
         guard !nodes.isEmpty else { return [] }
         
         let levels = Int(log2(Double(nodes.count))) + 1
-        let totalHeight = CGFloat(levels - 1) * (nodeRadius * 2 + verticalSpacing)
-        let startY = (frame.height - totalHeight) / 2
+        let nodeWidth = nodeRadius * 2
+        let totalHeight = CGFloat(levels - 1) * (nodeWidth + verticalSpacing)
+        let startY = (frame.height - totalHeight) / 2 + nodeRadius
         
         return nodes.enumerated().map { index, node in
             var newNode = node
             let level = Int(floor(log2(Double(index + 1))))
             let nodesInLevel = pow(2.0, Double(level))
             let position = Double(index + 1) - pow(2.0, Double(level))
-            let spacing = frame.width / (nodesInLevel + 1)
+            
+            // Calculate horizontal spacing for this level
+            let levelWidth = nodesInLevel * Double(nodeWidth) + (nodesInLevel - 1) * Double(horizontalSpacing)
+            let levelStartX = (Double(frame.width) - levelWidth) / 2 + Double(nodeRadius)
+            let x = levelStartX + position * (Double(nodeWidth) + Double(horizontalSpacing))
             
             newNode.position = CGPoint(
-                x: spacing * (position + 1),
-                y: startY + CGFloat(level) * (nodeRadius * 2 + verticalSpacing)
+                x: x,
+                y: startY + CGFloat(level) * (nodeWidth + verticalSpacing)
             )
             return newNode
         }
@@ -47,7 +56,21 @@ enum DataStructureLayoutManager {
     
     static func calculateArrayLayout(nodes: [DSNode], in frame: CGRect) -> [DSNode] {
         // Similar to linked list but with different spacing and no arrows
-        return calculateLinkedListLayout(nodes: nodes, in: frame)
+        guard !nodes.isEmpty else { return [] }
+        
+        let nodeWidth = nodeRadius * 2
+        let totalWidth = CGFloat(nodes.count) * nodeWidth + CGFloat(nodes.count - 1) * horizontalSpacing
+        let startX = (frame.width - totalWidth) / 2 + nodeRadius
+        let centerY = frame.height / 2
+        
+        return nodes.enumerated().map { index, node in
+            var newNode = node
+            newNode.position = CGPoint(
+                x: startX + CGFloat(index) * (nodeWidth + horizontalSpacing),
+                y: centerY
+            )
+            return newNode
+        }
     }
 }
 
@@ -142,6 +165,9 @@ struct NodeView: View {
                 Text(label)
                     .font(.caption)
                     .foregroundColor(.gray)
+                    .padding(.horizontal, 4)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(4)
                     .offset(y: -size * 0.8)
             }
         }
@@ -166,7 +192,7 @@ struct ConnectionView: View {
                 case .curved:
                     let control = CGPoint(
                         x: (fromPoint.x + toPoint.x) / 2,
-                        y: min(fromPoint.y, toPoint.y) - 50
+                        y: min(fromPoint.y, toPoint.y) - DataStructureLayoutManager.verticalSpacing
                     )
                     path.move(to: fromPoint)
                     path.addQuadCurve(to: toPoint, control: control)
@@ -200,42 +226,25 @@ struct ConnectionView: View {
             // Arrow head
             if connection.style != .selfPointing {
                 let angle = atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x)
-                let arrowLength: CGFloat = 10
+                let arrowLength: CGFloat = DataStructureLayoutManager.nodeRadius * 0.25
                 let arrowAngle: CGFloat = .pi / 6 // 30 degrees
                 
-                let arrowPoint = CGPoint(
-                    x: toPoint.x - (nodeSize/2) * cos(angle),
-                    y: toPoint.y - (nodeSize/2) * sin(angle)
-                )
-                
                 Path { path in
-                    path.move(to: arrowPoint)
+                    path.move(to: toPoint)
                     path.addLine(to: CGPoint(
-                        x: arrowPoint.x - arrowLength * cos(angle - arrowAngle),
-                        y: arrowPoint.y - arrowLength * sin(angle - arrowAngle)
+                        x: toPoint.x - arrowLength * cos(angle - arrowAngle),
+                        y: toPoint.y - arrowLength * sin(angle - arrowAngle)
                     ))
-                    path.move(to: arrowPoint)
+                    path.move(to: toPoint)
                     path.addLine(to: CGPoint(
-                        x: arrowPoint.x - arrowLength * cos(angle + arrowAngle),
-                        y: arrowPoint.y - arrowLength * sin(angle + arrowAngle)
+                        x: toPoint.x - arrowLength * cos(angle + arrowAngle),
+                        y: toPoint.y - arrowLength * sin(angle + arrowAngle)
                     ))
                 }
                 .stroke(
                     connection.isHighlighted ? Color.yellow : Color.blue,
                     style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
                 )
-            }
-            
-            // Optional connection label
-            if let label = connection.label {
-                let midPoint = CGPoint(
-                    x: (fromPoint.x + toPoint.x) / 2,
-                    y: (fromPoint.y + toPoint.y) / 2 - 15
-                )
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .position(midPoint)
             }
         }
     }
@@ -305,7 +314,7 @@ struct DataStructureView: View {
                         ConnectionView(
                             connection: connection,
                             fromPoint: fromNode.position,
-                            toPoint: toPoint(from: fromNode.position, to: toNode.position, nodeSize: nodeSize),
+                            toPoint: calculateEndpoint(from: fromNode.position, to: toNode.position),
                             nodeSize: nodeSize
                         )
                     }
@@ -341,11 +350,13 @@ struct DataStructureView: View {
         }
     }
     
-    private func toPoint(from: CGPoint, to: CGPoint, nodeSize: CGFloat) -> CGPoint {
+    private func calculateEndpoint(from: CGPoint, to: CGPoint) -> CGPoint {
         let angle = atan2(to.y - from.y, to.x - from.x)
+        let radius = DataStructureLayoutManager.nodeRadius
+        
         return CGPoint(
-            x: to.x - (nodeSize/2) * cos(angle),
-            y: to.y - (nodeSize/2) * sin(angle)
+            x: to.x - radius * cos(angle),
+            y: to.y - radius * sin(angle)
         )
     }
 }
