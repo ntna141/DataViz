@@ -1,5 +1,56 @@
 import SwiftUI
 
+// Layout manager for different data structure types
+enum DataStructureLayoutManager {
+    static let nodeRadius: CGFloat = 40
+    static let horizontalSpacing: CGFloat = 50
+    static let verticalSpacing: CGFloat = 50
+    
+    static func calculateLinkedListLayout(nodes: [DSNode], in frame: CGRect) -> [DSNode] {
+        guard !nodes.isEmpty else { return [] }
+        
+        let totalWidth = CGFloat(nodes.count - 1) * (nodeRadius * 2 + horizontalSpacing)
+        let startX = (frame.width - totalWidth) / 2
+        let centerY = frame.height / 2
+        
+        return nodes.enumerated().map { index, node in
+            var newNode = node
+            newNode.position = CGPoint(
+                x: startX + CGFloat(index) * (nodeRadius * 2 + horizontalSpacing) + nodeRadius,
+                y: centerY
+            )
+            return newNode
+        }
+    }
+    
+    static func calculateBinaryTreeLayout(nodes: [DSNode], in frame: CGRect) -> [DSNode] {
+        guard !nodes.isEmpty else { return [] }
+        
+        let levels = Int(log2(Double(nodes.count))) + 1
+        let totalHeight = CGFloat(levels - 1) * (nodeRadius * 2 + verticalSpacing)
+        let startY = (frame.height - totalHeight) / 2
+        
+        return nodes.enumerated().map { index, node in
+            var newNode = node
+            let level = Int(floor(log2(Double(index + 1))))
+            let nodesInLevel = pow(2.0, Double(level))
+            let position = Double(index + 1) - pow(2.0, Double(level))
+            let spacing = frame.width / (nodesInLevel + 1)
+            
+            newNode.position = CGPoint(
+                x: spacing * (position + 1),
+                y: startY + CGFloat(level) * (nodeRadius * 2 + verticalSpacing)
+            )
+            return newNode
+        }
+    }
+    
+    static func calculateArrayLayout(nodes: [DSNode], in frame: CGRect) -> [DSNode] {
+        // Similar to linked list but with different spacing and no arrows
+        return calculateLinkedListLayout(nodes: nodes, in: frame)
+    }
+}
+
 // Basic node that can be used in any data structure
 struct DSNode: Identifiable, Equatable {
     let id: UUID
@@ -223,31 +274,86 @@ struct ArrowHead: Shape {
 
 // Container view for data structure visualization
 struct DataStructureView: View {
+    enum LayoutType: String {
+        case linkedList = "linkedList"
+        case binaryTree = "binaryTree"
+        case array = "array"
+    }
+    
     let nodes: [DSNode]
     let connections: [DSConnection]
-    let nodeSize: CGFloat = 60
+    let nodeSize: CGFloat = DataStructureLayoutManager.nodeRadius * 2
+    let layoutType: LayoutType
+    @State private var frame: CGRect = .zero
+    @State private var layoutNodes: [DSNode] = []
+    
+    init(nodes: [DSNode], connections: [DSConnection], layoutType: LayoutType = .linkedList) {
+        self.nodes = nodes
+        self.connections = connections
+        self.layoutType = layoutType
+    }
     
     var body: some View {
-        ZStack {
-            // Draw all connections first
-            ForEach(connections) { connection in
-                if let fromNode = nodes.first(where: { $0.id == connection.from }),
-                   let toNode = nodes.first(where: { $0.id == connection.to }) {
-                    ConnectionView(
-                        connection: connection,
-                        fromPoint: fromNode.position,
-                        toPoint: toNode.position,
-                        nodeSize: nodeSize
-                    )
+        GeometryReader { geometry in
+            ZStack {
+                Color.clear.preference(key: FramePreferenceKey.self, value: geometry.frame(in: .local))
+                
+                // Draw all connections first
+                ForEach(connections) { connection in
+                    if let fromNode = layoutNodes.first(where: { $0.id == connection.from }),
+                       let toNode = layoutNodes.first(where: { $0.id == connection.to }) {
+                        ConnectionView(
+                            connection: connection,
+                            fromPoint: fromNode.position,
+                            toPoint: toPoint(from: fromNode.position, to: toNode.position, nodeSize: nodeSize),
+                            nodeSize: nodeSize
+                        )
+                    }
+                }
+                
+                // Draw all nodes on top
+                ForEach(layoutNodes) { node in
+                    NodeView(node: node, size: nodeSize)
+                        .position(node.position)
                 }
             }
-            
-            // Draw all nodes on top
-            ForEach(nodes) { node in
-                NodeView(node: node, size: nodeSize)
-                    .position(node.position)
-            }
+        }
+        .onPreferenceChange(FramePreferenceKey.self) { newFrame in
+            frame = newFrame
+            updateLayout()
+        }
+        .onChange(of: nodes) { _ in
+            updateLayout()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private func updateLayout() {
+        guard !frame.isEmpty else { return }
+        
+        switch layoutType {
+        case .linkedList:
+            layoutNodes = DataStructureLayoutManager.calculateLinkedListLayout(nodes: nodes, in: frame)
+        case .binaryTree:
+            layoutNodes = DataStructureLayoutManager.calculateBinaryTreeLayout(nodes: nodes, in: frame)
+        case .array:
+            layoutNodes = DataStructureLayoutManager.calculateArrayLayout(nodes: nodes, in: frame)
+        }
+    }
+    
+    private func toPoint(from: CGPoint, to: CGPoint, nodeSize: CGFloat) -> CGPoint {
+        let angle = atan2(to.y - from.y, to.x - from.x)
+        return CGPoint(
+            x: to.x - (nodeSize/2) * cos(angle),
+            y: to.y - (nodeSize/2) * sin(angle)
+        )
+    }
+}
+
+// Helper for getting frame size
+struct FramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
     }
 } 

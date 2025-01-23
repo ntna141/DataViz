@@ -24,6 +24,7 @@
                             "    head.next.next = Node(7)",
                             "}"
                         ],
+                        "dataStructureType": "linkedList",
                         "steps": [
                             {
                                 "lineNumber": 1,
@@ -31,28 +32,19 @@
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
-                                    {
-                                        "value": "",
-                                        "position": {"x": 100, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 250, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 400, "y": 200}
-                                    }
+                                    { "value": "" },
+                                    { "value": "" },
+                                    { "value": "" }
                                 ],
                                 "connections": [
                                     {
-                                        "fromIndex": 0,
-                                        "toIndex": 1,
+                                        "from": 0,
+                                        "to": 1,
                                         "label": "next"
                                     },
                                     {
-                                        "fromIndex": 1,
-                                        "toIndex": 2,
+                                        "from": 1,
+                                        "to": 2,
                                         "label": "next"
                                     }
                                 ]
@@ -63,28 +55,19 @@
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
-                                    {
-                                        "value": "5",
-                                        "position": {"x": 100, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 250, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 400, "y": 200}
-                                    }
+                                    { "value": "5" },
+                                    { "value": "" },
+                                    { "value": "" }
                                 ],
                                 "connections": [
                                     {
-                                        "fromIndex": 0,
-                                        "toIndex": 1,
+                                        "from": 0,
+                                        "to": 1,
                                         "label": "next"
                                     },
                                     {
-                                        "fromIndex": 1,
-                                        "toIndex": 2,
+                                        "from": 1,
+                                        "to": 2,
                                         "label": "next"
                                     }
                                 ]
@@ -95,28 +78,19 @@
                                 "userInputRequired": true,
                                 "availableElements": ["3", "7", "9"],
                                 "nodes": [
-                                    {
-                                        "value": "5",
-                                        "position": {"x": 100, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 250, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 400, "y": 200}
-                                    }
+                                    { "value": "5" },
+                                    { "value": "" },
+                                    { "value": "" }
                                 ],
                                 "connections": [
                                     {
-                                        "fromIndex": 0,
-                                        "toIndex": 1,
+                                        "from": 0,
+                                        "to": 1,
                                         "label": "next"
                                     },
                                     {
-                                        "fromIndex": 1,
-                                        "toIndex": 2,
+                                        "from": 1,
+                                        "to": 2,
                                         "label": "next"
                                     }
                                 ]
@@ -127,28 +101,19 @@
                                 "userInputRequired": true,
                                 "availableElements": ["7"],
                                 "nodes": [
-                                    {
-                                        "value": "5",
-                                        "position": {"x": 100, "y": 200}
-                                    },
-                                    {
-                                        "value": "3",
-                                        "position": {"x": 250, "y": 200}
-                                    },
-                                    {
-                                        "value": "",
-                                        "position": {"x": 400, "y": 200}
-                                    }
+                                    { "value": "5" },
+                                    { "value": "3" },
+                                    { "value": "" }
                                 ],
                                 "connections": [
                                     {
-                                        "fromIndex": 0,
-                                        "toIndex": 1,
+                                        "from": 0,
+                                        "to": 1,
                                         "label": "next"
                                     },
                                     {
-                                        "fromIndex": 1,
-                                        "toIndex": 2,
+                                        "from": 1,
+                                        "to": 2,
                                         "label": "next"
                                     }
                                 ]

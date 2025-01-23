@@ -14,13 +14,15 @@ class VisualizationManager {
                            title: String,
                            description: String,
                            code: [String],
+                           layoutType: DataStructureView.LayoutType = .linkedList,
                            steps: [(lineNumber: Int, comment: String?, nodes: [DSNode], connections: [DSConnection], userInputRequired: Bool, availableElements: [String])]) {
         let visualization = VisualizationQuestionEntity(context: context)
         visualization.uuid = UUID()
         visualization.title = title
         visualization.desc = description
         visualization.question = question
-        question.visualization = visualization  // Set the bidirectional relationship
+        visualization.layoutType = layoutType.rawValue
+        question.visualization = visualization
         
         // Create code lines
         for (index, line) in code.enumerated() {
@@ -45,12 +47,12 @@ class VisualizationManager {
             // Create nodes
             let nodeEntities = step.nodes.map { node -> NodeEntity in
                 let nodeEntity = NodeEntity(context: context)
-                nodeEntity.uuid = node.id  // Use the provided node ID
+                nodeEntity.uuid = node.id
                 nodeEntity.value = node.value
                 nodeEntity.label = node.label
                 nodeEntity.isHighlighted = node.isHighlighted
-                nodeEntity.positionX = Double(node.position.x)
-                nodeEntity.positionY = Double(node.position.y)
+                nodeEntity.positionX = 0 // Position will be calculated by the layout engine
+                nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
                 return nodeEntity
             }
@@ -80,6 +82,108 @@ class VisualizationManager {
             print("Visualization saved successfully")
         } catch {
             print("Error saving visualization: \(error)")
+        }
+    }
+    
+    // Initialize example visualization for first level's first question
+    func initializeExampleVisualization() {
+        print("Initializing example visualization...")
+        // Check if already initialized
+        let fetchRequest: NSFetchRequest<QuestionEntity> = QuestionEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "level.number == 1 AND type == %@", "visualization")
+        
+        do {
+            let questions = try context.fetch(fetchRequest)
+            print("Found \(questions.count) visualization questions for level 1")
+            
+            if let firstQuestion = questions.first {
+                if firstQuestion.visualization == nil {
+                    print("Creating visualization for question...")
+                    
+                    // Create nodes with consistent IDs
+                    let nodeIDs = (0..<3).map { _ in UUID() }
+                    
+                    // Create example linked list visualization
+                    createVisualization(
+                        for: firstQuestion,
+                        title: "Building a Linked List",
+                        description: "Learn how to build a linked list by following the code and completing the visualization",
+                        code: [
+                            "class Node {",
+                            "    var value: Int",
+                            "    var next: Node?",
+                            "}",
+                            "",
+                            "func createList() {",
+                            "    let head = Node(5)",
+                            "    head.next = Node(3)",
+                            "    head.next.next = Node(7)",
+                            "}"
+                        ],
+                        layoutType: .linkedList,
+                        steps: [
+                            // Initial state with three empty nodes
+                            (1, "First, we define our Node class", 
+                             [
+                                DSNode(id: nodeIDs[0], value: ""),
+                                DSNode(id: nodeIDs[1], value: ""),
+                                DSNode(id: nodeIDs[2], value: "")
+                             ],
+                             [
+                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
+                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
+                             ],
+                             false, []),
+                            
+                            // First node filled
+                            (7, "Create the head node with value 5",
+                             [
+                                DSNode(id: nodeIDs[0], value: "5"),
+                                DSNode(id: nodeIDs[1], value: ""),
+                                DSNode(id: nodeIDs[2], value: "")
+                             ],
+                             [
+                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
+                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
+                             ],
+                             false, []),
+                            
+                            // Second node needs to be filled
+                            (8, "Add the second node with value 3",
+                             [
+                                DSNode(id: nodeIDs[0], value: "5"),
+                                DSNode(id: nodeIDs[1], value: ""),
+                                DSNode(id: nodeIDs[2], value: "")
+                             ],
+                             [
+                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
+                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
+                             ],
+                             true, ["3", "7", "9"]),
+                            
+                            // Third node needs to be filled
+                            (9, "Complete the linked list by adding 7",
+                             [
+                                DSNode(id: nodeIDs[0], value: "5"),
+                                DSNode(id: nodeIDs[1], value: "3"),
+                                DSNode(id: nodeIDs[2], value: "")
+                             ],
+                             [
+                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
+                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
+                             ],
+                             true, ["7"])
+                        ]
+                    )
+                    print("Visualization created successfully")
+                } else {
+                    print("Visualization already exists for question")
+                }
+            } else {
+                print("No visualization question found for level 1")
+            }
+        } catch {
+            print("Error initializing example visualization: \(error)")
         }
     }
     
@@ -117,14 +221,10 @@ class VisualizationManager {
                     let nodes = (stepEntity.nodes as? Set<NodeEntity>)?
                         .map { nodeEntity in
                             DSNode(
-                                id: nodeEntity.uuid ?? UUID(),  // Use the stored UUID
+                                id: nodeEntity.uuid ?? UUID(),
                                 value: nodeEntity.value ?? "",
                                 isHighlighted: nodeEntity.isHighlighted,
-                                label: nodeEntity.label,
-                                position: CGPoint(
-                                    x: nodeEntity.positionX,
-                                    y: nodeEntity.positionY
-                                )
+                                label: nodeEntity.label
                             )
                         } ?? []
                     
@@ -156,116 +256,17 @@ class VisualizationManager {
         let initialState = steps.first?.dsState ?? []
         let initialConnections = steps.first?.dsConnections ?? []
         
+        // Get layout type
+        let layoutType = DataStructureView.LayoutType(rawValue: visualizationEntity.layoutType ?? "linkedList") ?? .linkedList
+        
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",
             description: visualizationEntity.desc ?? "",
             code: codeLines,
             steps: steps,
             initialDSState: initialState,
-            initialConnections: initialConnections
+            initialConnections: initialConnections,
+            layoutType: layoutType
         )
-    }
-    
-    // Initialize example visualization for first level's first question
-    func initializeExampleVisualization() {
-        print("Initializing example visualization...")
-        // Check if already initialized
-        let fetchRequest: NSFetchRequest<QuestionEntity> = QuestionEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "level.number == 1 AND type == %@", "visualization")
-        
-        do {
-            let questions = try context.fetch(fetchRequest)
-            print("Found \(questions.count) visualization questions for level 1")
-            
-            if let firstQuestion = questions.first {
-                if firstQuestion.visualization == nil {
-                    print("Creating visualization for question...")
-                    
-                    // Create consistent node IDs
-                    let node1ID = UUID()
-                    let node2ID = UUID()
-                    let node3ID = UUID()
-                    
-                    // Create example linked list visualization
-                    createVisualization(
-                        for: firstQuestion,
-                        title: "Building a Linked List",
-                        description: "Learn how to build a linked list by following the code and completing the visualization",
-                        code: [
-                            "class Node {",
-                            "    var value: Int",
-                            "    var next: Node?",
-                            "}",
-                            "",
-                            "func createList() {",
-                            "    let head = Node(5)",
-                            "    head.next = Node(3)",
-                            "    head.next.next = Node(7)",
-                            "}"
-                        ],
-                        steps: [
-                            // Initial state with three empty nodes
-                            (1, "First, we define our Node class", 
-                             [
-                                DSNode(id: node1ID, value: "", position: CGPoint(x: 100, y: 200)),
-                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
-                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
-                             ],
-                             [
-                                DSConnection(from: node1ID, to: node2ID, label: "next"),
-                                DSConnection(from: node2ID, to: node3ID, label: "next")
-                             ],
-                             false, []),
-                            
-                            // First node filled
-                            (7, "Create the head node with value 5",
-                             [
-                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
-                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
-                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
-                             ],
-                             [
-                                DSConnection(from: node1ID, to: node2ID, label: "next"),
-                                DSConnection(from: node2ID, to: node3ID, label: "next")
-                             ],
-                             false, []),
-                            
-                            // Second node needs to be filled
-                            (8, "Add the second node with value 3",
-                             [
-                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
-                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
-                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
-                             ],
-                             [
-                                DSConnection(from: node1ID, to: node2ID, label: "next"),
-                                DSConnection(from: node2ID, to: node3ID, label: "next")
-                             ],
-                             true, ["3", "7", "9"]),
-                            
-                            // Third node needs to be filled
-                            (9, "Complete the linked list by adding 7",
-                             [
-                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
-                                DSNode(id: node2ID, value: "3", position: CGPoint(x: 250, y: 200)),
-                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
-                             ],
-                             [
-                                DSConnection(from: node1ID, to: node2ID, label: "next"),
-                                DSConnection(from: node2ID, to: node3ID, label: "next")
-                             ],
-                             true, ["7"])
-                        ]
-                    )
-                    print("Visualization created successfully")
-                } else {
-                    print("Visualization already exists for question")
-                }
-            } else {
-                print("No visualization question found for level 1")
-            }
-        } catch {
-            print("Error initializing example visualization: \(error)")
-        }
     }
 } 

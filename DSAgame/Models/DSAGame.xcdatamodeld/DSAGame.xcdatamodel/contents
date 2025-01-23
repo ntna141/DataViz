@@ -61,6 +61,7 @@
     </entity>
     <entity name="VisualizationQuestionEntity" representedClassName="VisualizationQuestionEntity" syncable="YES" codeGenerationType="class">
         <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="layoutType" optional="YES" attributeType="String"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="code" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VisualizationQuestionLineEntity" inverseName="question" inverseEntity="VisualizationQuestionLineEntity"/>

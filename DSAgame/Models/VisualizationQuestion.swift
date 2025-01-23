@@ -20,6 +20,7 @@ struct VisualizationQuestion {
     let steps: [VisualizationStep]
     let initialDSState: [DSNode]
     let initialConnections: [DSConnection]
+    let layoutType: DataStructureView.LayoutType
 }
 
 // View for draggable elements
@@ -58,6 +59,7 @@ struct VisualizationQuestionView: View {
     @State private var dsConnections: [DSConnection]
     @State private var isAnimating = false
     @State private var visualizationArea: CGRect = .zero
+    @State private var visualizationFrame: CGRect = .zero
     
     init(question: VisualizationQuestion) {
         self.question = question
@@ -67,6 +69,11 @@ struct VisualizationQuestionView: View {
     
     var currentStep: VisualizationStep {
         question.steps[currentStepIndex]
+    }
+    
+    func updateNodePositions() {
+        guard !visualizationFrame.isEmpty else { return }
+        dsNodes = DataStructureLayoutManager.calculateLinkedListLayout(nodes: dsNodes, in: visualizationFrame)
     }
     
     func handleElementDrop(_ value: String, at location: CGPoint) {
@@ -85,7 +92,7 @@ struct VisualizationQuestionView: View {
                 pow(node.position.x - visualizationLocation.x, 2) +
                 pow(node.position.y - visualizationLocation.y, 2)
             )
-            return distance < 30 && node.value.isEmpty // Only allow dropping on empty nodes
+            return distance < DataStructureLayoutManager.nodeRadius && node.value.isEmpty // Only allow dropping on empty nodes
         }) {
             // Update node value
             var updatedNodes = dsNodes
@@ -107,6 +114,7 @@ struct VisualizationQuestionView: View {
             if !currentStep.userInputRequired {
                 dsNodes = currentStep.dsState
                 dsConnections = currentStep.dsConnections
+                updateNodePositions()
             }
         }
     }
@@ -127,11 +135,13 @@ struct VisualizationQuestionView: View {
                 ZStack {
                     Color.white
                         .shadow(radius: 2)
+                        .preference(key: FramePreferenceKey.self, value: geometry.frame(in: .local))
                     
                     // Data structure visualization
                     DataStructureView(
                         nodes: dsNodes,
-                        connections: dsConnections
+                        connections: dsConnections,
+                        layoutType: question.layoutType
                     )
                     .padding()
                     
@@ -162,6 +172,10 @@ struct VisualizationQuestionView: View {
                         }
                     }
                 )
+                .onPreferenceChange(FramePreferenceKey.self) { frame in
+                    visualizationFrame = frame
+                    updateNodePositions()
+                }
                 
                 // Code viewer in scrollview
                 ScrollView {
@@ -227,6 +241,9 @@ struct VisualizationQuestionView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
+            .onAppear {
+                updateNodePositions()
+            }
         }
     }
 }
@@ -269,7 +286,7 @@ struct VisualizationQuestionExample: View {
                 codeHighlightedLine: 2,
                 lineComment: "Create the head node",
                 dsState: [
-                    DSNode(value: "1", position: CGPoint(x: 100, y: 200))
+                    DSNode(value: "1")
                 ],
                 dsConnections: []
             ),
@@ -277,12 +294,12 @@ struct VisualizationQuestionExample: View {
                 codeHighlightedLine: 3,
                 lineComment: "Add the second node",
                 dsState: [
-                    DSNode(value: "1", position: CGPoint(x: 100, y: 200)),
-                    DSNode(value: "", position: CGPoint(x: 200, y: 200))
+                    DSNode(value: "1"),
+                    DSNode(value: "")
                 ],
                 dsConnections: [
                     DSConnection(
-                        from: UUID(), // You'll need to use actual node IDs
+                        from: UUID(),
                         to: UUID(),
                         label: "next"
                     )
@@ -292,7 +309,8 @@ struct VisualizationQuestionExample: View {
             )
         ],
         initialDSState: [],
-        initialConnections: []
+        initialConnections: [],
+        layoutType: .linkedList
     )
     
     var body: some View {

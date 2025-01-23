@@ -2,11 +2,11 @@ import SwiftUI
 
 struct DataStructureExampleView: View {
     // Example linked list
-    let linkedListNodes = [
-        DSNode(value: "1", position: CGPoint(x: 100, y: 100)),
-        DSNode(value: "2", position: CGPoint(x: 200, y: 100)),
-        DSNode(value: "3", isHighlighted: true, position: CGPoint(x: 300, y: 100)),
-        DSNode(value: "4", position: CGPoint(x: 400, y: 100))
+    @State private var linkedListNodes = [
+        DSNode(value: "1", position: .zero),
+        DSNode(value: "2", position: .zero),
+        DSNode(value: "3", isHighlighted: true, position: .zero),
+        DSNode(value: "4", position: .zero)
     ]
     
     var linkedListConnections: [DSConnection] {
@@ -17,7 +17,8 @@ struct DataStructureExampleView: View {
                     from: linkedListNodes[i].id,
                     to: linkedListNodes[i + 1].id,
                     label: i == 1 ? "next" : nil,
-                    isHighlighted: i == 1
+                    isHighlighted: i == 1,
+                    style: .straight
                 )
             )
         }
@@ -25,24 +26,24 @@ struct DataStructureExampleView: View {
     }
     
     // Example binary tree
-    let treeNodes = [
-        DSNode(value: "5", position: CGPoint(x: 250, y: 300)),
-        DSNode(value: "3", position: CGPoint(x: 150, y: 400)),
-        DSNode(value: "7", isHighlighted: true, position: CGPoint(x: 350, y: 400)),
-        DSNode(value: "1", position: CGPoint(x: 100, y: 500)),
-        DSNode(value: "4", position: CGPoint(x: 200, y: 500)),
-        DSNode(value: "6", position: CGPoint(x: 300, y: 500)),
-        DSNode(value: "8", position: CGPoint(x: 400, y: 500))
+    @State private var treeNodes = [
+        DSNode(value: "5", position: .zero),
+        DSNode(value: "3", position: .zero),
+        DSNode(value: "7", isHighlighted: true, position: .zero),
+        DSNode(value: "1", position: .zero),
+        DSNode(value: "4", position: .zero),
+        DSNode(value: "6", position: .zero),
+        DSNode(value: "8", position: .zero)
     ]
     
     var treeConnections: [DSConnection] {
         [
-            DSConnection(from: treeNodes[0].id, to: treeNodes[1].id, label: "left"),
-            DSConnection(from: treeNodes[0].id, to: treeNodes[2].id, label: "right", isHighlighted: true),
-            DSConnection(from: treeNodes[1].id, to: treeNodes[3].id),
-            DSConnection(from: treeNodes[1].id, to: treeNodes[4].id),
-            DSConnection(from: treeNodes[2].id, to: treeNodes[5].id),
-            DSConnection(from: treeNodes[2].id, to: treeNodes[6].id)
+            DSConnection(from: treeNodes[0].id, to: treeNodes[1].id, label: "left", style: .curved),
+            DSConnection(from: treeNodes[0].id, to: treeNodes[2].id, label: "right", isHighlighted: true, style: .curved),
+            DSConnection(from: treeNodes[1].id, to: treeNodes[3].id, style: .curved),
+            DSConnection(from: treeNodes[1].id, to: treeNodes[4].id, style: .curved),
+            DSConnection(from: treeNodes[2].id, to: treeNodes[5].id, style: .curved),
+            DSConnection(from: treeNodes[2].id, to: treeNodes[6].id, style: .curved)
         ]
     }
     
@@ -59,7 +60,8 @@ struct DataStructureExampleView: View {
                 
                 DataStructureView(
                     nodes: linkedListNodes,
-                    connections: linkedListConnections
+                    connections: linkedListConnections,
+                    layoutType: .linkedList
                 )
                 .frame(height: 150)
             }
@@ -71,7 +73,8 @@ struct DataStructureExampleView: View {
                 
                 DataStructureView(
                     nodes: treeNodes,
-                    connections: treeConnections
+                    connections: treeConnections,
+                    layoutType: .binaryTree
                 )
                 .frame(height: 300)
             }
