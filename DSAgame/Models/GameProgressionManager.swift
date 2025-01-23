@@ -117,11 +117,11 @@ class GameProgressionManager {
     }
     
     private func createVisualization(for question: QuestionEntity, from spec: LevelData.Visualization) {
-        // Create visualization
         let visualization = VisualizationQuestionEntity(context: context)
         visualization.uuid = UUID()
         visualization.title = question.title
         visualization.desc = question.desc
+        visualization.layoutType = spec.dataStructureType
         visualization.question = question
         question.visualization = visualization
         
@@ -151,9 +151,10 @@ class GameProgressionManager {
                 let nodeEntity = NodeEntity(context: context)
                 nodeEntity.uuid = nodeID
                 nodeEntity.value = nodeSpec.value
-                nodeEntity.isHighlighted = false
-                nodeEntity.positionX = nodeSpec.position.x
-                nodeEntity.positionY = nodeSpec.position.y
+                nodeEntity.isHighlighted = nodeSpec.isHighlighted ?? false
+                nodeEntity.label = nodeSpec.label
+                nodeEntity.positionX = 0 // Position will be calculated by the layout engine
+                nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
                 return nodeEntity
             }
@@ -163,14 +164,14 @@ class GameProgressionManager {
                 let connectionEntity = NodeConnectionEntity(context: context)
                 connectionEntity.uuid = UUID()
                 connectionEntity.label = connectionSpec.label
-                connectionEntity.isHighlighted = false
+                connectionEntity.isHighlighted = connectionSpec.isHighlighted ?? false
                 connectionEntity.isSelfPointing = false
-                connectionEntity.style = "straight"
+                connectionEntity.style = connectionSpec.style ?? "straight"
                 connectionEntity.step = stepEntity
                 
-                // Link to nodes using the consistent IDs
-                connectionEntity.fromNode = nodeEntities[connectionSpec.fromIndex]
-                connectionEntity.toNode = nodeEntities[connectionSpec.toIndex]
+                // Link to nodes using indices
+                connectionEntity.fromNode = nodeEntities[connectionSpec.from]
+                connectionEntity.toNode = nodeEntities[connectionSpec.to]
             }
         }
         

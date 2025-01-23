@@ -1,5 +1,6 @@
 import Foundation
 
+// JSON decoding models
 struct LevelData: Codable {
     let levels: [Level]
     
@@ -21,31 +22,30 @@ struct LevelData: Codable {
     
     struct Visualization: Codable {
         let code: [String]
+        let dataStructureType: String
         let steps: [Step]
-        
-        struct Step: Codable {
-            let lineNumber: Int
-            let comment: String?
-            let userInputRequired: Bool
-            let availableElements: [String]
-            let nodes: [Node]
-            let connections: [Connection]
-            
-            struct Node: Codable {
-                let value: String
-                let position: Position
-                
-                struct Position: Codable {
-                    let x: Double
-                    let y: Double
-                }
-            }
-            
-            struct Connection: Codable {
-                let fromIndex: Int
-                let toIndex: Int
-                let label: String?
-            }
-        }
+    }
+    
+    struct Step: Codable {
+        let lineNumber: Int
+        let comment: String?
+        let userInputRequired: Bool
+        let availableElements: [String]
+        let nodes: [Node]
+        let connections: [Connection]
+    }
+    
+    struct Node: Codable {
+        let value: String
+        var isHighlighted: Bool?
+        var label: String?
+    }
+    
+    struct Connection: Codable {
+        let from: Int
+        let to: Int
+        let label: String?
+        var isHighlighted: Bool?
+        var style: String?
     }
 } 
