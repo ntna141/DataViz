@@ -2,13 +2,22 @@ import SwiftUI
 
 // Basic node that can be used in any data structure
 struct DSNode: Identifiable, Equatable {
-    let id: UUID = UUID()
+    let id: UUID
     var value: String
     var isHighlighted: Bool = false
     var label: String? = nil
     var position: CGPoint = .zero
     
+    init(id: UUID = UUID(), value: String, isHighlighted: Bool = false, label: String? = nil, position: CGPoint = .zero) {
+        self.id = id
+        self.value = value
+        self.isHighlighted = isHighlighted
+        self.label = label
+        self.position = position
+    }
+    
     static func == (lhs: DSNode, rhs: DSNode) -> Bool {
+        lhs.id == rhs.id &&
         lhs.value == rhs.value &&
         lhs.isHighlighted == rhs.isHighlighted &&
         lhs.label == rhs.label &&
@@ -55,15 +64,27 @@ struct NodeView: View {
                 .fill(node.isHighlighted ? Color.yellow.opacity(0.3) : Color.white)
                 .overlay(
                     Circle()
-                        .stroke(node.isHighlighted ? Color.yellow : Color.blue, lineWidth: 2)
+                        .stroke(
+                            node.value.isEmpty ? Color.gray : (node.isHighlighted ? Color.yellow : Color.blue),
+                            style: StrokeStyle(
+                                lineWidth: 2,
+                                dash: node.value.isEmpty ? [5] : []
+                            )
+                        )
                 )
                 .frame(width: size, height: size)
                 .shadow(radius: 2)
             
-            // Node value
-            Text(node.value)
-                .font(.system(size: size * 0.4))
-                .foregroundColor(.black)
+            // Node value or placeholder
+            if node.value.isEmpty {
+                Text("?")
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.gray)
+            } else {
+                Text(node.value)
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.black)
+            }
             
             // Optional label above node
             if let label = node.label {
@@ -127,20 +148,43 @@ struct ConnectionView: View {
             
             // Arrow head
             if connection.style != .selfPointing {
-                ArrowHead(from: fromPoint, to: toPoint)
-                    .fill(connection.isHighlighted ? Color.yellow : Color.blue)
-                    .frame(width: 10, height: 10)
+                let angle = atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x)
+                let arrowLength: CGFloat = 10
+                let arrowAngle: CGFloat = .pi / 6 // 30 degrees
+                
+                let arrowPoint = CGPoint(
+                    x: toPoint.x - (nodeSize/2) * cos(angle),
+                    y: toPoint.y - (nodeSize/2) * sin(angle)
+                )
+                
+                Path { path in
+                    path.move(to: arrowPoint)
+                    path.addLine(to: CGPoint(
+                        x: arrowPoint.x - arrowLength * cos(angle - arrowAngle),
+                        y: arrowPoint.y - arrowLength * sin(angle - arrowAngle)
+                    ))
+                    path.move(to: arrowPoint)
+                    path.addLine(to: CGPoint(
+                        x: arrowPoint.x - arrowLength * cos(angle + arrowAngle),
+                        y: arrowPoint.y - arrowLength * sin(angle + arrowAngle)
+                    ))
+                }
+                .stroke(
+                    connection.isHighlighted ? Color.yellow : Color.blue,
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
+                )
             }
             
             // Optional connection label
             if let label = connection.label {
+                let midPoint = CGPoint(
+                    x: (fromPoint.x + toPoint.x) / 2,
+                    y: (fromPoint.y + toPoint.y) / 2 - 15
+                )
                 Text(label)
                     .font(.caption)
                     .foregroundColor(.gray)
-                    .position(
-                        x: (fromPoint.x + toPoint.x) / 2,
-                        y: (fromPoint.y + toPoint.y) / 2 - 15
-                    )
+                    .position(midPoint)
             }
         }
     }
@@ -204,5 +248,6 @@ struct DataStructureView: View {
                     .position(node.position)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 } 

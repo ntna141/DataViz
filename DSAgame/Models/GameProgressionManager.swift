@@ -10,52 +10,175 @@ class GameProgressionManager {
         self.context = PersistenceController.shared.container.viewContext
     }
     
+    private func loadLevelData() -> LevelData? {
+        guard let url = Bundle.main.url(forResource: "levels", withExtension: "json") else {
+            print("Could not find levels.json in bundle")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            return try decoder.decode(LevelData.self, from: data)
+        } catch {
+            print("Error loading level data: \(error)")
+            return nil
+        }
+    }
+    
     func initializeGameLevels() {
         // Check if levels already exist
         let fetchRequest: NSFetchRequest<LevelEntity> = LevelEntity.fetchRequest()
         
         do {
             let existingLevels = try context.fetch(fetchRequest)
-            if existingLevels.isEmpty {
+            print("Found \(existingLevels.count) existing levels")
+            
+            let shouldReset = ProcessInfo.processInfo.environment["RESET_GAME_DATA"] == "1"
+            print("RESET_GAME_DATA environment variable is \(ProcessInfo.processInfo.environment["RESET_GAME_DATA"] ?? "not set")")
+            
+            if existingLevels.isEmpty || shouldReset {
+                if shouldReset {
+                    print("Resetting game data...")
+                    // Delete existing data
+                    for level in existingLevels {
+                        print("Deleting level \(level.number) with \(level.questions?.count ?? 0) questions")
+                        context.delete(level)
+                    }
+                    try context.save()
+                    print("Existing data deleted successfully")
+                }
+                
                 print("Initializing game levels...")
-                // Create initial levels
-                for i in 1...10 {
+                guard let levelData = loadLevelData() else {
+                    print("Failed to load level data from levels.json")
+                    return
+                }
+                print("Loaded \(levelData.levels.count) levels from JSON")
+                
+                // Create levels from JSON data
+                for levelSpec in levelData.levels {
+                    print("Creating level \(levelSpec.number): \(levelSpec.topic)")
                     let level = LevelEntity(context: context)
                     level.uuid = UUID()
-                    level.number = Int32(i)
-                    level.isUnlocked = i == 1
-                    level.requiredStars = Int32((i - 1) * 3) // Each level requires 3 stars from previous level
+                    level.number = Int32(levelSpec.number)
+                    level.isUnlocked = levelSpec.number == 1
+                    level.requiredStars = Int32(levelSpec.requiredStars)
+                    level.topic = levelSpec.topic
+                    level.desc = levelSpec.description
                     
-                    // Set specific topic and description for first level
-                    if i == 1 {
-                        level.topic = "Linked Lists"
-                        level.desc = "Learn about linked lists and how to build them step by step."
-                        
-                        // Create visualization question for first level
+                    // Create questions
+                    for questionSpec in levelSpec.questions {
+                        print("Creating question: \(questionSpec.title) of type \(questionSpec.type)")
                         let question = QuestionEntity(context: context)
                         question.uuid = UUID()
                         question.level = level
-                        question.type = "visualization"
-                        question.title = "Building a Linked List"
-                        question.desc = "Learn how to build a linked list by following the code and completing the visualization"
-                        question.difficulty = 1
+                        question.type = questionSpec.type
+                        question.title = questionSpec.title
+                        question.desc = questionSpec.description
+                        question.difficulty = Int16(questionSpec.difficulty)
                         question.isCompleted = false
                         question.stars = 0
                         question.attempts = 0
+                        
+                        // Save to ensure question has an ID
+                        try context.save()
+                        print("Question saved successfully")
+                        
+                        // Create visualization if present
+                        if let visualizationSpec = questionSpec.visualization {
+                            print("Creating visualization with \(visualizationSpec.steps.count) steps")
+                            createVisualization(for: question, from: visualizationSpec)
+                        }
                     }
                 }
                 
-                // Save the context to ensure levels and questions are created
                 try context.save()
                 print("Game levels initialized successfully")
                 
-                // Initialize visualization for first level's question
-                VisualizationManager.shared.initializeExampleVisualization()
+                // Verify initialization
+                let verifyLevels = try context.fetch(fetchRequest)
+                print("Verification: Found \(verifyLevels.count) levels after initialization")
+                for level in verifyLevels {
+                    print("Level \(level.number): \(level.questions?.count ?? 0) questions")
+                    if let questions = level.questions?.allObjects as? [QuestionEntity] {
+                        for question in questions {
+                            print("  - Question: \(question.title ?? ""), Visualization: \(question.visualization != nil ? "Yes" : "No")")
+                        }
+                    }
+                }
             } else {
                 print("Game levels already exist, skipping initialization")
+                print("To force reset, set RESET_GAME_DATA=1 in environment variables")
             }
         } catch {
             print("Error initializing game levels: \(error)")
+        }
+    }
+    
+    private func createVisualization(for question: QuestionEntity, from spec: LevelData.Visualization) {
+        // Create visualization
+        let visualization = VisualizationQuestionEntity(context: context)
+        visualization.uuid = UUID()
+        visualization.title = question.title
+        visualization.desc = question.desc
+        visualization.question = question
+        question.visualization = visualization
+        
+        // Create code lines
+        for (index, line) in spec.code.enumerated() {
+            let codeLine = VisualizationQuestionLineEntity(context: context)
+            codeLine.uuid = UUID()
+            codeLine.lineNumber = Int32(index + 1)
+            codeLine.content = line
+            codeLine.question = visualization
+        }
+        
+        // Create steps
+        for (index, stepSpec) in spec.steps.enumerated() {
+            let stepEntity = VisualizationStepEntity(context: context)
+            stepEntity.uuid = UUID()
+            stepEntity.orderIndex = Int32(index)
+            stepEntity.codeHighlightedLine = Int32(stepSpec.lineNumber)
+            stepEntity.lineComment = stepSpec.comment
+            stepEntity.userInputRequired = stepSpec.userInputRequired
+            stepEntity.availableElements = stepSpec.availableElements
+            stepEntity.question = visualization
+            
+            // Create nodes with consistent IDs
+            let nodeIDs = stepSpec.nodes.map { _ in UUID() }
+            let nodeEntities = zip(stepSpec.nodes, nodeIDs).map { (nodeSpec, nodeID) -> NodeEntity in
+                let nodeEntity = NodeEntity(context: context)
+                nodeEntity.uuid = nodeID
+                nodeEntity.value = nodeSpec.value
+                nodeEntity.isHighlighted = false
+                nodeEntity.positionX = nodeSpec.position.x
+                nodeEntity.positionY = nodeSpec.position.y
+                nodeEntity.step = stepEntity
+                return nodeEntity
+            }
+            
+            // Create connections using node indices
+            for connectionSpec in stepSpec.connections {
+                let connectionEntity = NodeConnectionEntity(context: context)
+                connectionEntity.uuid = UUID()
+                connectionEntity.label = connectionSpec.label
+                connectionEntity.isHighlighted = false
+                connectionEntity.isSelfPointing = false
+                connectionEntity.style = "straight"
+                connectionEntity.step = stepEntity
+                
+                // Link to nodes using the consistent IDs
+                connectionEntity.fromNode = nodeEntities[connectionSpec.fromIndex]
+                connectionEntity.toNode = nodeEntities[connectionSpec.toIndex]
+            }
+        }
+        
+        do {
+            try context.save()
+            print("Visualization created successfully")
+        } catch {
+            print("Error creating visualization: \(error)")
         }
     }
     

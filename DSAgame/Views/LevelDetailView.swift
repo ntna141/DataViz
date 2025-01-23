@@ -7,54 +7,58 @@ struct LevelDetailView: View {
     @State private var visualization: VisualizationQuestion?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Header
-            HStack {
-                Text("Level \(level.number)")
-                    .font(.title)
-                    .fontWeight(.bold)
-                Spacer()
+        GeometryReader { geometry in
+            VStack(alignment: .leading, spacing: 20) {
+                // Header
+                HStack {
+                    Text("Level \(level.number)")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    Spacer()
+                    
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                    }
+                }
                 
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
+                // Topic
+                Text(level.topic ?? "")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                // Description
+                Text(level.desc ?? "")
+                    .font(.body)
+                    .multilineTextAlignment(.leading)
+                
+                // Start Visualization Button
+                if let visualization = visualization {
+                    Button(action: {
+                        showingVisualization = true
+                    }) {
+                        Text("Start Visualization")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                } else {
+                    Text("No visualization available")
                         .foregroundColor(.gray)
+                        .italic()
                 }
+                
+                Spacer()
             }
-            
-            // Topic
-            Text(level.topic ?? "")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            // Description
-            Text(level.desc ?? "")
-                .font(.body)
-            
-            // Start Visualization Button
-            if let visualization = visualization {
-                Button(action: {
-                    showingVisualization = true
-                }) {
-                    Text("Start Visualization")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-            } else {
-                Text("No visualization available")
-                    .foregroundColor(.gray)
-                    .italic()
-            }
-            
-            Spacer()
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding()
         .onAppear {
             // Load visualization from the first question of type "visualization"
             if let questions = level.questions?.allObjects as? [QuestionEntity],
@@ -62,7 +66,7 @@ struct LevelDetailView: View {
                 visualization = VisualizationManager.shared.loadVisualization(for: visualizationQuestion)
             }
         }
-        .sheet(isPresented: $showingVisualization) {
+        .fullScreenCover(isPresented: $showingVisualization) {
             if let visualization = visualization {
                 VisualizationQuestionView(question: visualization)
             }

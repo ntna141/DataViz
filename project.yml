@@ -9,3 +9,6 @@ targets:
     platform: iOS
     sources: 
       - path: DSAgame
+    resources:
+      - path: DSAgame/Resources
+        type: folder

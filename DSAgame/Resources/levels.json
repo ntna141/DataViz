@@ -1,0 +1,162 @@
+{
+    "levels": [
+        {
+            "number": 1,
+            "topic": "Linked Lists",
+            "description": "Learn about linked lists and how to build them step by step.",
+            "requiredStars": 0,
+            "questions": [
+                {
+                    "type": "visualization",
+                    "title": "Building a Linked List",
+                    "description": "Learn how to build a linked list by following the code and completing the visualization",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "class Node {",
+                            "    var value: Int",
+                            "    var next: Node?",
+                            "}",
+                            "",
+                            "func createList() {",
+                            "    let head = Node(5)",
+                            "    head.next = Node(3)",
+                            "    head.next.next = Node(7)",
+                            "}"
+                        ],
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "First, we define our Node class",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "position": {"x": 100, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 250, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 400, "y": 200}
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "fromIndex": 0,
+                                        "toIndex": 1,
+                                        "label": "next"
+                                    },
+                                    {
+                                        "fromIndex": 1,
+                                        "toIndex": 2,
+                                        "label": "next"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "Create the head node with value 5",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "5",
+                                        "position": {"x": 100, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 250, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 400, "y": 200}
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "fromIndex": 0,
+                                        "toIndex": 1,
+                                        "label": "next"
+                                    },
+                                    {
+                                        "fromIndex": 1,
+                                        "toIndex": 2,
+                                        "label": "next"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 8,
+                                "comment": "Add the second node with value 3",
+                                "userInputRequired": true,
+                                "availableElements": ["3", "7", "9"],
+                                "nodes": [
+                                    {
+                                        "value": "5",
+                                        "position": {"x": 100, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 250, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 400, "y": 200}
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "fromIndex": 0,
+                                        "toIndex": 1,
+                                        "label": "next"
+                                    },
+                                    {
+                                        "fromIndex": 1,
+                                        "toIndex": 2,
+                                        "label": "next"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 9,
+                                "comment": "Complete the linked list by adding 7",
+                                "userInputRequired": true,
+                                "availableElements": ["7"],
+                                "nodes": [
+                                    {
+                                        "value": "5",
+                                        "position": {"x": 100, "y": 200}
+                                    },
+                                    {
+                                        "value": "3",
+                                        "position": {"x": 250, "y": 200}
+                                    },
+                                    {
+                                        "value": "",
+                                        "position": {"x": 400, "y": 200}
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "fromIndex": 0,
+                                        "toIndex": 1,
+                                        "label": "next"
+                                    },
+                                    {
+                                        "fromIndex": 1,
+                                        "toIndex": 2,
+                                        "label": "next"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+} 

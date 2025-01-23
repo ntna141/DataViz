@@ -96,37 +96,25 @@ struct CodeLineView: View {
                 .frame(width: maxLineNumberWidth, alignment: .trailing)
                 .padding(.horizontal, 8)
             
-            // Code content
-            HStack(spacing: 4) {
-                ForEach(line.syntaxTokens) { token in
-                    Text(token.text)
-                        .foregroundColor(token.type.color)
+            VStack(alignment: .leading, spacing: 4) {
+                // Code content
+                HStack(spacing: 4) {
+                    ForEach(line.syntaxTokens) { token in
+                        Text(token.text)
+                            .foregroundColor(token.type.color)
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 2)
-            .background(line.isHighlighted ? Color.yellow.opacity(0.2) : Color.clear)
-            
-            // Side comment with pointer
-            if let comment = line.sideComment {
-                HStack(spacing: 0) {
-                    // Pointer line
-                    Rectangle()
-                        .frame(width: 30, height: 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 2)
+                .background(line.isHighlighted ? Color.yellow.opacity(0.2) : Color.clear)
+                
+                // Inline comment
+                if let comment = line.sideComment {
+                    Text("// \(comment)")
+                        .font(.system(.body, design: .monospaced))
                         .foregroundColor(.gray)
-                    
-                    // Comment bubble
-                    Text(comment)
-                        .font(.callout)
-                        .foregroundColor(.black)
-                        .padding(8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.white)
-                                .shadow(radius: 2)
-                        )
+                        .padding(.leading, 16)
                 }
-                .padding(.leading)
             }
         }
     }
@@ -152,7 +140,6 @@ struct CodeViewer: View {
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(8)
-            .shadow(radius: 2)
         }
     }
 }

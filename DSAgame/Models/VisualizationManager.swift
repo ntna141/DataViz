@@ -20,6 +20,7 @@ class VisualizationManager {
         visualization.title = title
         visualization.desc = description
         visualization.question = question
+        question.visualization = visualization  // Set the bidirectional relationship
         
         // Create code lines
         for (index, line) in code.enumerated() {
@@ -44,7 +45,7 @@ class VisualizationManager {
             // Create nodes
             let nodeEntities = step.nodes.map { node -> NodeEntity in
                 let nodeEntity = NodeEntity(context: context)
-                nodeEntity.uuid = UUID()
+                nodeEntity.uuid = node.id  // Use the provided node ID
                 nodeEntity.value = node.value
                 nodeEntity.label = node.label
                 nodeEntity.isHighlighted = node.isHighlighted
@@ -64,9 +65,9 @@ class VisualizationManager {
                 connectionEntity.style = connection.style.rawValue
                 connectionEntity.step = stepEntity
                 
-                // Find corresponding nodes
-                if let fromNode = nodeEntities.first(where: { $0.value == step.nodes.first(where: { $0.id == connection.from })?.value }),
-                   let toNode = nodeEntities.first(where: { $0.value == step.nodes.first(where: { $0.id == connection.to })?.value }) {
+                // Find corresponding nodes using node IDs
+                if let fromNode = nodeEntities.first(where: { $0.uuid == connection.from }),
+                   let toNode = nodeEntities.first(where: { $0.uuid == connection.to }) {
                     connectionEntity.fromNode = fromNode
                     connectionEntity.toNode = toNode
                 }
@@ -76,6 +77,7 @@ class VisualizationManager {
         // Save changes
         do {
             try context.save()
+            print("Visualization saved successfully")
         } catch {
             print("Error saving visualization: \(error)")
         }
@@ -115,6 +117,7 @@ class VisualizationManager {
                     let nodes = (stepEntity.nodes as? Set<NodeEntity>)?
                         .map { nodeEntity in
                             DSNode(
+                                id: nodeEntity.uuid ?? UUID(),  // Use the stored UUID
                                 value: nodeEntity.value ?? "",
                                 isHighlighted: nodeEntity.isHighlighted,
                                 label: nodeEntity.label,
@@ -149,13 +152,17 @@ class VisualizationManager {
                 }
         }()
         
+        // Get initial state from first step if available
+        let initialState = steps.first?.dsState ?? []
+        let initialConnections = steps.first?.dsConnections ?? []
+        
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",
             description: visualizationEntity.desc ?? "",
             code: codeLines,
             steps: steps,
-            initialDSState: [],
-            initialConnections: []
+            initialDSState: initialState,
+            initialConnections: initialConnections
         )
     }
     
@@ -173,6 +180,12 @@ class VisualizationManager {
             if let firstQuestion = questions.first {
                 if firstQuestion.visualization == nil {
                     print("Creating visualization for question...")
+                    
+                    // Create consistent node IDs
+                    let node1ID = UUID()
+                    let node2ID = UUID()
+                    let node3ID = UUID()
+                    
                     // Create example linked list visualization
                     createVisualization(
                         for: firstQuestion,
@@ -191,40 +204,55 @@ class VisualizationManager {
                             "}"
                         ],
                         steps: [
-                            (1, "First, we define our Node class", [], [], false, []),
-                            (7, "Create the head node with value 5",
-                             [DSNode(value: "5", position: CGPoint(x: 100, y: 200))],
-                             [], false, []),
-                            (8, "Add the second node",
+                            // Initial state with three empty nodes
+                            (1, "First, we define our Node class", 
                              [
-                                DSNode(value: "5", position: CGPoint(x: 100, y: 200)),
-                                DSNode(value: "3", position: CGPoint(x: 250, y: 200))
+                                DSNode(id: node1ID, value: "", position: CGPoint(x: 100, y: 200)),
+                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
+                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
                              ],
                              [
-                                DSConnection(
-                                    from: UUID(),
-                                    to: UUID(),
-                                    label: "next"
-                                )
+                                DSConnection(from: node1ID, to: node2ID, label: "next"),
+                                DSConnection(from: node2ID, to: node3ID, label: "next")
+                             ],
+                             false, []),
+                            
+                            // First node filled
+                            (7, "Create the head node with value 5",
+                             [
+                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
+                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
+                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
+                             ],
+                             [
+                                DSConnection(from: node1ID, to: node2ID, label: "next"),
+                                DSConnection(from: node2ID, to: node3ID, label: "next")
+                             ],
+                             false, []),
+                            
+                            // Second node needs to be filled
+                            (8, "Add the second node with value 3",
+                             [
+                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
+                                DSNode(id: node2ID, value: "", position: CGPoint(x: 250, y: 200)),
+                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
+                             ],
+                             [
+                                DSConnection(from: node1ID, to: node2ID, label: "next"),
+                                DSConnection(from: node2ID, to: node3ID, label: "next")
                              ],
                              true, ["3", "7", "9"]),
-                            (9, "Complete the linked list",
+                            
+                            // Third node needs to be filled
+                            (9, "Complete the linked list by adding 7",
                              [
-                                DSNode(value: "5", position: CGPoint(x: 100, y: 200)),
-                                DSNode(value: "3", position: CGPoint(x: 250, y: 200)),
-                                DSNode(value: "7", position: CGPoint(x: 400, y: 200))
+                                DSNode(id: node1ID, value: "5", position: CGPoint(x: 100, y: 200)),
+                                DSNode(id: node2ID, value: "3", position: CGPoint(x: 250, y: 200)),
+                                DSNode(id: node3ID, value: "", position: CGPoint(x: 400, y: 200))
                              ],
                              [
-                                DSConnection(
-                                    from: UUID(),
-                                    to: UUID(),
-                                    label: "next"
-                                ),
-                                DSConnection(
-                                    from: UUID(),
-                                    to: UUID(),
-                                    label: "next"
-                                )
+                                DSConnection(from: node1ID, to: node2ID, label: "next"),
+                                DSConnection(from: node2ID, to: node3ID, label: "next")
                              ],
                              true, ["7"])
                         ]

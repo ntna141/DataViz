@@ -25,7 +25,8 @@ struct VisualizationQuestion {
 // View for draggable elements
 struct DraggableElement: View {
     let value: String
-    @State private var dragAmount = CGSize.zero
+    @State private var position = CGPoint.zero
+    @State private var isDragging = false
     let onDropped: (String, CGPoint) -> Void
     
     var body: some View {
@@ -33,15 +34,16 @@ struct DraggableElement: View {
             .padding(10)
             .background(Color.white)
             .cornerRadius(8)
-            .shadow(radius: 2)
-            .offset(dragAmount)
+            .shadow(radius: isDragging ? 4 : 2)
+            .position(x: position.x, y: position.y)
             .gesture(
                 DragGesture()
                     .onChanged { gesture in
-                        dragAmount = gesture.translation
+                        isDragging = true
+                        position = gesture.location
                     }
                     .onEnded { gesture in
-                        dragAmount = .zero
+                        isDragging = false
                         onDropped(value, gesture.location)
                     }
             )
@@ -55,6 +57,7 @@ struct VisualizationQuestionView: View {
     @State private var dsNodes: [DSNode]
     @State private var dsConnections: [DSConnection]
     @State private var isAnimating = false
+    @State private var visualizationArea: CGRect = .zero
     
     init(question: VisualizationQuestion) {
         self.question = question
@@ -67,16 +70,27 @@ struct VisualizationQuestionView: View {
     }
     
     func handleElementDrop(_ value: String, at location: CGPoint) {
-        // Find the closest node to the drop location
+        // Convert the screen coordinates to visualization area coordinates
+        let visualizationLocation = CGPoint(
+            x: location.x - visualizationArea.minX,
+            y: location.y - visualizationArea.minY
+        )
+        
+        // Check if the drop is within the visualization area
+        guard visualizationArea.contains(location) else { return }
+        
+        // Find the closest empty node to the drop location
         if let targetNodeIndex = dsNodes.firstIndex(where: { node in
             let distance = sqrt(
-                pow(node.position.x - location.x, 2) +
-                pow(node.position.y - location.y, 2)
+                pow(node.position.x - visualizationLocation.x, 2) +
+                pow(node.position.y - visualizationLocation.y, 2)
             )
-            return distance < 30 // Threshold for dropping
+            return distance < 30 && node.value.isEmpty // Only allow dropping on empty nodes
         }) {
             // Update node value
-            dsNodes[targetNodeIndex].value = value
+            var updatedNodes = dsNodes
+            updatedNodes[targetNodeIndex].value = value
+            dsNodes = updatedNodes
             
             // Check if this completes the current step
             if dsNodes == currentStep.dsState {
@@ -98,77 +112,121 @@ struct VisualizationQuestionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Title and description
-            Text(question.title)
-                .font(.title)
-                .padding()
-            
-            Text(question.description)
-                .font(.body)
-                .padding(.horizontal)
-            
-            HStack(spacing: 20) {
-                // Code viewer
-                CodeViewer(lines: question.code.map { line in
-                    var modifiedLine = line
-                    modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
-                    if line.number == currentStep.codeHighlightedLine {
-                        modifiedLine.sideComment = currentStep.lineComment
-                    }
-                    return modifiedLine
-                })
-                .frame(width: 400)
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Title and description
+                Text(question.title)
+                    .font(.title)
+                    .padding(.top)
                 
-                // Data structure visualization
-                DataStructureView(
-                    nodes: dsNodes,
-                    connections: dsConnections
-                )
-                .frame(width: 400, height: 400)
-            }
-            
-            // Available elements for dragging
-            if currentStep.userInputRequired {
-                HStack(spacing: 15) {
-                    ForEach(currentStep.availableElements, id: \.self) { element in
-                        DraggableElement(value: element) { value, location in
-                            handleElementDrop(value, at: location)
+                Text(question.description)
+                    .font(.body)
+                    .padding(.horizontal)
+                
+                // Visualization area with draggable elements and data structure
+                ZStack {
+                    Color.white
+                        .shadow(radius: 2)
+                    
+                    // Data structure visualization
+                    DataStructureView(
+                        nodes: dsNodes,
+                        connections: dsConnections
+                    )
+                    .padding()
+                    
+                    // Available elements for dragging
+                    if currentStep.userInputRequired {
+                        VStack {
+                            HStack(spacing: 15) {
+                                ForEach(currentStep.availableElements, id: \.self) { element in
+                                    DraggableElement(value: element) { value, location in
+                                        handleElementDrop(value, at: location)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                            
+                            Spacer()
+                        }
+                        .padding(.top)
+                    }
+                }
+                .frame(height: geometry.size.height * 0.4)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.onAppear {
+                            visualizationArea = geo.frame(in: .global)
                         }
                     }
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-            }
-            
-            // Navigation buttons
-            HStack {
-                Button(action: {
-                    if currentStepIndex > 0 {
-                        currentStepIndex -= 1
-                        dsNodes = question.steps[currentStepIndex].dsState
-                        dsConnections = question.steps[currentStepIndex].dsConnections
-                    }
-                }) {
-                    Text("Previous")
-                }
-                .disabled(currentStepIndex == 0 || isAnimating)
+                )
                 
-                Spacer()
-                
-                Button(action: {
-                    if !currentStep.userInputRequired {
-                        moveToNextStep()
-                    }
-                }) {
-                    Text("Next")
+                // Code viewer in scrollview
+                ScrollView {
+                    CodeViewer(lines: question.code.map { line in
+                        var modifiedLine = line
+                        modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
+                        if line.number == currentStep.codeHighlightedLine {
+                            modifiedLine.sideComment = currentStep.lineComment
+                        }
+                        return modifiedLine
+                    })
+                    .frame(minHeight: geometry.size.height * 0.35)
                 }
-                .disabled(currentStepIndex == question.steps.count - 1 || 
-                         currentStep.userInputRequired ||
-                         isAnimating)
+                .padding(.horizontal)
+                
+                // Fixed navigation bar at the bottom
+                HStack {
+                    Button(action: {
+                        if currentStepIndex > 0 {
+                            currentStepIndex -= 1
+                            dsNodes = question.steps[currentStepIndex].dsState
+                            dsConnections = question.steps[currentStepIndex].dsConnections
+                        }
+                    }) {
+                        Text("Previous")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: 120)
+                            .background(currentStepIndex > 0 ? Color.blue : Color.gray)
+                            .cornerRadius(10)
+                    }
+                    .disabled(currentStepIndex == 0 || isAnimating)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        if !currentStep.userInputRequired {
+                            moveToNextStep()
+                        }
+                    }) {
+                        Text("Next")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: 120)
+                            .background(
+                                (!currentStep.userInputRequired && currentStepIndex < question.steps.count - 1) 
+                                ? Color.blue : Color.gray
+                            )
+                            .cornerRadius(10)
+                    }
+                    .disabled(currentStepIndex == question.steps.count - 1 || 
+                             currentStep.userInputRequired ||
+                             isAnimating)
+                }
+                .padding(.horizontal, 40)
+                .padding(.vertical, 20)
+                .background(
+                    Color(.systemBackground)
+                        .shadow(radius: 2, y: -2)
+                )
             }
-            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground))
         }
     }
 }
