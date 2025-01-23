@@ -26,8 +26,8 @@ struct VisualizationQuestion {
 // View for draggable elements
 struct DraggableElement: View {
     let value: String
-    @State private var position = CGPoint.zero
     @State private var isDragging = false
+    @State private var dragLocation: CGPoint = .zero
     let onDropped: (String, CGPoint) -> Void
     
     var body: some View {
@@ -36,19 +36,40 @@ struct DraggableElement: View {
             .background(Color.white)
             .cornerRadius(8)
             .shadow(radius: isDragging ? 4 : 2)
-            .position(x: position.x, y: position.y)
+            .scaleEffect(isDragging ? 1.1 : 1.0)
+            .opacity(isDragging ? 0.7 : 1.0)
+            .overlay(
+                GeometryReader { geometry in
+                    if isDragging {
+                        Text(value)
+                            .padding(10)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .shadow(radius: 4)
+                            .position(dragLocation)
+                    }
+                }
+            )
             .gesture(
-                DragGesture()
+                DragGesture(coordinateSpace: .named("dataStructureSpace"))
                     .onChanged { gesture in
                         isDragging = true
-                        position = gesture.location
+                        dragLocation = gesture.location
                     }
                     .onEnded { gesture in
                         isDragging = false
                         onDropped(value, gesture.location)
                     }
             )
+            .animation(.spring(response: 0.3), value: isDragging)
     }
+}
+
+// Represents a dragging state
+struct DragState {
+    var value: String
+    var position: CGPoint
+    var isDragging: Bool
 }
 
 // Main visualization question view
@@ -58,8 +79,7 @@ struct VisualizationQuestionView: View {
     @State private var dsNodes: [DSNode]
     @State private var dsConnections: [DSConnection]
     @State private var isAnimating = false
-    @State private var visualizationArea: CGRect = .zero
-    @State private var visualizationFrame: CGRect = .zero
+    @State private var targetNodeIndex: Int?
     
     init(question: VisualizationQuestion) {
         self.question = question
@@ -71,41 +91,6 @@ struct VisualizationQuestionView: View {
         question.steps[currentStepIndex]
     }
     
-    func updateNodePositions() {
-        guard !visualizationFrame.isEmpty else { return }
-        dsNodes = DataStructureLayoutManager.calculateLinkedListLayout(nodes: dsNodes, in: visualizationFrame)
-    }
-    
-    func handleElementDrop(_ value: String, at location: CGPoint) {
-        // Convert the screen coordinates to visualization area coordinates
-        let visualizationLocation = CGPoint(
-            x: location.x - visualizationArea.minX,
-            y: location.y - visualizationArea.minY
-        )
-        
-        // Check if the drop is within the visualization area
-        guard visualizationArea.contains(location) else { return }
-        
-        // Find the closest empty node to the drop location
-        if let targetNodeIndex = dsNodes.firstIndex(where: { node in
-            let distance = sqrt(
-                pow(node.position.x - visualizationLocation.x, 2) +
-                pow(node.position.y - visualizationLocation.y, 2)
-            )
-            return distance < DataStructureLayoutManager.nodeRadius && node.value.isEmpty // Only allow dropping on empty nodes
-        }) {
-            // Update node value
-            var updatedNodes = dsNodes
-            updatedNodes[targetNodeIndex].value = value
-            dsNodes = updatedNodes
-            
-            // Check if this completes the current step
-            if dsNodes == currentStep.dsState {
-                moveToNextStep()
-            }
-        }
-    }
-    
     func moveToNextStep() {
         guard currentStepIndex < question.steps.count - 1 else { return }
         
@@ -114,7 +99,6 @@ struct VisualizationQuestionView: View {
             if !currentStep.userInputRequired {
                 dsNodes = currentStep.dsState
                 dsConnections = currentStep.dsConnections
-                updateNodePositions()
             }
         }
     }
@@ -132,50 +116,94 @@ struct VisualizationQuestionView: View {
                     .padding(.horizontal)
                 
                 // Visualization area with draggable elements and data structure
-                ZStack {
-                    Color.white
-                        .shadow(radius: 2)
-                        .preference(key: FramePreferenceKey.self, value: geometry.frame(in: .local))
-                    
-                    // Data structure visualization
-                    DataStructureView(
-                        nodes: dsNodes,
-                        connections: dsConnections,
-                        layoutType: question.layoutType
-                    )
-                    .padding()
-                    
-                    // Available elements for dragging
-                    if currentStep.userInputRequired {
-                        VStack {
+                GeometryReader { visualizationGeometry in
+                    ZStack(alignment: .top) {
+                        // Data structure visualization
+                        DataStructureView(
+                            nodes: dsNodes,
+                            connections: dsConnections,
+                            layoutType: question.layoutType,
+                            targetNodeIndex: targetNodeIndex
+                        )
+                        .onChange(of: dsNodes) { newNodes in
+                            print("\n=== Node State Update ===")
+                            for (index, node) in newNodes.enumerated() {
+                                print("Node \(index):")
+                                print("  - Position: \(node.position)")
+                                print("  - Value: '\(node.value)'")
+                                print("  - Empty: \(node.value.isEmpty)")
+                            }
+                        }
+                        
+                        // Available elements for dragging
+                        if currentStep.userInputRequired {
                             HStack(spacing: 15) {
                                 ForEach(currentStep.availableElements, id: \.self) { element in
-                                    DraggableElement(value: element) { value, location in
-                                        handleElementDrop(value, at: location)
+                                    DraggableElement(value: element) { value, dropLocation in
+                                        print("\n=== Drop Event ===")
+                                        print("Drop location: \(dropLocation)")
+                                        print("Current nodes state:")
+                                        
+                                        var closestDistance = CGFloat.infinity
+                                        var closestNodeIndex: Int?
+                                        
+                                        for (index, node) in dsNodes.enumerated() {
+                                            // Use node position directly since we're in the same coordinate space
+                                            let distance = sqrt(
+                                                pow(node.position.x - dropLocation.x, 2) +
+                                                pow(node.position.y - dropLocation.y, 2)
+                                            )
+                                            
+                                            print("Node \(index):")
+                                            print("  - Position: \(node.position)")
+                                            print("  - Value: '\(node.value)'")
+                                            print("  - Distance to drop: \(distance)")
+                                            
+                                            // Update closest node if this is closer and empty
+                                            if distance < closestDistance && node.value.isEmpty {
+                                                closestDistance = distance
+                                                closestNodeIndex = index
+                                            }
+                                        }
+                                        
+                                        print("Closest empty node index: \(String(describing: closestNodeIndex))")
+                                        print("Closest distance: \(closestDistance)")
+                                        
+                                        // Only update if within a reasonable distance (e.g., 100 points)
+                                        if let targetIndex = closestNodeIndex, closestDistance < 100 {
+                                            print("Updating node at index: \(targetIndex) with value: \(value)")
+                                            
+                                            // Update node value
+                                            var updatedNodes = dsNodes
+                                            updatedNodes[targetIndex].value = value
+                                            dsNodes = updatedNodes
+                                            
+                                            // Check if this completes the current step
+                                            let isComplete = dsNodes.count == currentStep.dsState.count &&
+                                                zip(dsNodes, currentStep.dsState).allSatisfy { currentNode, expectedNode in
+                                                    currentNode.value == expectedNode.value
+                                                }
+                                            
+                                            print("Step complete: \(isComplete)")
+                                            
+                                            if isComplete {
+                                                moveToNextStep()
+                                            }
+                                        } else {
+                                            print("Drop rejected - too far from any empty node")
+                                        }
                                     }
                                 }
                             }
                             .padding()
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
-                            
-                            Spacer()
+                            .padding(.top)
                         }
-                        .padding(.top)
                     }
                 }
                 .frame(height: geometry.size.height * 0.4)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear.onAppear {
-                            visualizationArea = geo.frame(in: .global)
-                        }
-                    }
-                )
-                .onPreferenceChange(FramePreferenceKey.self) { frame in
-                    visualizationFrame = frame
-                    updateNodePositions()
-                }
+                .coordinateSpace(name: "dataStructureSpace")
                 
                 // Code viewer in scrollview
                 ScrollView {
@@ -191,7 +219,7 @@ struct VisualizationQuestionView: View {
                 }
                 .padding(.horizontal)
                 
-                // Fixed navigation bar at the bottom
+                // Navigation buttons
                 HStack {
                     Button(action: {
                         if currentStepIndex > 0 {
@@ -241,9 +269,6 @@ struct VisualizationQuestionView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
-            .onAppear {
-                updateNodePositions()
-            }
         }
     }
 }

@@ -130,6 +130,7 @@ struct DSConnection: Identifiable, Equatable {
 struct NodeView: View {
     let node: DSNode
     let size: CGFloat
+    let isDropTarget: Bool
     
     var body: some View {
         ZStack {
@@ -139,9 +140,9 @@ struct NodeView: View {
                 .overlay(
                     Circle()
                         .stroke(
-                            node.value.isEmpty ? Color.gray : (node.isHighlighted ? Color.yellow : Color.blue),
+                            node.value.isEmpty ? (isDropTarget ? Color.green : Color.gray) : (node.isHighlighted ? Color.yellow : Color.blue),
                             style: StrokeStyle(
-                                lineWidth: 2,
+                                lineWidth: isDropTarget ? 3 : 2,
                                 dash: node.value.isEmpty ? [5] : []
                             )
                         )
@@ -153,7 +154,7 @@ struct NodeView: View {
             if node.value.isEmpty {
                 Text("?")
                     .font(.system(size: size * 0.4))
-                    .foregroundColor(.gray)
+                    .foregroundColor(isDropTarget ? Color.green : Color.gray)
             } else {
                 Text(node.value)
                     .font(.system(size: size * 0.4))
@@ -171,6 +172,8 @@ struct NodeView: View {
                     .offset(y: -size * 0.8)
             }
         }
+        .scaleEffect(isDropTarget ? 1.1 : 1.0)
+        .animation(.spring(response: 0.3), value: isDropTarget)
     }
 }
 
@@ -293,13 +296,16 @@ struct DataStructureView: View {
     let connections: [DSConnection]
     let nodeSize: CGFloat = DataStructureLayoutManager.nodeRadius * 2
     let layoutType: LayoutType
+    let targetNodeIndex: Int?
     @State private var frame: CGRect = .zero
     @State private var layoutNodes: [DSNode] = []
     
-    init(nodes: [DSNode], connections: [DSConnection], layoutType: LayoutType = .linkedList) {
+    init(nodes: [DSNode], connections: [DSConnection], layoutType: LayoutType = .linkedList, targetNodeIndex: Int? = nil) {
         self.nodes = nodes
         self.connections = connections
         self.layoutType = layoutType
+        self.targetNodeIndex = targetNodeIndex
+        print("DataStructureView init - Target node index: \(String(describing: targetNodeIndex))")
     }
     
     var body: some View {
@@ -321,17 +327,23 @@ struct DataStructureView: View {
                 }
                 
                 // Draw all nodes on top
-                ForEach(layoutNodes) { node in
-                    NodeView(node: node, size: nodeSize)
-                        .position(node.position)
+                ForEach(Array(layoutNodes.enumerated()), id: \.element.id) { index, node in
+                    NodeView(
+                        node: node,
+                        size: nodeSize,
+                        isDropTarget: index == targetNodeIndex && node.value.isEmpty
+                    )
+                    .position(node.position)
                 }
             }
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
+            print("Frame changed: \(newFrame)")
             frame = newFrame
             updateLayout()
         }
-        .onChange(of: nodes) { _ in
+        .onChange(of: nodes) { newNodes in
+            print("Nodes changed - Count: \(newNodes.count)")
             updateLayout()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -339,6 +351,7 @@ struct DataStructureView: View {
     
     private func updateLayout() {
         guard !frame.isEmpty else { return }
+        print("Updating layout - Frame: \(frame)")
         
         switch layoutType {
         case .linkedList:
@@ -348,6 +361,7 @@ struct DataStructureView: View {
         case .array:
             layoutNodes = DataStructureLayoutManager.calculateArrayLayout(nodes: nodes, in: frame)
         }
+        print("Layout updated - Node positions: \(layoutNodes.map { $0.position })")
     }
     
     private func calculateEndpoint(from: CGPoint, to: CGPoint) -> CGPoint {

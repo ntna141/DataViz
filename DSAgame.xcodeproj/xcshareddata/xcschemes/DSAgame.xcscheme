@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "RESET_GAME_DATA"
+            key = "RESET_CORE_DATA"
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
