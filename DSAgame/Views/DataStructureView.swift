@@ -88,8 +88,17 @@ struct DataStructureView: View {
                         
                         // Draw cells on top
                         ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
+                            let isHovered = hoveredCellIndex == index
+                            let displayState = CellDisplayState(
+                                value: cell.displayState.value,
+                                isHighlighted: cell.displayState.isHighlighted,
+                                isHovered: isHovered,
+                                label: cell.displayState.label,
+                                position: cell.position,
+                                style: isHovered ? .hovered : cell.displayState.style
+                            )
                             CellView(
-                                state: cell.displayState,
+                                state: displayState,
                                 size: LayoutConfig.cellDiameter
                             )
                             .id("\(cell.id)-\(renderCycle)")

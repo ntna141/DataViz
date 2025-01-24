@@ -23,6 +23,7 @@ protocol DataStructureCell: Identifiable {
 struct CellDisplayState {
     let value: String
     let isHighlighted: Bool
+    let isHovered: Bool
     let label: String?
     let position: CGPoint
     let style: CellStyle
@@ -32,33 +33,46 @@ struct CellDisplayState {
         let strokeColor: Color
         let strokeWidth: CGFloat
         let isDashed: Bool
+        let glowRadius: CGFloat
         
         static let standard = CellStyle(
             fillColor: .white,
             strokeColor: .blue,
             strokeWidth: 2,
-            isDashed: false
+            isDashed: false,
+            glowRadius: 0
         )
         
         static let highlighted = CellStyle(
             fillColor: .yellow.opacity(0.3),
             strokeColor: .blue,
             strokeWidth: 2,
-            isDashed: false
+            isDashed: false,
+            glowRadius: 0
         )
         
         static let readyToDrop = CellStyle(
             fillColor: .green.opacity(0.3),
             strokeColor: .green,
             strokeWidth: 2,
-            isDashed: false
+            isDashed: false,
+            glowRadius: 8
         )
         
         static let empty = CellStyle(
             fillColor: .white,
             strokeColor: .gray,
             strokeWidth: 2,
-            isDashed: true
+            isDashed: true,
+            glowRadius: 0
+        )
+        
+        static let hovered = CellStyle(
+            fillColor: .blue.opacity(0.1),
+            strokeColor: .blue,
+            strokeWidth: 3,
+            isDashed: false,
+            glowRadius: 8
         )
     }
 }
@@ -113,6 +127,7 @@ struct BasicCell: DataStructureCell {
         CellDisplayState(
             value: value,
             isHighlighted: isHighlighted,
+            isHovered: false,
             label: label,
             position: position,
             style: determineStyle()
@@ -139,7 +154,7 @@ struct CellView: View {
     
     var body: some View {
         ZStack {
-            // Cell background
+            // Cell background with glow
             Circle()
                 .fill(state.style.fillColor)
                 .overlay(
@@ -152,8 +167,11 @@ struct CellView: View {
                             )
                         )
                 )
+                .shadow(
+                    color: state.style.strokeColor.opacity(0.5),
+                    radius: state.style.glowRadius
+                )
                 .frame(width: size, height: size)
-                .shadow(radius: 2)
             
             // Cell value or placeholder
             if !state.value.isEmpty {
