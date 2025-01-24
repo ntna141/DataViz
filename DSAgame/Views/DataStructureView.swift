@@ -59,6 +59,8 @@ struct DataStructureView: View {
     @State private var dragState: (element: String, location: CGPoint)?
     @State private var hoveredCellIndex: Int?
     @State private var renderCycle = UUID()
+    @State private var draggingFromCellIndex: Int?
+    @State private var isOverElementList: Bool = false
     
     init(
         layoutType: DataStructureLayoutType,
@@ -103,6 +105,23 @@ struct DataStructureView: View {
                             )
                             .id("\(cell.id)-\(renderCycle)")
                             .position(cell.position)
+                            .gesture(
+                                // Allow dragging from non-empty cells
+                                DragGesture(coordinateSpace: .global)
+                                    .onChanged { value in
+                                        if !cell.value.isEmpty && dragState == nil {
+                                            draggingFromCellIndex = index
+                                            let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                                            dragState = (element: cell.value, location: localLocation)
+                                        }
+                                        if dragState != nil {
+                                            handleDragChanged(value, in: geometry.frame(in: .global))
+                                        }
+                                    }
+                                    .onEnded { value in
+                                        handleDragEnded(value)
+                                    }
+                            )
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -128,9 +147,14 @@ struct DataStructureView: View {
                             }
                         }
                         .padding(8)
-                        .background(Color.gray.opacity(0.1))
+                        .background(
+                            Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
+                        )
                         .cornerRadius(8)
                         .frame(height: 50)  // Fixed height for elements
+                        .onHover { isHovered in
+                            isOverElementList = isHovered
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -176,29 +200,52 @@ struct DataStructureView: View {
         // Update drag location
         dragState?.location = localLocation
         
-        // Find closest cell
-        let closestCell = layoutCells.enumerated()
-            .min(by: { first, second in
-                let distance1 = distance(from: first.element.position, to: localLocation)
-                let distance2 = distance(from: second.element.position, to: localLocation)
-                return distance1 < distance2
-            })
+        // Check if we're over the element list area
+        let elementListY = globalFrame.height - 50 // Height of element list area
+        isOverElementList = localLocation.y >= elementListY
         
-        if let closest = closestCell,
-           distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
-            hoveredCellIndex = closest.offset
+        // Only look for cell targets if not over element list
+        if !isOverElementList {
+            // Find closest cell
+            let closestCell = layoutCells.enumerated()
+                .min(by: { first, second in
+                    let distance1 = distance(from: first.element.position, to: localLocation)
+                    let distance2 = distance(from: second.element.position, to: localLocation)
+                    return distance1 < distance2
+                })
+            
+            if let closest = closestCell,
+               distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
+                hoveredCellIndex = closest.offset
+            } else {
+                hoveredCellIndex = nil
+            }
         } else {
             hoveredCellIndex = nil
         }
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
-        if let cellIndex = hoveredCellIndex,
-           let element = dragState?.element {
-            onElementDropped(element, cellIndex)
+        if isOverElementList {
+            // If dragging from a cell, clear that cell
+            if let fromIndex = draggingFromCellIndex {
+                onElementDropped("", fromIndex)
+            }
+        } else if let cellIndex = hoveredCellIndex,
+                  let element = dragState?.element {
+            // Only drop if the target cell is empty or if we're dragging from a different cell
+            if layoutCells[cellIndex].value.isEmpty || cellIndex != draggingFromCellIndex {
+                // If dragging from a cell, clear that cell first
+                if let fromIndex = draggingFromCellIndex {
+                    onElementDropped("", fromIndex)
+                }
+                onElementDropped(element, cellIndex)
+            }
         }
         dragState = nil
         hoveredCellIndex = nil
+        draggingFromCellIndex = nil
+        isOverElementList = false
     }
     
     private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
