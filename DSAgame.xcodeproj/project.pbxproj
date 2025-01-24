@@ -3,14 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		376567F9E0BE9864566D692A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2146F0980C7057C3F6A9D42 /* Assets.xcassets */; };
 		415107C221BB120844AE1EC1 /* VisualizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94C9F12C9A730D177B5071D /* VisualizationManager.swift */; };
 		489B066DC88B0A4F8CD85C97 /* GameProgressionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8C0B43B5FEA91A92A79830 /* GameProgressionManager.swift */; };
-		557ADA831002D103EFB1785C /* DataStructureExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4D4A85314DFD605AB0A619A /* DataStructureExampleView.swift */; };
 		86B1D36C655882E2A7508E28 /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = 205823DB7D12711143EBA2AE /* levels.json */; };
 		8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 257A165A598AFFA2D57D3FDB /* ContentView.swift */; };
 		9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4705BC152C2EE6DBB054CFF /* LevelData.swift */; };
@@ -33,7 +32,6 @@
 		610D09BE7F8D048B1991A1B8 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		784243AA1B71FCA929412DF5 /* DSAgame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSAgame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		A4D4A85314DFD605AB0A619A /* DataStructureExampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureExampleView.swift; sourceTree = "<group>"; };
 		B4705BC152C2EE6DBB054CFF /* LevelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelData.swift; sourceTree = "<group>"; };
 		BCDF4D9110E0CF97708D6AD4 /* DataStructureElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureElements.swift; sourceTree = "<group>"; };
 		C2146F0980C7057C3F6A9D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -48,7 +46,6 @@
 		4B6E90C529C3F0E6CA7CACDB /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A4D4A85314DFD605AB0A619A /* DataStructureExampleView.swift */,
 				54DE96D5797E5855965CDE5D /* LevelDetailView.swift */,
 			);
 			path = Views;
@@ -143,8 +140,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 65291BC46E0657D442E019F9 /* Build configuration list for PBXProject "DSAgame" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -186,7 +181,6 @@
 				B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */,
 				FEC6D4C7E70E7023F889FB25 /* DSAgameApp.swift in Sources */,
 				D83C0F9EFF2C9FFA1A160509 /* DataStructureElements.swift in Sources */,
-				557ADA831002D103EFB1785C /* DataStructureExampleView.swift in Sources */,
 				489B066DC88B0A4F8CD85C97 /* GameProgressionManager.swift in Sources */,
 				9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */,
 				CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */,

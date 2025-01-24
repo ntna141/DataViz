@@ -131,6 +131,15 @@ struct NodeView: View {
     let node: DSNode
     let size: CGFloat
     let isDropTarget: Bool
+    let snappedElement: String?
+    
+    // Compute a single value to track state changes for animation
+    private var animationState: Int {
+        var state = 0
+        if isDropTarget { state += 1 }
+        if snappedElement != nil { state += 2 }
+        return state
+    }
     
     var body: some View {
         ZStack {
@@ -143,15 +152,19 @@ struct NodeView: View {
                             node.value.isEmpty ? (isDropTarget ? Color.green : Color.gray) : (node.isHighlighted ? Color.yellow : Color.blue),
                             style: StrokeStyle(
                                 lineWidth: isDropTarget ? 3 : 2,
-                                dash: node.value.isEmpty ? [5] : []
+                                dash: node.value.isEmpty && snappedElement == nil ? [5] : []
                             )
                         )
                 )
                 .frame(width: size, height: size)
                 .shadow(radius: 2)
             
-            // Node value or placeholder
-            if node.value.isEmpty {
+            // Node value, snapped element, or placeholder
+            if let snappedElement = snappedElement {
+                Text(snappedElement)
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.black)
+            } else if node.value.isEmpty {
                 Text("?")
                     .font(.system(size: size * 0.4))
                     .foregroundColor(isDropTarget ? Color.green : Color.gray)
@@ -173,7 +186,7 @@ struct NodeView: View {
             }
         }
         .scaleEffect(isDropTarget ? 1.1 : 1.0)
-        .animation(.spring(response: 0.3), value: isDropTarget)
+        .animation(.spring(response: 0.3), value: animationState)
     }
 }
 
@@ -297,16 +310,14 @@ struct DataStructureView: View {
     let nodeSize: CGFloat = DataStructureLayoutManager.nodeRadius * 2
     let layoutType: LayoutType
     let targetNodeIndex: Int?
+    let availableElements: [String]
+    let onElementDropped: (String, Int) -> Void
+    
     @State private var frame: CGRect = .zero
     @State private var layoutNodes: [DSNode] = []
-    
-    init(nodes: [DSNode], connections: [DSConnection], layoutType: LayoutType = .linkedList, targetNodeIndex: Int? = nil) {
-        self.nodes = nodes
-        self.connections = connections
-        self.layoutType = layoutType
-        self.targetNodeIndex = targetNodeIndex
-        print("DataStructureView init - Target node index: \(String(describing: targetNodeIndex))")
-    }
+    @State private var dragState: (element: String, location: CGPoint)?
+    @State private var hoveredNodeIndex: Int?
+    @State private var snappedElements: [Int: String] = [:] // nodeIndex: element
     
     var body: some View {
         GeometryReader { geometry in
@@ -331,19 +342,84 @@ struct DataStructureView: View {
                     NodeView(
                         node: node,
                         size: nodeSize,
-                        isDropTarget: index == targetNodeIndex && node.value.isEmpty
+                        isDropTarget: index == hoveredNodeIndex && node.value.isEmpty && snappedElements[index] == nil,
+                        snappedElement: snappedElements[index]
                     )
                     .position(node.position)
+                }
+                
+                // Available elements at the top
+                if !availableElements.isEmpty {
+                    HStack(spacing: 15) {
+                        ForEach(availableElements, id: \.self) { element in
+                            if !snappedElements.values.contains(element) {
+                                GeometryReader { elementGeometry in
+                                    DraggableElementView(
+                                        element: element,
+                                        isDragging: dragState?.element == element,
+                                        onDragStarted: { globalLocation in
+                                            let localLocation = geometry.frame(in: .global).convert(from: globalLocation)
+                                            dragState = (element: element, location: localLocation)
+                                        },
+                                        onDragChanged: { value in
+                                            let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                                            dragState?.location = localLocation
+                                            
+                                            // Find closest empty node
+                                            let closestNode = layoutNodes.enumerated()
+                                                .filter { $0.element.value.isEmpty && snappedElements[$0.offset] == nil }
+                                                .min(by: { first, second in
+                                                    let distance1 = distance(from: first.element.position, to: localLocation)
+                                                    let distance2 = distance(from: second.element.position, to: localLocation)
+                                                    return distance1 < distance2
+                                                })
+                                            
+                                            // Update hover state
+                                            if let closest = closestNode,
+                                               distance(from: closest.element.position, to: localLocation) < nodeSize {
+                                                hoveredNodeIndex = closest.offset
+                                            } else {
+                                                hoveredNodeIndex = nil
+                                            }
+                                        },
+                                        onDragEnded: { value in
+                                            if let nodeIndex = hoveredNodeIndex {
+                                                snappedElements[nodeIndex] = element
+                                                onElementDropped(element, nodeIndex)
+                                            }
+                                            dragState = nil
+                                            hoveredNodeIndex = nil
+                                        }
+                                    )
+                                    .position(x: elementGeometry.size.width/2, y: elementGeometry.size.height/2)
+                                }
+                                .frame(width: 50, height: 50)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .position(x: geometry.size.width/2, y: 40)
+                }
+                
+                // Dragged element overlay
+                if let dragState = dragState {
+                    Text(dragState.element)
+                        .padding(10)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .shadow(radius: 4)
+                        .scaleEffect(1.1)
+                        .position(dragState.location)
                 }
             }
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
-            print("Frame changed: \(newFrame)")
             frame = newFrame
             updateLayout()
         }
         .onChange(of: nodes) { newNodes in
-            print("Nodes changed - Count: \(newNodes.count)")
             updateLayout()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -351,17 +427,24 @@ struct DataStructureView: View {
     
     private func updateLayout() {
         guard !frame.isEmpty else { return }
-        print("Updating layout - Frame: \(frame)")
         
+        let newNodes: [DSNode]
         switch layoutType {
         case .linkedList:
-            layoutNodes = DataStructureLayoutManager.calculateLinkedListLayout(nodes: nodes, in: frame)
+            newNodes = DataStructureLayoutManager.calculateLinkedListLayout(nodes: nodes, in: frame)
         case .binaryTree:
-            layoutNodes = DataStructureLayoutManager.calculateBinaryTreeLayout(nodes: nodes, in: frame)
+            newNodes = DataStructureLayoutManager.calculateBinaryTreeLayout(nodes: nodes, in: frame)
         case .array:
-            layoutNodes = DataStructureLayoutManager.calculateArrayLayout(nodes: nodes, in: frame)
+            newNodes = DataStructureLayoutManager.calculateArrayLayout(nodes: nodes, in: frame)
         }
-        print("Layout updated - Node positions: \(layoutNodes.map { $0.position })")
+        
+        // Print layout positions
+        print("\nNode positions after layout calculation:")
+        for (index, node) in newNodes.enumerated() {
+            print("Node \(index) position: \(node.position)")
+        }
+        
+        layoutNodes = newNodes
     }
     
     private func calculateEndpoint(from: CGPoint, to: CGPoint) -> CGPoint {
@@ -372,6 +455,54 @@ struct DataStructureView: View {
             x: to.x - radius * cos(angle),
             y: to.y - radius * sin(angle)
         )
+    }
+    
+    private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
+        sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2))
+    }
+}
+
+extension CGRect {
+    func convert(from globalPoint: CGPoint) -> CGPoint {
+        CGPoint(
+            x: globalPoint.x - origin.x,
+            y: globalPoint.y - origin.y
+        )
+    }
+}
+
+// Draggable element view
+struct DraggableElementView: View {
+    let element: String
+    let isDragging: Bool
+    let onDragStarted: (CGPoint) -> Void
+    let onDragChanged: (DragGesture.Value) -> Void
+    let onDragEnded: (DragGesture.Value) -> Void
+    
+    var body: some View {
+        Text(element)
+            .padding(10)
+            .background(Color.white)
+            .cornerRadius(8)
+            .shadow(radius: isDragging ? 4 : 2)
+            .scaleEffect(isDragging ? 1.1 : 1.0)
+            .opacity(isDragging ? 0.3 : 1.0)
+            .gesture(
+                DragGesture(coordinateSpace: .global)
+                    .onChanged { value in
+                        if !isDragging {
+                            // Adjust initial position to account for the offset
+                            let adjustedLocation = CGPoint(
+                                x: value.location.x,
+                                y: value.location.y - 30
+                            )
+                            onDragStarted(adjustedLocation)
+                        }
+                        onDragChanged(value)
+                    }
+                    .onEnded(onDragEnded)
+            )
+            .animation(.spring(response: 0.3), value: isDragging)
     }
 }
 

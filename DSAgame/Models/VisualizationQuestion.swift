@@ -117,93 +117,45 @@ struct VisualizationQuestionView: View {
                 
                 // Visualization area with draggable elements and data structure
                 GeometryReader { visualizationGeometry in
-                    ZStack(alignment: .top) {
-                        // Data structure visualization
-                        DataStructureView(
-                            nodes: dsNodes,
-                            connections: dsConnections,
-                            layoutType: question.layoutType,
-                            targetNodeIndex: targetNodeIndex
-                        )
-                        .onChange(of: dsNodes) { newNodes in
-                            print("\n=== Node State Update ===")
-                            for (index, node) in newNodes.enumerated() {
-                                print("Node \(index):")
-                                print("  - Position: \(node.position)")
-                                print("  - Value: '\(node.value)'")
-                                print("  - Empty: \(node.value.isEmpty)")
+                    DataStructureView(
+                        nodes: dsNodes,
+                        connections: dsConnections,
+                        layoutType: question.layoutType,
+                        targetNodeIndex: targetNodeIndex,
+                        availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
+                        onElementDropped: { value, nodeIndex in
+                            print("\n=== Drop Event ===")
+                            print("Element \(value) dropped on node \(nodeIndex)")
+                            
+                            // Update node value
+                            var updatedNodes = dsNodes
+                            updatedNodes[nodeIndex].value = value
+                            dsNodes = updatedNodes
+                            
+                            // Check if this completes the current step
+                            let isComplete = dsNodes.count == currentStep.dsState.count &&
+                                zip(dsNodes, currentStep.dsState).allSatisfy { currentNode, expectedNode in
+                                    currentNode.value == expectedNode.value
+                                }
+                            
+                            print("Step complete: \(isComplete)")
+                            
+                            if isComplete {
+                                moveToNextStep()
                             }
                         }
-                        
-                        // Available elements for dragging
-                        if currentStep.userInputRequired {
-                            HStack(spacing: 15) {
-                                ForEach(currentStep.availableElements, id: \.self) { element in
-                                    DraggableElement(value: element) { value, dropLocation in
-                                        print("\n=== Drop Event ===")
-                                        print("Drop location: \(dropLocation)")
-                                        print("Current nodes state:")
-                                        
-                                        var closestDistance = CGFloat.infinity
-                                        var closestNodeIndex: Int?
-                                        
-                                        for (index, node) in dsNodes.enumerated() {
-                                            // Use node position directly since we're in the same coordinate space
-                                            let distance = sqrt(
-                                                pow(node.position.x - dropLocation.x, 2) +
-                                                pow(node.position.y - dropLocation.y, 2)
-                                            )
-                                            
-                                            print("Node \(index):")
-                                            print("  - Position: \(node.position)")
-                                            print("  - Value: '\(node.value)'")
-                                            print("  - Distance to drop: \(distance)")
-                                            
-                                            // Update closest node if this is closer and empty
-                                            if distance < closestDistance && node.value.isEmpty {
-                                                closestDistance = distance
-                                                closestNodeIndex = index
-                                            }
-                                        }
-                                        
-                                        print("Closest empty node index: \(String(describing: closestNodeIndex))")
-                                        print("Closest distance: \(closestDistance)")
-                                        
-                                        // Only update if within a reasonable distance (e.g., 100 points)
-                                        if let targetIndex = closestNodeIndex, closestDistance < 100 {
-                                            print("Updating node at index: \(targetIndex) with value: \(value)")
-                                            
-                                            // Update node value
-                                            var updatedNodes = dsNodes
-                                            updatedNodes[targetIndex].value = value
-                                            dsNodes = updatedNodes
-                                            
-                                            // Check if this completes the current step
-                                            let isComplete = dsNodes.count == currentStep.dsState.count &&
-                                                zip(dsNodes, currentStep.dsState).allSatisfy { currentNode, expectedNode in
-                                                    currentNode.value == expectedNode.value
-                                                }
-                                            
-                                            print("Step complete: \(isComplete)")
-                                            
-                                            if isComplete {
-                                                moveToNextStep()
-                                            }
-                                        } else {
-                                            print("Drop rejected - too far from any empty node")
-                                        }
-                                    }
-                                }
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(12)
-                            .padding(.top)
+                    )
+                    .onChange(of: dsNodes) { newNodes in
+                        print("\n=== Node State Update ===")
+                        for (index, node) in newNodes.enumerated() {
+                            print("Node \(index):")
+                            print("  - Position: \(node.position)")
+                            print("  - Value: '\(node.value)'")
+                            print("  - Empty: \(node.value.isEmpty)")
                         }
                     }
                 }
                 .frame(height: geometry.size.height * 0.4)
-                .coordinateSpace(name: "dataStructureSpace")
                 
                 // Code viewer in scrollview
                 ScrollView {
