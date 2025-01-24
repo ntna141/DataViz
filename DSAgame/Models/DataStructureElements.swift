@@ -17,7 +17,18 @@ enum DataStructureLayoutManager {
         let startX = (frame.width - totalWidth) / 2 + nodeRadius
         let centerY = frame.height / 2
         
-        return nodes.enumerated().map { index, node in
+        // Create a copy of nodes that we can modify
+        var orderedNodes = nodes
+        
+        // If there's a head node, ensure it's first
+        if let headIndex = nodes.firstIndex(where: { $0.label == "head" }) {
+            let headNode = nodes[headIndex]
+            orderedNodes.remove(at: headIndex)
+            orderedNodes.insert(headNode, at: 0)
+        }
+        
+        // Set positions based on the ordered array
+        return orderedNodes.enumerated().map { index, node in
             var newNode = node
             newNode.position = CGPoint(
                 x: startX + CGFloat(index) * (nodeWidth + horizontalSpacing),
@@ -133,7 +144,6 @@ struct NodeView: View {
     let isDropTarget: Bool
     let snappedElement: String?
     
-    // Compute a single value to track state changes for animation
     private var animationState: Int {
         var state = 0
         if isDropTarget { state += 1 }
@@ -149,7 +159,7 @@ struct NodeView: View {
                 .overlay(
                     Circle()
                         .stroke(
-                            node.value.isEmpty ? (isDropTarget ? Color.green : Color.gray) : (node.isHighlighted ? Color.yellow : Color.blue),
+                            isDropTarget ? Color.green : (node.value.isEmpty ? Color.gray : Color.blue),
                             style: StrokeStyle(
                                 lineWidth: isDropTarget ? 3 : 2,
                                 dash: node.value.isEmpty && snappedElement == nil ? [5] : []
@@ -163,7 +173,7 @@ struct NodeView: View {
             if let snappedElement = snappedElement {
                 Text(snappedElement)
                     .font(.system(size: size * 0.4))
-                    .foregroundColor(.black)
+                    .foregroundColor(isDropTarget ? .green : .black)
             } else if node.value.isEmpty {
                 Text("?")
                     .font(.system(size: size * 0.4))
@@ -171,7 +181,7 @@ struct NodeView: View {
             } else {
                 Text(node.value)
                     .font(.system(size: size * 0.4))
-                    .foregroundColor(.black)
+                    .foregroundColor(isDropTarget ? .green : .black)
             }
             
             // Optional label above node
@@ -201,60 +211,39 @@ struct ConnectionView: View {
         ZStack {
             // Connection line
             Path { path in
-                switch connection.style {
-                case .straight:
-                    path.move(to: fromPoint)
-                    path.addLine(to: toPoint)
-                case .curved:
-                    let control = CGPoint(
-                        x: (fromPoint.x + toPoint.x) / 2,
-                        y: min(fromPoint.y, toPoint.y) - DataStructureLayoutManager.verticalSpacing
-                    )
-                    path.move(to: fromPoint)
-                    path.addQuadCurve(to: toPoint, control: control)
-                case .selfPointing:
-                    let controlPoint1 = CGPoint(
-                        x: fromPoint.x + nodeSize,
-                        y: fromPoint.y - nodeSize
-                    )
-                    let controlPoint2 = CGPoint(
-                        x: fromPoint.x - nodeSize,
-                        y: fromPoint.y - nodeSize
-                    )
-                    path.move(to: fromPoint)
-                    path.addCurve(
-                        to: fromPoint,
-                        control1: controlPoint1,
-                        control2: controlPoint2
-                    )
-                }
+                path.move(to: fromPoint)
+                path.addLine(to: toPoint)
             }
             .stroke(
                 connection.isHighlighted ? Color.yellow : Color.blue,
                 style: StrokeStyle(
                     lineWidth: 2,
                     lineCap: .round,
-                    lineJoin: .round,
-                    dash: connection.style == .selfPointing ? [5, 5] : []
+                    lineJoin: .round
                 )
             )
             
             // Arrow head
             if connection.style != .selfPointing {
                 let angle = atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x)
+                let radius = DataStructureLayoutManager.nodeRadius
+                let arrowTip = CGPoint(
+                    x: toPoint.x - radius * cos(angle),
+                    y: toPoint.y - radius * sin(angle)
+                )
                 let arrowLength: CGFloat = DataStructureLayoutManager.nodeRadius * 0.25
                 let arrowAngle: CGFloat = .pi / 6 // 30 degrees
                 
                 Path { path in
-                    path.move(to: toPoint)
+                    path.move(to: arrowTip)
                     path.addLine(to: CGPoint(
-                        x: toPoint.x - arrowLength * cos(angle - arrowAngle),
-                        y: toPoint.y - arrowLength * sin(angle - arrowAngle)
+                        x: arrowTip.x - arrowLength * cos(angle - arrowAngle),
+                        y: arrowTip.y - arrowLength * sin(angle - arrowAngle)
                     ))
-                    path.move(to: toPoint)
+                    path.move(to: arrowTip)
                     path.addLine(to: CGPoint(
-                        x: toPoint.x - arrowLength * cos(angle + arrowAngle),
-                        y: toPoint.y - arrowLength * sin(angle + arrowAngle)
+                        x: arrowTip.x - arrowLength * cos(angle + arrowAngle),
+                        y: arrowTip.y - arrowLength * sin(angle + arrowAngle)
                     ))
                 }
                 .stroke(
@@ -342,7 +331,7 @@ struct DataStructureView: View {
                     NodeView(
                         node: node,
                         size: nodeSize,
-                        isDropTarget: index == hoveredNodeIndex && node.value.isEmpty && snappedElements[index] == nil,
+                        isDropTarget: index == hoveredNodeIndex,
                         snappedElement: snappedElements[index]
                     )
                     .position(node.position)
@@ -365,16 +354,15 @@ struct DataStructureView: View {
                                             let localLocation = geometry.frame(in: .global).convert(from: value.location)
                                             dragState?.location = localLocation
                                             
-                                            // Find closest empty node
+                                            // Find closest node (no filter for empty)
                                             let closestNode = layoutNodes.enumerated()
-                                                .filter { $0.element.value.isEmpty && snappedElements[$0.offset] == nil }
                                                 .min(by: { first, second in
                                                     let distance1 = distance(from: first.element.position, to: localLocation)
                                                     let distance2 = distance(from: second.element.position, to: localLocation)
                                                     return distance1 < distance2
                                                 })
                                             
-                                            // Update hover state
+                                            // Update hover state for any node within range
                                             if let closest = closestNode,
                                                distance(from: closest.element.position, to: localLocation) < nodeSize {
                                                 hoveredNodeIndex = closest.offset
@@ -384,6 +372,10 @@ struct DataStructureView: View {
                                         },
                                         onDragEnded: { value in
                                             if let nodeIndex = hoveredNodeIndex {
+                                                // Handle swap if node is occupied
+                                                if let existingElement = snappedElements[nodeIndex] {
+                                                    snappedElements.removeValue(forKey: nodeIndex)
+                                                }
                                                 snappedElements[nodeIndex] = element
                                                 onElementDropped(element, nodeIndex)
                                             }
@@ -448,13 +440,8 @@ struct DataStructureView: View {
     }
     
     private func calculateEndpoint(from: CGPoint, to: CGPoint) -> CGPoint {
-        let angle = atan2(to.y - from.y, to.x - from.x)
-        let radius = DataStructureLayoutManager.nodeRadius
-        
-        return CGPoint(
-            x: to.x - radius * cos(angle),
-            y: to.y - radius * sin(angle)
-        )
+        // Don't adjust the endpoint - let the ConnectionView handle it
+        to
     }
     
     private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
