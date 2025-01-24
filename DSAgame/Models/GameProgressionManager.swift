@@ -145,17 +145,27 @@ class GameProgressionManager {
             stepEntity.availableElements = stepSpec.availableElements
             stepEntity.question = visualization
             
-            // Create nodes with consistent IDs
+            // Create node IDs based on the actual number of nodes
             let nodeIDs = stepSpec.nodes.map { _ in UUID() }
-            let nodeEntities = zip(stepSpec.nodes, nodeIDs).map { (nodeSpec, nodeID) -> NodeEntity in
+            
+            // Create nodes with consistent IDs
+            let nodeEntities = zip(stepSpec.nodes.enumerated(), nodeIDs).map { (indexedNode, nodeID) -> NodeEntity in
+                let (index, nodeSpec) = indexedNode
                 let nodeEntity = NodeEntity(context: context)
                 nodeEntity.uuid = nodeID
                 nodeEntity.value = nodeSpec.value
                 nodeEntity.isHighlighted = nodeSpec.isHighlighted ?? false
                 nodeEntity.label = nodeSpec.label
+                nodeEntity.orderIndex = Int32(index)  // Set the order index based on the enumerated index
                 nodeEntity.positionX = 0 // Position will be calculated by the layout engine
                 nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
+                
+                print("Creating node at index \(nodeEntity.orderIndex):")
+                print("  - Value: '\(nodeEntity.value ?? "")'")
+                print("  - Label: \(nodeEntity.label ?? "none")")
+                print("  - UUID: \(nodeEntity.uuid?.uuidString ?? "unknown")")
+                
                 return nodeEntity
             }
             
@@ -172,6 +182,11 @@ class GameProgressionManager {
                 // Link to nodes using indices
                 connectionEntity.fromNode = nodeEntities[connectionSpec.from]
                 connectionEntity.toNode = nodeEntities[connectionSpec.to]
+                
+                print("Created connection: \(connectionSpec.from) -> \(connectionSpec.to)")
+                print("  - From node value: '\(nodeEntities[connectionSpec.from].value ?? "")'")
+                print("  - To node value: '\(nodeEntities[connectionSpec.to].value ?? "")'")
+                print("  - Style: \(connectionEntity.style ?? "straight")")
             }
         }
         

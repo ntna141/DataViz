@@ -1,0 +1,167 @@
+import SwiftUI
+
+// Protocol defining the core behavior of a data structure cell
+protocol DataStructureCell: Identifiable {
+    var id: String { get }
+    var value: String { get set }
+    var position: CGPoint { get set }
+    var isHighlighted: Bool { get set }
+    var label: String? { get set }
+    
+    // Core cell behaviors
+    mutating func setValue(_ value: String)
+    mutating func highlight()
+    mutating func unhighlight()
+    mutating func setLabel(_ label: String?)
+    
+    // Visual state
+    var displayState: CellDisplayState { get }
+}
+
+// Represents the visual state of a cell
+struct CellDisplayState {
+    let value: String
+    let isHighlighted: Bool
+    let label: String?
+    let position: CGPoint
+    let style: CellStyle
+    
+    struct CellStyle {
+        let fillColor: Color
+        let strokeColor: Color
+        let strokeWidth: CGFloat
+        let isDashed: Bool
+        
+        static let standard = CellStyle(
+            fillColor: .white,
+            strokeColor: .blue,
+            strokeWidth: 2,
+            isDashed: false
+        )
+        
+        static let highlighted = CellStyle(
+            fillColor: .yellow.opacity(0.3),
+            strokeColor: .blue,
+            strokeWidth: 2,
+            isDashed: false
+        )
+        
+        static let empty = CellStyle(
+            fillColor: .white,
+            strokeColor: .gray,
+            strokeWidth: 2,
+            isDashed: true
+        )
+    }
+}
+
+// Base implementation of a data structure cell
+struct BasicCell: DataStructureCell {
+    let id: String
+    var value: String
+    var position: CGPoint
+    var isHighlighted: Bool
+    var label: String?
+    
+    init(
+        id: String = UUID().uuidString,
+        value: String = "",
+        position: CGPoint = .zero,
+        isHighlighted: Bool = false,
+        label: String? = nil
+    ) {
+        self.id = id
+        self.value = value
+        self.position = position
+        self.isHighlighted = isHighlighted
+        self.label = label
+    }
+    
+    // MARK: - Cell Behaviors
+    
+    mutating func setValue(_ value: String) {
+        self.value = value
+    }
+    
+    mutating func highlight() {
+        isHighlighted = true
+    }
+    
+    mutating func unhighlight() {
+        isHighlighted = false
+    }
+    
+    mutating func setLabel(_ label: String?) {
+        self.label = label
+    }
+    
+    // MARK: - Display State
+    
+    var displayState: CellDisplayState {
+        CellDisplayState(
+            value: value,
+            isHighlighted: isHighlighted,
+            label: label,
+            position: position,
+            style: determineStyle()
+        )
+    }
+    
+    private func determineStyle() -> CellDisplayState.CellStyle {
+        if isHighlighted {
+            return .highlighted
+        } else if value.isEmpty {
+            return .empty
+        } else {
+            return .standard
+        }
+    }
+}
+
+// View for rendering a cell
+struct CellView: View {
+    let state: CellDisplayState
+    let size: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // Cell background
+            Circle()
+                .fill(state.style.fillColor)
+                .overlay(
+                    Circle()
+                        .stroke(
+                            state.style.strokeColor,
+                            style: StrokeStyle(
+                                lineWidth: state.style.strokeWidth,
+                                dash: state.style.isDashed ? [5] : []
+                            )
+                        )
+                )
+                .frame(width: size, height: size)
+                .shadow(radius: 2)
+            
+            // Cell value or placeholder
+            if !state.value.isEmpty {
+                Text(state.value)
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.black)
+            } else {
+                Text("?")
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.gray)
+            }
+            
+            // Optional label
+            if let label = state.label {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 4)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(4)
+                    .offset(y: -size * 0.8)
+            }
+        }
+    }
+} 

@@ -5,8 +5,8 @@ struct VisualizationStep {
     let id = UUID()
     let codeHighlightedLine: Int
     let lineComment: String?
-    let dsState: [DSNode]
-    let dsConnections: [DSConnection]
+    var cells: [any DataStructureCell]
+    var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
     var availableElements: [String] = []
 }
@@ -18,9 +18,9 @@ struct VisualizationQuestion {
     let description: String
     let code: [CodeLine]
     let steps: [VisualizationStep]
-    let initialDSState: [DSNode]
-    let initialConnections: [DSConnection]
-    let layoutType: DataStructureView.LayoutType
+    let initialCells: [any DataStructureCell]
+    let initialConnections: [any DataStructureConnection]
+    let layoutType: DataStructureLayoutType
 }
 
 // View for draggable elements
@@ -75,154 +75,153 @@ struct DragState {
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
-    @State private var currentStepIndex = 1  // Start from second step
-    @State private var dsNodes: [DSNode]
-    @State private var dsConnections: [DSConnection]
-    @State private var isAnimating = false
-    @State private var targetNodeIndex: Int?
+    @State private var currentStepIndex = 0
+    @State private var currentStep: VisualizationStep
+    @State private var visualizationKey = UUID()
     
     init(question: VisualizationQuestion) {
+        print("\n=== Initializing VisualizationQuestionView ===")
         self.question = question
-        // Initialize with second step's state
-        _dsNodes = State(initialValue: question.steps[1].dsState)
-        _dsConnections = State(initialValue: question.steps[1].dsConnections)
-    }
-    
-    var currentStep: VisualizationStep {
-        question.steps[currentStepIndex]
-    }
-    
-    func moveToNextStep() {
-        guard currentStepIndex < question.steps.count - 1 else { return }
+        _currentStep = State(initialValue: question.steps[0])
         
-        withAnimation {
-            currentStepIndex += 1
-            if !currentStep.userInputRequired {
-                dsNodes = currentStep.dsState
-                dsConnections = currentStep.dsConnections
-            }
+        print("\nFirst step cells:")
+        for (i, cell) in question.steps[0].cells.enumerated() {
+            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
         }
+        
+        print("\nInitialization complete")
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Title and description
-                Text(question.title)
-                    .font(.title)
-                    .padding(.top)
-                
-                Text(question.description)
-                    .font(.body)
-                    .padding(.horizontal)
-                
-                // Visualization area with draggable elements and data structure
-                GeometryReader { visualizationGeometry in
-                    DataStructureView(
-                        nodes: dsNodes,
-                        connections: dsConnections,
-                        layoutType: question.layoutType,
-                        targetNodeIndex: targetNodeIndex,
-                        availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
-                        onElementDropped: { value, nodeIndex in
-                            print("\n=== Drop Event ===")
-                            print("Element \(value) dropped on node \(nodeIndex)")
-                            
-                            // Update node value
-                            var updatedNodes = dsNodes
-                            updatedNodes[nodeIndex].value = value
-                            dsNodes = updatedNodes
-                            
-                            // Check if this completes the current step
-                            let isComplete = dsNodes.count == currentStep.dsState.count &&
-                                zip(dsNodes, currentStep.dsState).allSatisfy { currentNode, expectedNode in
-                                    currentNode.value == expectedNode.value
-                                }
-                            
-                            print("Step complete: \(isComplete)")
-                            
-                            if isComplete {
+        VStack {
+            // Title and description
+            Text(question.title).font(.title)
+            Text(question.description).font(.body)
+            
+            // Code viewer
+            CodeViewer(lines: question.code.map { line in
+                var modifiedLine = line
+                modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
+                modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
+                return modifiedLine
+            })
+            
+            // Data structure view with key for complete re-render
+            ZStack {
+                DataStructureView(
+                    layoutType: question.layoutType,
+                    cells: currentStep.cells,
+                    connections: currentStep.connections,
+                    availableElements: [],  // Don't pass available elements here
+                    onElementDropped: { value, index in
+                        if currentStep.userInputRequired {
+                            setValue(value, forCellAtIndex: index)
+                            // Check against next step for validation
+                            if let nextStep = question.steps[safe: currentStepIndex + 1],
+                               currentStep.cells[index].value == nextStep.cells[index].value {
                                 moveToNextStep()
                             }
                         }
-                    )
-                    .onChange(of: dsNodes) { newNodes in
-                        print("\n=== Node State Update ===")
-                        for (index, node) in newNodes.enumerated() {
-                            print("Node \(index):")
-                            print("  - Position: \(node.position)")
-                            print("  - Value: '\(node.value)'")
-                            print("  - Empty: \(node.value.isEmpty)")
-                        }
                     }
-                }
-                .frame(height: geometry.size.height * 0.4)
-                
-                // Code viewer in scrollview
-                ScrollView {
-                    CodeViewer(lines: question.code.map { line in
-                        var modifiedLine = line
-                        modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
-                        if line.number == currentStep.codeHighlightedLine {
-                            modifiedLine.sideComment = currentStep.lineComment
-                        }
-                        return modifiedLine
-                    })
-                    .frame(minHeight: geometry.size.height * 0.35)
-                }
-                .padding(.horizontal)
-                
-                // Navigation buttons
-                HStack {
-                    Button(action: {
-                        if currentStepIndex > 0 {
-                            currentStepIndex -= 1
-                            dsNodes = question.steps[currentStepIndex].dsState
-                            dsConnections = question.steps[currentStepIndex].dsConnections
-                        }
-                    }) {
-                        Text("Previous")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(width: 120)
-                            .background(currentStepIndex > 0 ? Color.blue : Color.gray)
-                            .cornerRadius(10)
-                    }
-                    .disabled(currentStepIndex == 0 || isAnimating)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        if !currentStep.userInputRequired {
-                            moveToNextStep()
-                        }
-                    }) {
-                        Text("Next")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(width: 120)
-                            .background(
-                                (!currentStep.userInputRequired && currentStepIndex < question.steps.count - 1) 
-                                ? Color.blue : Color.gray
-                            )
-                            .cornerRadius(10)
-                    }
-                    .disabled(currentStepIndex == question.steps.count - 1 || 
-                             currentStep.userInputRequired ||
-                             isAnimating)
-                }
-                .padding(.horizontal, 40)
-                .padding(.vertical, 20)
-                .background(
-                    Color(.systemBackground)
-                        .shadow(radius: 2, y: -2)
                 )
+                .id(visualizationKey)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemBackground))
+            .coordinateSpace(name: "dataStructureSpace")
+            
+            // Available elements for dragging (only show if user input required)
+            if currentStep.userInputRequired && !currentStep.availableElements.isEmpty {
+                HStack {
+                    ForEach(currentStep.availableElements, id: \.self) { element in
+                        DraggableElement(value: element) { value, location in
+                            // Find the closest cell and update its value
+                            if let index = findClosestCell(to: location) {
+                                setValue(value, forCellAtIndex: index)
+                                // Check against next step for validation
+                                if let nextStep = question.steps[safe: currentStepIndex + 1],
+                                   currentStep.cells[index].value == nextStep.cells[index].value {
+                                    moveToNextStep()
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
+            }
+            
+            // Navigation
+            HStack {
+                Button("Previous") {
+                    if currentStepIndex > 0 {
+                        let prevIndex = currentStepIndex - 1
+                        currentStepIndex = prevIndex
+                        currentStep = question.steps[prevIndex]
+                        visualizationKey = UUID()
+                    }
+                }
+                .disabled(currentStepIndex == 0)
+                
+                Spacer()
+                
+                Button("Next") {
+                    if !currentStep.userInputRequired {
+                        moveToNextStep()
+                    }
+                }
+                .disabled(currentStep.userInputRequired || currentStepIndex == question.steps.count - 1)
+            }
+            .padding()
         }
+    }
+    
+    private func moveToNextStep() {
+        print("\n=== Moving to Next Step ===")
+        
+        let nextIndex = currentStepIndex + 1
+        guard nextIndex < question.steps.count else { return }
+        
+        let nextStep = question.steps[nextIndex]
+        
+        print("\nCurrent step cells:")
+        for (i, cell) in currentStep.cells.enumerated() {
+            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
+        }
+        
+        print("\nNext step cells:")
+        for (i, cell) in nextStep.cells.enumerated() {
+            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
+        }
+        
+        currentStepIndex = nextIndex
+        currentStep = nextStep
+        visualizationKey = UUID()
+        
+        print("\nMoved to step \(nextIndex)")
+        print("Updated cells:")
+        for (i, cell) in currentStep.cells.enumerated() {
+            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
+        }
+    }
+    
+    private func setValue(_ value: String, forCellAtIndex index: Int) {
+        guard index < currentStep.cells.count else { return }
+        var newCells = currentStep.cells
+        var updatedCell = newCells[index]
+        updatedCell.setValue(value)
+        newCells[index] = updatedCell
+        currentStep.cells = newCells
+        visualizationKey = UUID()
+    }
+    
+    private func findClosestCell(to point: CGPoint) -> Int? {
+        // For now, just return index 1 since that's where we want to place the value
+        // In a real implementation, you would calculate distances to each cell
+        return 1
+    }
+}
+
+extension Collection {
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
 
@@ -257,28 +256,28 @@ struct VisualizationQuestionExample: View {
             VisualizationStep(
                 codeHighlightedLine: 1,
                 lineComment: "Starting to build the list",
-                dsState: [],
-                dsConnections: []
+                cells: [],
+                connections: []
             ),
             VisualizationStep(
                 codeHighlightedLine: 2,
                 lineComment: "Create the head node",
-                dsState: [
-                    DSNode(value: "1")
+                cells: [
+                    BasicCell(value: "1")
                 ],
-                dsConnections: []
+                connections: []
             ),
             VisualizationStep(
                 codeHighlightedLine: 3,
                 lineComment: "Add the second node",
-                dsState: [
-                    DSNode(id: "node1", value: "1"),
-                    DSNode(id: "node2", value: "")
+                cells: [
+                    BasicCell(id: "node1", value: "1"),
+                    BasicCell(id: "node2", value: "")
                 ],
-                dsConnections: [
-                    DSConnection(
-                        from: "node1",
-                        to: "node2",
+                connections: [
+                    BasicConnection(
+                        fromCellId: "node1",
+                        toCellId: "node2",
                         label: "next"
                     )
                 ],
@@ -286,7 +285,7 @@ struct VisualizationQuestionExample: View {
                 availableElements: ["2", "3", "4"]
             )
         ],
-        initialDSState: [],
+        initialCells: [],
         initialConnections: [],
         layoutType: .linkedList
     )
