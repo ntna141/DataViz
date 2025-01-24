@@ -87,13 +87,13 @@ enum DataStructureLayoutManager {
 
 // Basic node that can be used in any data structure
 struct DSNode: Identifiable, Equatable {
-    let id: UUID
+    let id: String
     var value: String
     var isHighlighted: Bool = false
     var label: String? = nil
     var position: CGPoint = .zero
     
-    init(id: UUID = UUID(), value: String, isHighlighted: Bool = false, label: String? = nil, position: CGPoint = .zero) {
+    init(id: String = UUID().uuidString, value: String, isHighlighted: Bool = false, label: String? = nil, position: CGPoint = .zero) {
         self.id = id
         self.value = value
         self.isHighlighted = isHighlighted
@@ -114,8 +114,8 @@ struct DSNode: Identifiable, Equatable {
 // Represents a connection between nodes
 struct DSConnection: Identifiable, Equatable {
     let id: UUID = UUID()
-    let from: UUID
-    let to: UUID
+    let from: String
+    let to: String
     var label: String? = nil
     var isSelfPointing: Bool = false
     var isHighlighted: Bool = false

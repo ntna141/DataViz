@@ -39,11 +39,13 @@
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2
+                                        "to": 2,
+                                        "style": "straight"
                                     }
                                 ]
                             },
@@ -60,11 +62,13 @@
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2
+                                        "to": 2,
+                                        "style": "straight"
                                     }
                                 ]
                             },
@@ -81,11 +85,13 @@
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2
+                                        "to": 2,
+                                        "style": "straight"
                                     }
                                 ]
                             },
@@ -102,11 +108,13 @@
                                 "connections": [
                                     {
                                         "from": 0,
-                                        "to": 1
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 1,
-                                        "to": 2
+                                        "to": 2,
+                                        "style": "straight"
                                     }
                                 ]
                             }

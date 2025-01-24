@@ -75,7 +75,7 @@ struct DragState {
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
-    @State private var currentStepIndex = 0
+    @State private var currentStepIndex = 1  // Start from second step
     @State private var dsNodes: [DSNode]
     @State private var dsConnections: [DSConnection]
     @State private var isAnimating = false
@@ -83,8 +83,9 @@ struct VisualizationQuestionView: View {
     
     init(question: VisualizationQuestion) {
         self.question = question
-        _dsNodes = State(initialValue: question.initialDSState)
-        _dsConnections = State(initialValue: question.initialConnections)
+        // Initialize with second step's state
+        _dsNodes = State(initialValue: question.steps[1].dsState)
+        _dsConnections = State(initialValue: question.steps[1].dsConnections)
     }
     
     var currentStep: VisualizationStep {
@@ -271,13 +272,13 @@ struct VisualizationQuestionExample: View {
                 codeHighlightedLine: 3,
                 lineComment: "Add the second node",
                 dsState: [
-                    DSNode(value: "1"),
-                    DSNode(value: "")
+                    DSNode(id: "node1", value: "1"),
+                    DSNode(id: "node2", value: "")
                 ],
                 dsConnections: [
                     DSConnection(
-                        from: UUID(),
-                        to: UUID(),
+                        from: "node1",
+                        to: "node2",
                         label: "next"
                     )
                 ],

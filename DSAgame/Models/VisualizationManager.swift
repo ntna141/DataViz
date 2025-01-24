@@ -9,20 +9,25 @@ class VisualizationManager {
         self.context = PersistenceController.shared.container.viewContext
     }
     
-    // Create a new visualization question
-    func createVisualization(for question: QuestionEntity,
-                           title: String,
-                           description: String,
-                           code: [String],
-                           layoutType: DataStructureView.LayoutType = .linkedList,
-                           steps: [(lineNumber: Int, comment: String?, nodes: [DSNode], connections: [DSConnection], userInputRequired: Bool, availableElements: [String])]) {
-        let visualization = VisualizationQuestionEntity(context: context)
-        visualization.uuid = UUID()
-        visualization.title = title
-        visualization.desc = description
-        visualization.question = question
-        visualization.layoutType = layoutType.rawValue
-        question.visualization = visualization
+    // Create a new visualization question from JSON data
+    func createVisualization(for question: QuestionEntity, from jsonData: [String: Any]) {
+        guard let visualization = jsonData["visualization"] as? [String: Any],
+              let title = jsonData["title"] as? String,
+              let description = jsonData["description"] as? String,
+              let code = visualization["code"] as? [String],
+              let dataStructureType = visualization["dataStructureType"] as? String,
+              let steps = visualization["steps"] as? [[String: Any]] else {
+            print("Invalid visualization JSON data")
+            return
+        }
+        
+        let visualizationEntity = VisualizationQuestionEntity(context: context)
+        visualizationEntity.uuid = UUID()
+        visualizationEntity.title = title
+        visualizationEntity.desc = description
+        visualizationEntity.question = question
+        visualizationEntity.layoutType = dataStructureType
+        question.visualization = visualizationEntity
         
         // Create code lines
         for (index, line) in code.enumerated() {
@@ -30,27 +35,33 @@ class VisualizationManager {
             codeLine.uuid = UUID()
             codeLine.lineNumber = Int32(index + 1)
             codeLine.content = line
-            codeLine.question = visualization
+            codeLine.question = visualizationEntity
         }
         
         // Create steps
-        for (index, step) in steps.enumerated() {
+        for (index, stepData) in steps.enumerated() {
+            guard let lineNumber = stepData["lineNumber"] as? Int,
+                  let nodes = stepData["nodes"] as? [[String: Any]],
+                  let connections = stepData["connections"] as? [[String: Any]] else {
+                continue
+            }
+            
             let stepEntity = VisualizationStepEntity(context: context)
             stepEntity.uuid = UUID()
             stepEntity.orderIndex = Int32(index)
-            stepEntity.codeHighlightedLine = Int32(step.lineNumber)
-            stepEntity.lineComment = step.comment
-            stepEntity.userInputRequired = step.userInputRequired
-            stepEntity.availableElements = step.availableElements
-            stepEntity.question = visualization
+            stepEntity.codeHighlightedLine = Int32(lineNumber)
+            stepEntity.lineComment = stepData["comment"] as? String
+            stepEntity.userInputRequired = stepData["userInputRequired"] as? Bool ?? false
+            stepEntity.availableElements = stepData["availableElements"] as? [String] ?? []
+            stepEntity.question = visualizationEntity
             
             // Create nodes
-            let nodeEntities = step.nodes.map { node -> NodeEntity in
+            let nodeEntities = nodes.map { nodeData -> NodeEntity in
                 let nodeEntity = NodeEntity(context: context)
-                nodeEntity.uuid = node.id
-                nodeEntity.value = node.value
-                nodeEntity.label = node.label
-                nodeEntity.isHighlighted = node.isHighlighted
+                nodeEntity.uuid = UUID()
+                nodeEntity.value = nodeData["value"] as? String ?? ""
+                nodeEntity.label = nodeData["label"] as? String
+                nodeEntity.isHighlighted = nodeData["isHighlighted"] as? Bool ?? false
                 nodeEntity.positionX = 0 // Position will be calculated by the layout engine
                 nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
@@ -58,21 +69,23 @@ class VisualizationManager {
             }
             
             // Create connections
-            for connection in step.connections {
+            for connectionData in connections {
+                guard let fromIndex = connectionData["from"] as? Int,
+                      let toIndex = connectionData["to"] as? Int,
+                      fromIndex < nodeEntities.count,
+                      toIndex < nodeEntities.count else {
+                    continue
+                }
+                
                 let connectionEntity = NodeConnectionEntity(context: context)
                 connectionEntity.uuid = UUID()
-                connectionEntity.label = connection.label
-                connectionEntity.isHighlighted = connection.isHighlighted
-                connectionEntity.isSelfPointing = connection.isSelfPointing
-                connectionEntity.style = connection.style.rawValue
+                connectionEntity.label = connectionData["label"] as? String
+                connectionEntity.isHighlighted = connectionData["isHighlighted"] as? Bool ?? false
+                connectionEntity.isSelfPointing = connectionData["isSelfPointing"] as? Bool ?? false
+                connectionEntity.style = connectionData["style"] as? String ?? "straight"
                 connectionEntity.step = stepEntity
-                
-                // Find corresponding nodes using node IDs
-                if let fromNode = nodeEntities.first(where: { $0.uuid == connection.from }),
-                   let toNode = nodeEntities.first(where: { $0.uuid == connection.to }) {
-                    connectionEntity.fromNode = fromNode
-                    connectionEntity.toNode = toNode
-                }
+                connectionEntity.fromNode = nodeEntities[fromIndex]
+                connectionEntity.toNode = nodeEntities[toIndex]
             }
         }
         
@@ -82,108 +95,6 @@ class VisualizationManager {
             print("Visualization saved successfully")
         } catch {
             print("Error saving visualization: \(error)")
-        }
-    }
-    
-    // Initialize example visualization for first level's first question
-    func initializeExampleVisualization() {
-        print("Initializing example visualization...")
-        // Check if already initialized
-        let fetchRequest: NSFetchRequest<QuestionEntity> = QuestionEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "level.number == 1 AND type == %@", "visualization")
-        
-        do {
-            let questions = try context.fetch(fetchRequest)
-            print("Found \(questions.count) visualization questions for level 1")
-            
-            if let firstQuestion = questions.first {
-                if firstQuestion.visualization == nil {
-                    print("Creating visualization for question...")
-                    
-                    // Create nodes with consistent IDs
-                    let nodeIDs = (0..<3).map { _ in UUID() }
-                    
-                    // Create example linked list visualization
-                    createVisualization(
-                        for: firstQuestion,
-                        title: "Building a Linked List",
-                        description: "Learn how to build a linked list by following the code and completing the visualization",
-                        code: [
-                            "class Node {",
-                            "    var value: Int",
-                            "    var next: Node?",
-                            "}",
-                            "",
-                            "func createList() {",
-                            "    let head = Node(5)",
-                            "    head.next = Node(3)",
-                            "    head.next.next = Node(7)",
-                            "}"
-                        ],
-                        layoutType: .linkedList,
-                        steps: [
-                            // Initial state with three empty nodes
-                            (1, "First, we define our Node class", 
-                             [
-                                DSNode(id: nodeIDs[0], value: ""),
-                                DSNode(id: nodeIDs[1], value: ""),
-                                DSNode(id: nodeIDs[2], value: "")
-                             ],
-                             [
-                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
-                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
-                             ],
-                             false, []),
-                            
-                            // First node filled
-                            (7, "Create the head node with value 5",
-                             [
-                                DSNode(id: nodeIDs[0], value: "5"),
-                                DSNode(id: nodeIDs[1], value: ""),
-                                DSNode(id: nodeIDs[2], value: "")
-                             ],
-                             [
-                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
-                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
-                             ],
-                             false, []),
-                            
-                            // Second node needs to be filled
-                            (8, "Add the second node with value 3",
-                             [
-                                DSNode(id: nodeIDs[0], value: "5"),
-                                DSNode(id: nodeIDs[1], value: ""),
-                                DSNode(id: nodeIDs[2], value: "")
-                             ],
-                             [
-                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
-                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
-                             ],
-                             true, ["3", "7", "9"]),
-                            
-                            // Third node needs to be filled
-                            (9, "Complete the linked list by adding 7",
-                             [
-                                DSNode(id: nodeIDs[0], value: "5"),
-                                DSNode(id: nodeIDs[1], value: "3"),
-                                DSNode(id: nodeIDs[2], value: "")
-                             ],
-                             [
-                                DSConnection(from: nodeIDs[0], to: nodeIDs[1], label: "next"),
-                                DSConnection(from: nodeIDs[1], to: nodeIDs[2], label: "next")
-                             ],
-                             true, ["7"])
-                        ]
-                    )
-                    print("Visualization created successfully")
-                } else {
-                    print("Visualization already exists for question")
-                }
-            } else {
-                print("No visualization question found for level 1")
-            }
-        } catch {
-            print("Error initializing example visualization: \(error)")
         }
     }
     
@@ -221,7 +132,7 @@ class VisualizationManager {
                     let nodes = (stepEntity.nodes as? Set<NodeEntity>)?
                         .map { nodeEntity in
                             DSNode(
-                                id: nodeEntity.uuid ?? UUID(),
+                                id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,
                                 value: nodeEntity.value ?? "",
                                 isHighlighted: nodeEntity.isHighlighted,
                                 label: nodeEntity.label
@@ -232,8 +143,8 @@ class VisualizationManager {
                     let connections = (stepEntity.connections as? Set<NodeConnectionEntity>)?
                         .map { connectionEntity in
                             DSConnection(
-                                from: connectionEntity.fromNode?.uuid ?? UUID(),
-                                to: connectionEntity.toNode?.uuid ?? UUID(),
+                                from: connectionEntity.fromNode?.uuid?.uuidString ?? UUID().uuidString,
+                                to: connectionEntity.toNode?.uuid?.uuidString ?? UUID().uuidString,
                                 label: connectionEntity.label,
                                 isSelfPointing: connectionEntity.isSelfPointing,
                                 isHighlighted: connectionEntity.isHighlighted,
