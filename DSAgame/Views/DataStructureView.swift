@@ -77,22 +77,17 @@ struct DataStructureView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let _ = print("GeometryReader size: \(geometry.size)")
             ZStack {
-                // Main content
-                HStack(alignment: .center, spacing: 5) {
+                VStack(spacing: 20) {
                     // Data structure area
                     ZStack {
-                        let _ = print("Rendering \(connectionStates.count) connections")
-                        // Draw all connections first
+                        // Draw connections first
                         ForEach(connectionStates, id: \.id) { connection in
                             ConnectionView(state: connection.state)
                         }
                         
-                        let _ = print("Rendering \(layoutCells.count) cells with positions: \(layoutCells.map { $0.value })")
-                        // Draw all cells on top
+                        // Draw cells on top
                         ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
-                            let _ = print("Cell \(index): value=\(cell.value), position=\(cell.position)")
                             CellView(
                                 state: cell.displayState,
                                 size: LayoutConfig.cellDiameter
@@ -101,11 +96,11 @@ struct DataStructureView: View {
                             .position(cell.position)
                         }
                     }
-                    .frame(width: geometry.size.width * 0.85, height: geometry.size.height)
+                    .frame(width: geometry.size.width, height: geometry.size.height * 0.8)
                     
                     // Elements list
                     if !availableElements.isEmpty {
-                        VStack(spacing: 10) {
+                        HStack(spacing: 15) {
                             ForEach(availableElements, id: \.self) { element in
                                 if !layoutCells.contains(where: { $0.value == element }) {
                                     DraggableElementView(
@@ -126,7 +121,6 @@ struct DataStructureView: View {
                         .padding(8)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(8)
-                        .frame(width: geometry.size.width * 0.15)
                     }
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -155,18 +149,50 @@ struct DataStructureView: View {
             }
         }
         .onChange(of: cells.map(\.id)) { _ in
-            print("Cells changed: \(cells.map { $0.value })")
             updateLayout()
         }
         .onChange(of: connections.map(\.id)) { _ in
-            print("Connections changed: \(connections.count)")
             updateLayout()
         }
         .onChange(of: layoutType) { newType in
-            print("Layout type changed: \(newType)")
             layoutManager.setLayoutType(newType)
             updateLayout()
         }
+    }
+    
+    private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
+        let localLocation = globalFrame.convert(from: value.location)
+        
+        // Update drag location
+        dragState?.location = localLocation
+        
+        // Find closest cell
+        let closestCell = layoutCells.enumerated()
+            .min(by: { first, second in
+                let distance1 = distance(from: first.element.position, to: localLocation)
+                let distance2 = distance(from: second.element.position, to: localLocation)
+                return distance1 < distance2
+            })
+        
+        if let closest = closestCell,
+           distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
+            hoveredCellIndex = closest.offset
+        } else {
+            hoveredCellIndex = nil
+        }
+    }
+    
+    private func handleDragEnded(_ value: DragGesture.Value) {
+        if let cellIndex = hoveredCellIndex,
+           let element = dragState?.element {
+            onElementDropped(element, cellIndex)
+        }
+        dragState = nil
+        hoveredCellIndex = nil
+    }
+    
+    private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
+        sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2))
     }
     
     private func updateLayout() {
@@ -186,46 +212,6 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
-    }
-    
-    private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect, cellIndex: Int? = nil) {
-        let localLocation = globalFrame.convert(from: value.location)
-        
-        if let index = cellIndex, dragState == nil {
-            // Start dragging from an existing cell
-            dragState = (element: layoutCells[index].value, location: localLocation)
-        } else if dragState != nil {
-            // Update drag location
-            dragState?.location = localLocation
-            
-            // Find closest cell
-            let closestCell = layoutCells.enumerated()
-                .min(by: { first, second in
-                    let distance1 = distance(from: first.element.position, to: localLocation)
-                    let distance2 = distance(from: second.element.position, to: localLocation)
-                    return distance1 < distance2
-                })
-            
-            if let closest = closestCell,
-               distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
-                hoveredCellIndex = closest.offset
-            } else {
-                hoveredCellIndex = nil
-            }
-        }
-    }
-    
-    private func handleDragEnded(_ value: DragGesture.Value) {
-        if let cellIndex = hoveredCellIndex,
-           let element = dragState?.element {
-            onElementDropped(element, cellIndex)
-        }
-        dragState = nil
-        hoveredCellIndex = nil
-    }
-    
-    private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
-        sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2))
     }
 }
 

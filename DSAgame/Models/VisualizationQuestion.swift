@@ -58,7 +58,7 @@ struct VisualizationQuestionView: View {
             })
             .frame(maxHeight: 200)
             
-            Spacer()  // Add spacer to push content down
+            Spacer()  // Push content down
             
             // Data structure view with key for complete re-render
             DataStructureView(
