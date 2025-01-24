@@ -223,34 +223,32 @@ struct ConnectionView: View {
                 )
             )
             
-            // Arrow head
-            if connection.style != .selfPointing {
-                let angle = atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x)
-                let radius = DataStructureLayoutManager.nodeRadius
-                let arrowTip = CGPoint(
-                    x: toPoint.x - radius * cos(angle),
-                    y: toPoint.y - radius * sin(angle)
-                )
-                let arrowLength: CGFloat = DataStructureLayoutManager.nodeRadius * 0.25
-                let arrowAngle: CGFloat = .pi / 6 // 30 degrees
-                
-                Path { path in
-                    path.move(to: arrowTip)
-                    path.addLine(to: CGPoint(
-                        x: arrowTip.x - arrowLength * cos(angle - arrowAngle),
-                        y: arrowTip.y - arrowLength * sin(angle - arrowAngle)
-                    ))
-                    path.move(to: arrowTip)
-                    path.addLine(to: CGPoint(
-                        x: arrowTip.x - arrowLength * cos(angle + arrowAngle),
-                        y: arrowTip.y - arrowLength * sin(angle + arrowAngle)
-                    ))
-                }
-                .stroke(
-                    connection.isHighlighted ? Color.yellow : Color.blue,
-                    style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
-                )
+            // Arrow head - always points to the 'to' node
+            let angle = atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x)
+            let radius = DataStructureLayoutManager.nodeRadius
+            let arrowTip = CGPoint(
+                x: toPoint.x - radius * cos(angle),
+                y: toPoint.y - radius * sin(angle)
+            )
+            let arrowLength: CGFloat = DataStructureLayoutManager.nodeRadius * 0.25
+            let arrowAngle: CGFloat = .pi / 6 // 30 degrees
+            
+            Path { path in
+                path.move(to: arrowTip)
+                path.addLine(to: CGPoint(
+                    x: arrowTip.x - arrowLength * cos(angle - arrowAngle),
+                    y: arrowTip.y - arrowLength * sin(angle - arrowAngle)
+                ))
+                path.move(to: arrowTip)
+                path.addLine(to: CGPoint(
+                    x: arrowTip.x - arrowLength * cos(angle + arrowAngle),
+                    y: arrowTip.y - arrowLength * sin(angle + arrowAngle)
+                ))
             }
+            .stroke(
+                connection.isHighlighted ? Color.yellow : Color.blue,
+                style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
+            )
         }
     }
 }
@@ -335,6 +333,49 @@ struct DataStructureView: View {
                         snappedElement: snappedElements[index]
                     )
                     .position(node.position)
+                    .gesture(
+                        DragGesture(coordinateSpace: .global)
+                            .onChanged { value in
+                                if let element = snappedElements[index], dragState == nil {
+                                    let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                                    dragState = (element: element, location: localLocation)
+                                    snappedElements.removeValue(forKey: index)
+                                }
+                                if dragState != nil {
+                                    let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                                    dragState?.location = localLocation
+                                    
+                                    // Find closest node
+                                    let closestNode = layoutNodes.enumerated()
+                                        .min(by: { first, second in
+                                            let distance1 = distance(from: first.element.position, to: localLocation)
+                                            let distance2 = distance(from: second.element.position, to: localLocation)
+                                            return distance1 < distance2
+                                        })
+                                    
+                                    if let closest = closestNode,
+                                       distance(from: closest.element.position, to: localLocation) < nodeSize {
+                                        hoveredNodeIndex = closest.offset
+                                    } else {
+                                        hoveredNodeIndex = nil
+                                    }
+                                }
+                            }
+                            .onEnded { value in
+                                if let nodeIndex = hoveredNodeIndex {
+                                    if let draggedElement = dragState?.element {
+                                        // Handle swap if node is occupied
+                                        if let existingElement = snappedElements[nodeIndex] {
+                                            snappedElements.removeValue(forKey: nodeIndex)
+                                        }
+                                        snappedElements[nodeIndex] = draggedElement
+                                        onElementDropped(draggedElement, nodeIndex)
+                                    }
+                                }
+                                dragState = nil
+                                hoveredNodeIndex = nil
+                            }
+                    )
                 }
                 
                 // Available elements at the top
@@ -397,13 +438,43 @@ struct DataStructureView: View {
                 
                 // Dragged element overlay
                 if let dragState = dragState {
-                    Text(dragState.element)
-                        .padding(10)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 4)
-                        .scaleEffect(1.1)
-                        .position(dragState.location)
+                    DraggableElementView(
+                        element: dragState.element,
+                        isDragging: true,
+                        onDragStarted: { _ in },
+                        onDragChanged: { value in
+                            let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                            self.dragState?.location = localLocation
+                            
+                            // Find closest node
+                            let closestNode = layoutNodes.enumerated()
+                                .min(by: { first, second in
+                                    let distance1 = distance(from: first.element.position, to: localLocation)
+                                    let distance2 = distance(from: second.element.position, to: localLocation)
+                                    return distance1 < distance2
+                                })
+                            
+                            if let closest = closestNode,
+                               distance(from: closest.element.position, to: localLocation) < nodeSize {
+                                hoveredNodeIndex = closest.offset
+                            } else {
+                                hoveredNodeIndex = nil
+                            }
+                        },
+                        onDragEnded: { value in
+                            if let nodeIndex = hoveredNodeIndex {
+                                // Handle swap if node is occupied
+                                if let existingElement = snappedElements[nodeIndex] {
+                                    snappedElements.removeValue(forKey: nodeIndex)
+                                }
+                                snappedElements[nodeIndex] = dragState.element
+                                onElementDropped(dragState.element, nodeIndex)
+                            }
+                            self.dragState = nil
+                            hoveredNodeIndex = nil
+                        }
+                    )
+                    .position(dragState.location)
                 }
             }
         }
