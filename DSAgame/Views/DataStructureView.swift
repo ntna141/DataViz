@@ -78,8 +78,8 @@ struct DataStructureView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                VStack(spacing: 20) {
-                    // Data structure area
+                VStack(spacing: 0) {
+                    // Data structure area at the top
                     ZStack {
                         // Draw connections first
                         ForEach(connectionStates, id: \.id) { connection in
@@ -96,9 +96,9 @@ struct DataStructureView: View {
                             .position(cell.position)
                         }
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height * 0.8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    // Elements list
+                    // Elements list with fixed height at the bottom
                     if !availableElements.isEmpty {
                         HStack(spacing: 15) {
                             ForEach(availableElements, id: \.self) { element in
@@ -121,9 +121,10 @@ struct DataStructureView: View {
                         .padding(8)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(8)
+                        .frame(height: 50)  // Fixed height for elements
                     }
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 // Dragged element overlay
                 if let dragState = dragState {

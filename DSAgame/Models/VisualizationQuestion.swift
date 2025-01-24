@@ -56,9 +56,18 @@ struct VisualizationQuestionView: View {
                 modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
                 return modifiedLine
             })
-            .frame(maxHeight: 200)
-            
-            Spacer()  // Push content down
+            .frame(maxHeight: 240)  // Increased by 20%
+            .overlay(
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .frame(height: 0.5)
+                        .foregroundColor(.gray.opacity(0.3))
+                    Spacer()
+                    Rectangle()
+                        .frame(height: 0.5)
+                        .foregroundColor(.gray.opacity(0.3))
+                }
+            )
             
             // Data structure view with key for complete re-render
             DataStructureView(
@@ -73,7 +82,9 @@ struct VisualizationQuestionView: View {
                 }
             )
             .id(visualizationKey)
-            .frame(height: 200)
+            .frame(maxHeight: .infinity)  // Take up remaining space
+            
+            Spacer()  // Flexible space to push buttons to bottom
             
             // Navigation
             HStack {
