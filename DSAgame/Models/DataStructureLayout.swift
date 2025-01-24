@@ -56,21 +56,36 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                 return nil
             }
             
-            // Create display state with actual points
+            // Calculate edge points
+            let angle = atan2(toCell.position.y - fromCell.position.y,
+                            toCell.position.x - fromCell.position.x)
+            
+            // Calculate points on the edge of the circles
+            let fromPoint = CGPoint(
+                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
+                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+            )
+            
+            let toPoint = CGPoint(
+                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
+                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
+            )
+            
+            // Create display state with edge points
             var displayState = (connection as? BasicConnection)?.displayState ?? 
                              ConnectionDisplayState(
-                                fromPoint: .zero,
-                                toPoint: .zero,
+                                fromPoint: fromPoint,
+                                toPoint: toPoint,
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
                                 style: connection.style,
                                 visualStyle: connection.isHighlighted ? .highlighted : .standard
                              )
             
-            // Update points based on cell positions
+            // Update points to edge positions
             displayState = ConnectionDisplayState(
-                fromPoint: fromCell.position,
-                toPoint: toCell.position,
+                fromPoint: fromPoint,
+                toPoint: toPoint,
                 label: displayState.label,
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
@@ -119,10 +134,25 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                 return nil
             }
             
+            // Calculate edge points
+            let angle = atan2(toCell.position.y - fromCell.position.y,
+                            toCell.position.x - fromCell.position.x)
+            
+            // Calculate points on the edge of the circles
+            let fromPoint = CGPoint(
+                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
+                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+            )
+            
+            let toPoint = CGPoint(
+                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
+                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
+            )
+            
             var displayState = (connection as? BasicConnection)?.displayState ?? 
                              ConnectionDisplayState(
-                                fromPoint: .zero,
-                                toPoint: .zero,
+                                fromPoint: fromPoint,
+                                toPoint: toPoint,
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
                                 style: .curved, // Use curved style for tree connections
@@ -130,8 +160,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                              )
             
             displayState = ConnectionDisplayState(
-                fromPoint: fromCell.position,
-                toPoint: toCell.position,
+                fromPoint: fromPoint,
+                toPoint: toPoint,
                 label: displayState.label,
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
@@ -171,10 +201,25 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 return nil
             }
             
+            // Calculate edge points
+            let angle = atan2(toCell.position.y - fromCell.position.y,
+                            toCell.position.x - fromCell.position.x)
+            
+            // Calculate points on the edge of the circles
+            let fromPoint = CGPoint(
+                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
+                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+            )
+            
+            let toPoint = CGPoint(
+                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
+                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
+            )
+            
             var displayState = (connection as? BasicConnection)?.displayState ?? 
                              ConnectionDisplayState(
-                                fromPoint: .zero,
-                                toPoint: .zero,
+                                fromPoint: fromPoint,
+                                toPoint: toPoint,
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
                                 style: connection.style,
@@ -182,8 +227,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                              )
             
             displayState = ConnectionDisplayState(
-                fromPoint: fromCell.position,
-                toPoint: toCell.position,
+                fromPoint: fromPoint,
+                toPoint: toPoint,
                 label: displayState.label,
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
