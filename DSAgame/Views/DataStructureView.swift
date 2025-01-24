@@ -77,59 +77,59 @@ struct DataStructureView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let _ = print("GeometryReader size: \(geometry.size)")
             ZStack {
-                Color.clear.preference(key: FramePreferenceKey.self, value: geometry.frame(in: .local))
-                
-                // Draw all connections first
-                ForEach(connectionStates, id: \.id) { connection in
-                    ConnectionView(state: connection.state)
-                }
-                
-                // Draw all cells on top with renderCycle for uniqueness
-                ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
-                    CellView(
-                        state: cell.displayState,
-                        size: LayoutConfig.cellDiameter
-                    )
-                    .id("\(cell.id)-\(renderCycle)")
-                    .position(cell.position)
-                    .gesture(
-                        DragGesture(coordinateSpace: .global)
-                            .onChanged { value in
-                                handleDragChanged(value, in: geometry.frame(in: .global), cellIndex: index)
-                            }
-                            .onEnded { value in
-                                handleDragEnded(value)
-                            }
-                    )
-                }
-                
-                // Available elements at the top
-                if !availableElements.isEmpty {
-                    HStack(spacing: 15) {
-                        ForEach(availableElements, id: \.self) { element in
-                            if !layoutCells.contains(where: { $0.value == element }) {
-                                DraggableElementView(
-                                    element: element,
-                                    isDragging: dragState?.element == element,
-                                    onDragStarted: { location in
-                                        let localLocation = geometry.frame(in: .global).convert(from: location)
-                                        dragState = (element: element, location: localLocation)
-                                    },
-                                    onDragChanged: { value in
-                                        handleDragChanged(value, in: geometry.frame(in: .global))
-                                    },
-                                    onDragEnded: handleDragEnded
-                                )
-                                .frame(width: 50, height: 50)
-                            }
+                // Main content
+                HStack(alignment: .center, spacing: 5) {
+                    // Data structure area
+                    ZStack {
+                        let _ = print("Rendering \(connectionStates.count) connections")
+                        // Draw all connections first
+                        ForEach(connectionStates, id: \.id) { connection in
+                            ConnectionView(state: connection.state)
+                        }
+                        
+                        let _ = print("Rendering \(layoutCells.count) cells with positions: \(layoutCells.map { $0.value })")
+                        // Draw all cells on top
+                        ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
+                            let _ = print("Cell \(index): value=\(cell.value), position=\(cell.position)")
+                            CellView(
+                                state: cell.displayState,
+                                size: LayoutConfig.cellDiameter
+                            )
+                            .id("\(cell.id)-\(renderCycle)")
+                            .position(cell.position)
                         }
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    .position(x: geometry.size.width/2, y: 40)
+                    .frame(width: geometry.size.width * 0.85, height: geometry.size.height)
+                    
+                    // Elements list
+                    if !availableElements.isEmpty {
+                        VStack(spacing: 10) {
+                            ForEach(availableElements, id: \.self) { element in
+                                if !layoutCells.contains(where: { $0.value == element }) {
+                                    DraggableElementView(
+                                        element: element,
+                                        isDragging: dragState?.element == element,
+                                        onDragStarted: { location in
+                                            let localLocation = geometry.frame(in: .global).convert(from: location)
+                                            dragState = (element: element, location: localLocation)
+                                        },
+                                        onDragChanged: { value in
+                                            handleDragChanged(value, in: geometry.frame(in: .global))
+                                        },
+                                        onDragEnded: handleDragEnded
+                                    )
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                        .frame(width: geometry.size.width * 0.15)
+                    }
                 }
+                .frame(width: geometry.size.width, height: geometry.size.height)
                 
                 // Dragged element overlay
                 if let dragState = dragState {
@@ -145,31 +145,42 @@ struct DataStructureView: View {
                     .position(dragState.location)
                 }
             }
+            .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: geometry.size))
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
-            frame = newFrame
-            updateLayout()
+            if newFrame != frame {  // Only update if frame actually changed
+                frame = newFrame
+                print("Frame updated to: \(newFrame)")
+                updateLayout()
+            }
         }
         .onChange(of: cells.map(\.id)) { _ in
+            print("Cells changed: \(cells.map { $0.value })")
             updateLayout()
         }
         .onChange(of: connections.map(\.id)) { _ in
+            print("Connections changed: \(connections.count)")
             updateLayout()
         }
         .onChange(of: layoutType) { newType in
+            print("Layout type changed: \(newType)")
             layoutManager.setLayoutType(newType)
             updateLayout()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func updateLayout() {
         guard !frame.isEmpty else { return }
+        print("Updating layout with frame: \(frame)")
+        print("Current cells: \(cells.map { $0.value })")
+        
         let (newCells, newStates) = layoutManager.updateLayout(
             cells: cells,
             connections: connections,
             in: frame
         )
+        
+        print("New layout cells: \(newCells.map { $0.value })")
         layoutCells = newCells
         connectionStates = newStates.enumerated().map { (index, state) in
             (id: "\(index)", state: state)

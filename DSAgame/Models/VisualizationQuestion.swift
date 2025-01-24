@@ -23,55 +23,6 @@ struct VisualizationQuestion {
     let layoutType: DataStructureLayoutType
 }
 
-// View for draggable elements
-struct DraggableElement: View {
-    let value: String
-    @State private var isDragging = false
-    @State private var dragLocation: CGPoint = .zero
-    let onDropped: (String, CGPoint) -> Void
-    
-    var body: some View {
-        Text(value)
-            .padding(10)
-            .background(Color.white)
-            .cornerRadius(8)
-            .shadow(radius: isDragging ? 4 : 2)
-            .scaleEffect(isDragging ? 1.1 : 1.0)
-            .opacity(isDragging ? 0.7 : 1.0)
-            .overlay(
-                GeometryReader { geometry in
-                    if isDragging {
-                        Text(value)
-                            .padding(10)
-                            .background(Color.white)
-                            .cornerRadius(8)
-                            .shadow(radius: 4)
-                            .position(dragLocation)
-                    }
-                }
-            )
-            .gesture(
-                DragGesture(coordinateSpace: .named("dataStructureSpace"))
-                    .onChanged { gesture in
-                        isDragging = true
-                        dragLocation = gesture.location
-                    }
-                    .onEnded { gesture in
-                        isDragging = false
-                        onDropped(value, gesture.location)
-                    }
-            )
-            .animation(.spring(response: 0.3), value: isDragging)
-    }
-}
-
-// Represents a dragging state
-struct DragState {
-    var value: String
-    var position: CGPoint
-    var isDragging: Bool
-}
-
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
@@ -93,7 +44,7 @@ struct VisualizationQuestionView: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             // Title and description
             Text(question.title).font(.title)
             Text(question.description).font(.body)
@@ -105,48 +56,24 @@ struct VisualizationQuestionView: View {
                 modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
                 return modifiedLine
             })
+            .frame(maxHeight: 200)
+            
+            Spacer()  // Add spacer to push content down
             
             // Data structure view with key for complete re-render
-            ZStack {
-                DataStructureView(
-                    layoutType: question.layoutType,
-                    cells: currentStep.cells,
-                    connections: currentStep.connections,
-                    availableElements: [],  // Don't pass available elements here
-                    onElementDropped: { value, index in
-                        if currentStep.userInputRequired {
-                            setValue(value, forCellAtIndex: index)
-                            // Check against next step for validation
-                            if let nextStep = question.steps[safe: currentStepIndex + 1],
-                               currentStep.cells[index].value == nextStep.cells[index].value {
-                                moveToNextStep()
-                            }
-                        }
-                    }
-                )
-                .id(visualizationKey)
-            }
-            .coordinateSpace(name: "dataStructureSpace")
-            
-            // Available elements for dragging (only show if user input required)
-            if currentStep.userInputRequired && !currentStep.availableElements.isEmpty {
-                HStack {
-                    ForEach(currentStep.availableElements, id: \.self) { element in
-                        DraggableElement(value: element) { value, location in
-                            // Find the closest cell and update its value
-                            if let index = findClosestCell(to: location) {
-                                setValue(value, forCellAtIndex: index)
-                                // Check against next step for validation
-                                if let nextStep = question.steps[safe: currentStepIndex + 1],
-                                   currentStep.cells[index].value == nextStep.cells[index].value {
-                                    moveToNextStep()
-                                }
-                            }
-                        }
+            DataStructureView(
+                layoutType: question.layoutType,
+                cells: currentStep.cells,
+                connections: currentStep.connections,
+                availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
+                onElementDropped: { value, index in
+                    if currentStep.userInputRequired {
+                        setValue(value, forCellAtIndex: index)
                     }
                 }
-                .padding()
-            }
+            )
+            .id(visualizationKey)
+            .frame(height: 200)
             
             // Navigation
             HStack {
@@ -163,11 +90,10 @@ struct VisualizationQuestionView: View {
                 Spacer()
                 
                 Button("Next") {
-                    if !currentStep.userInputRequired {
-                        moveToNextStep()
-                    }
+                    moveToNextStep()
                 }
-                .disabled(currentStep.userInputRequired || currentStepIndex == question.steps.count - 1)
+                .disabled(currentStepIndex == question.steps.count - 1 || 
+                         (currentStep.userInputRequired && !isCurrentStepComplete()))
             }
             .padding()
         }
@@ -212,10 +138,15 @@ struct VisualizationQuestionView: View {
         visualizationKey = UUID()
     }
     
-    private func findClosestCell(to point: CGPoint) -> Int? {
-        // For now, just return index 1 since that's where we want to place the value
-        // In a real implementation, you would calculate distances to each cell
-        return 1
+    private func isCurrentStepComplete() -> Bool {
+        guard let nextStep = question.steps[safe: currentStepIndex + 1] else { return false }
+        // Check if all non-empty cells in the next step have matching values in current step
+        return zip(currentStep.cells, nextStep.cells).allSatisfy { current, next in
+            if next.value.isEmpty {
+                return true // Skip validation for empty cells in next step
+            }
+            return current.value == next.value
+        }
     }
 }
 

@@ -12,6 +12,7 @@ protocol DataStructureCell: Identifiable {
     mutating func setValue(_ value: String)
     mutating func highlight()
     mutating func unhighlight()
+    mutating func setHighlighted(_ highlighted: Bool)
     mutating func setLabel(_ label: String?)
     
     // Visual state
@@ -42,6 +43,13 @@ struct CellDisplayState {
         static let highlighted = CellStyle(
             fillColor: .yellow.opacity(0.3),
             strokeColor: .blue,
+            strokeWidth: 2,
+            isDashed: false
+        )
+        
+        static let readyToDrop = CellStyle(
+            fillColor: .green.opacity(0.3),
+            strokeColor: .green,
             strokeWidth: 2,
             isDashed: false
         )
@@ -91,6 +99,10 @@ struct BasicCell: DataStructureCell {
         isHighlighted = false
     }
     
+    mutating func setHighlighted(_ highlighted: Bool) {
+        isHighlighted = highlighted
+    }
+    
     mutating func setLabel(_ label: String?) {
         self.label = label
     }
@@ -108,7 +120,9 @@ struct BasicCell: DataStructureCell {
     }
     
     private func determineStyle() -> CellDisplayState.CellStyle {
-        if isHighlighted {
+        if isHighlighted && value.isEmpty {
+            return .readyToDrop
+        } else if isHighlighted {
             return .highlighted
         } else if value.isEmpty {
             return .empty
