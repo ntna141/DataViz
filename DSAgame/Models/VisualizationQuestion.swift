@@ -16,6 +16,8 @@ struct VisualizationQuestion {
     let id = UUID()
     let title: String
     let description: String
+    let hint: String
+    let review: String
     let code: [CodeLine]
     let steps: [VisualizationStep]
     let initialCells: [any DataStructureCell]
@@ -26,13 +28,17 @@ struct VisualizationQuestion {
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
+    let onComplete: () -> Void
+    @Environment(\.presentationMode) var presentationMode
     @State private var currentStepIndex = 0
     @State private var currentStep: VisualizationStep
     @State private var visualizationKey = UUID()
+    @State private var showingHint = false
     
-    init(question: VisualizationQuestion) {
+    init(question: VisualizationQuestion, onComplete: @escaping () -> Void = {}) {
         print("\n=== Initializing VisualizationQuestionView ===")
         self.question = question
+        self.onComplete = onComplete
         _currentStep = State(initialValue: question.steps[0])
         
         print("\nFirst step cells:")
@@ -45,6 +51,28 @@ struct VisualizationQuestionView: View {
     
     var body: some View {
         VStack(spacing: 10) {
+            // Header with close and hint buttons
+            HStack {
+                Button(action: {
+                    showingHint = true
+                }) {
+                    Image(systemName: "questionmark.circle")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                }
+            }
+            .padding(.horizontal)
+            
             // Title and description
             Text(question.title).font(.title)
             Text(question.description).font(.body)
@@ -100,14 +128,28 @@ struct VisualizationQuestionView: View {
                 
                 Spacer()
                 
-                Button("Next") {
-                    moveToNextStep()
+                Button(isLastStep ? "Complete" : "Next") {
+                    if isLastStep {
+                        onComplete()
+                    } else {
+                        moveToNextStep()
+                    }
                 }
-                .disabled(currentStepIndex == question.steps.count - 1 || 
-                         (currentStep.userInputRequired && !isCurrentStepComplete()))
+                .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
             }
             .padding()
         }
+        .alert("Need a hint?", isPresented: $showingHint) {
+            Button("Got it") {
+                showingHint = false
+            }
+        } message: {
+            Text(question.hint)
+        }
+    }
+    
+    private var isLastStep: Bool {
+        currentStepIndex == question.steps.count - 1
     }
     
     private func moveToNextStep() {
@@ -151,11 +193,14 @@ struct VisualizationQuestionView: View {
     
     private func isCurrentStepComplete() -> Bool {
         guard let nextStep = question.steps[safe: currentStepIndex + 1] else { return false }
-        // Check if all non-empty cells in the next step have matching values in current step
+        
+        // Check if all cells in the current step match the next step's requirements
         return zip(currentStep.cells, nextStep.cells).allSatisfy { current, next in
+            // If next cell is empty, current cell should also be empty
             if next.value.isEmpty {
-                return true // Skip validation for empty cells in next step
+                return current.value.isEmpty
             }
+            // If next cell has a value, current cell must match exactly
             return current.value == next.value
         }
     }
@@ -172,6 +217,8 @@ struct VisualizationQuestionExample: View {
     let sampleQuestion = VisualizationQuestion(
         title: "Build a Linked List",
         description: "Watch how a linked list is built step by step and complete the missing values",
+        hint: "Start by creating the head node, then connect each new node to the previous one.",
+        review: "Great job! You've learned how to build a linked list by connecting nodes in sequence. Each node points to the next one, forming a chain of data.",
         code: [
             CodeLine(
                 number: 1,

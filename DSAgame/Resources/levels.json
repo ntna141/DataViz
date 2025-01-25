@@ -10,6 +10,8 @@
                     "type": "visualization",
                     "title": "Building a Linked List",
                     "description": "Learn how to build a linked list by following the code and completing the visualization",
+                    "hint": "Watch how each node is connected to the next one. The head node is our starting point, and we build the list by connecting nodes in sequence.",
+                    "review": "Great job! You've learned the basics of building a linked list. Each node contains a value and points to the next node in the sequence, forming a chain of data.",
                     "difficulty": 1,
                     "visualization": {
                         "code": [
@@ -104,6 +106,232 @@
                                     { "value": "5", "label": "head" },
                                     { "value": "3" },
                                     { "value": "" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Inserting into a Linked List",
+                    "description": "Learn how to insert a new node into the middle of a linked list",
+                    "hint": "When inserting a node in the middle, we need to: 1) Create the new node, 2) Point it to the next node, 3) Update the previous node to point to our new node.",
+                    "review": "Excellent! You've mastered inserting nodes into a linked list. Remember the order of operations: first connect the new node to the next one, then update the previous node's pointer.",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "func insertNode(value: Int, after: Node) {",
+                            "    let newNode = Node(value)",
+                            "    newNode.next = after.next",
+                            "    after.next = newNode",
+                            "}"
+                        ],
+                        "dataStructureType": "linkedList",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "We start with an existing linked list",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "1", "label": "head" },
+                                    { "value": "3" },
+                                    { "value": "5" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Create a new node with value 4",
+                                "userInputRequired": true,
+                                "availableElements": ["4"],
+                                "nodes": [
+                                    { "value": "1", "label": "head" },
+                                    { "value": "3" },
+                                    { "value": "5" },
+                                    { "value": "" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Point the new node to the next node (5)",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "1", "label": "head" },
+                                    { "value": "3" },
+                                    { "value": "5" },
+                                    { "value": "4" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "Update the previous node to point to the new node",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "1", "label": "head" },
+                                    { "value": "3" },
+                                    { "value": "5" },
+                                    { "value": "4" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Deleting from a Linked List",
+                    "description": "Learn how to remove a node from a linked list",
+                    "hint": "To delete a node, we need to update the previous node's pointer to skip over the node we want to delete. The skipped node will no longer be part of the list.",
+                    "review": "Well done! You've learned how to delete nodes from a linked list. By updating the pointers to skip a node, we effectively remove it from the list without breaking the chain.",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "func deleteNode(after: Node) {",
+                            "    // Skip the next node by updating the pointer",
+                            "    after.next = after.next?.next",
+                            "}"
+                        ],
+                        "dataStructureType": "linkedList",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "We start with an existing linked list",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "2", "label": "head" },
+                                    { "value": "4" },
+                                    { "value": "6" },
+                                    { "value": "8" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Update the pointer to skip node with value 6",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "2", "label": "head" },
+                                    { "value": "4" },
+                                    { "value": "6", "isHighlighted": true },
+                                    { "value": "8" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Node is now removed from the list",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "2", "label": "head" },
+                                    { "value": "4" },
+                                    { "value": "8" }
                                 ],
                                 "connections": [
                                     {

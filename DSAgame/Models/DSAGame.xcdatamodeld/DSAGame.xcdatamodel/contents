@@ -62,6 +62,8 @@
     </entity>
     <entity name="VisualizationQuestionEntity" representedClassName="VisualizationQuestionEntity" syncable="YES" codeGenerationType="class">
         <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="hint" optional="YES" attributeType="String"/>
+        <attribute name="review" optional="YES" attributeType="String"/>
         <attribute name="layoutType" optional="YES" attributeType="String"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>

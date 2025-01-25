@@ -168,6 +168,8 @@ class VisualizationManager {
         guard let visualization = jsonData["visualization"] as? [String: Any],
               let title = jsonData["title"] as? String,
               let description = jsonData["description"] as? String,
+              let hint = jsonData["hint"] as? String,
+              let review = jsonData["review"] as? String,
               let code = visualization["code"] as? [String],
               let dataStructureType = visualization["dataStructureType"] as? String,
               let steps = visualization["steps"] as? [[String: Any]] else {
@@ -178,6 +180,8 @@ class VisualizationManager {
         print("\nParsed visualization data:")
         print("Title: \(title)")
         print("Description: \(description)")
+        print("Hint: \(hint)")
+        print("Review: \(review)")
         print("Data structure type: \(dataStructureType)")
         print("\nSteps:")
         for (index, stepData) in steps.enumerated() {
@@ -189,6 +193,8 @@ class VisualizationManager {
         visualizationEntity.uuid = UUID()
         visualizationEntity.title = title
         visualizationEntity.desc = description
+        visualizationEntity.hint = hint
+        visualizationEntity.review = review
         visualizationEntity.question = question
         visualizationEntity.layoutType = dataStructureType
         question.visualization = visualizationEntity
@@ -394,6 +400,8 @@ class VisualizationManager {
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",
             description: visualizationEntity.desc ?? "",
+            hint: visualizationEntity.hint ?? "Watch carefully how the data structure changes with each step.",
+            review: visualizationEntity.review ?? "Great job completing this visualization!",
             code: codeLines,
             steps: steps,
             initialCells: steps.first?.cells ?? [],

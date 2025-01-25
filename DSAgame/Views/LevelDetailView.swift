@@ -1,10 +1,57 @@
 import SwiftUI
 
+struct ReviewScreen: View {
+    let review: String
+    let onNext: () -> Void
+    let onBackToMap: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            Text("Great Job!")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Text(review)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+            
+            VStack(spacing: 15) {
+                Button(action: onNext) {
+                    Text("Start Next Question")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                
+                Button(action: onBackToMap) {
+                    Text("Back to Map")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.top)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
+    }
+}
+
 struct LevelDetailView: View {
     let level: LevelEntity
     @Environment(\.presentationMode) var presentationMode
     @State private var showingVisualization = false
+    @State private var showingReview = false
     @State private var visualization: VisualizationQuestion?
+    @State private var currentQuestionIndex = 0
+    @State private var visualizationQuestions: [QuestionEntity] = []
     
     var body: some View {
         GeometryReader { geometry in
@@ -28,19 +75,18 @@ struct LevelDetailView: View {
                 // Topic
                 Text(level.topic ?? "")
                     .font(.title2)
-                    .fontWeight(.semibold)
                 
                 // Description
                 Text(level.desc ?? "")
                     .font(.body)
-                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.gray)
                 
-                // Start Visualization Button
-                if let visualization = visualization {
+                // Start button
+                if visualization != nil {
                     Button(action: {
                         showingVisualization = true
                     }) {
-                        Text("Start Visualization")
+                        Text("Continue Visualization")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -48,28 +94,70 @@ struct LevelDetailView: View {
                             .background(Color.blue)
                             .cornerRadius(10)
                     }
-                } else {
-                    Text("No visualization available")
-                        .foregroundColor(.gray)
-                        .italic()
                 }
-                
-                Spacer()
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            // Load visualization from the first question of type "visualization"
-            if let questions = level.questions?.allObjects as? [QuestionEntity],
-               let visualizationQuestion = questions.first(where: { $0.type == "visualization" }) {
-                visualization = VisualizationManager.shared.loadVisualization(for: visualizationQuestion)
+            // Load all visualization questions
+            if let questions = level.questions?.allObjects as? [QuestionEntity] {
+                visualizationQuestions = questions.filter { $0.type == "visualization" }
+                loadCurrentQuestion()
+                if visualization != nil {
+                    showingVisualization = true
+                }
             }
         }
         .fullScreenCover(isPresented: $showingVisualization) {
             if let visualization = visualization {
-                VisualizationQuestionView(question: visualization)
+                VisualizationQuestionView(question: visualization) {
+                    showingVisualization = false
+                    showingReview = true
+                }
             }
+        }
+        .fullScreenCover(isPresented: $showingReview) {
+            if let visualization = visualization {
+                ReviewScreen(
+                    review: visualization.review,
+                    onNext: {
+                        showingReview = false
+                        moveToNextQuestion()
+                    },
+                    onBackToMap: {
+                        showingReview = false
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
+        }
+    }
+    
+    private func loadCurrentQuestion() {
+        guard currentQuestionIndex < visualizationQuestions.count else {
+            visualization = nil
+            showingVisualization = false
+            return
+        }
+        
+        let question = visualizationQuestions[currentQuestionIndex]
+        visualization = VisualizationManager.shared.loadVisualization(for: question)
+    }
+    
+    private func moveToNextQuestion() {
+        // First reset current visualization
+        visualization = nil
+        
+        // Then load next question
+        currentQuestionIndex += 1
+        loadCurrentQuestion()
+        
+        // Show new visualization if available
+        if visualization != nil {
+            showingVisualization = true
+        } else {
+            presentationMode.wrappedValue.dismiss()
         }
     }
 }
