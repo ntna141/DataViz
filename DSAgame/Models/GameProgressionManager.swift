@@ -201,9 +201,10 @@ class GameProgressionManager {
     private func getQuestionType(_ number: Int) -> String {
         switch number {
             case 1: return "visualization"
-            case 2: return "coding"
-            case 3: return "fill_blank"
-            case 4: return "matching"
+            case 2: return "debugging"
+            case 3: return "coding"
+            case 4: return "fill_blank"
+            case 5: return "matching"
             default: return "multiple_choice"
         }
     }

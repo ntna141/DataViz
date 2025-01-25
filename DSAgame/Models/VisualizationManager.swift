@@ -191,6 +191,7 @@ class VisualizationManager {
         visualizationEntity.desc = description
         visualizationEntity.question = question
         visualizationEntity.layoutType = dataStructureType
+        visualizationEntity.type = question.type ?? "visualization"  // Set type from question
         question.visualization = visualizationEntity
         
         // Create code lines
@@ -223,6 +224,8 @@ class VisualizationManager {
             stepEntity.lineComment = stepData["comment"] as? String
             stepEntity.userInputRequired = stepData["userInputRequired"] as? Bool ?? false
             stepEntity.availableElements = stepData["availableElements"] as? [String] ?? []
+            stepEntity.frameIndex = Int32(stepData["frameIndex"] as? Int ?? 0)  // New field
+            stepEntity.correctLines = stepData["correctLines"] as? [Int]  // New field
             stepEntity.question = visualizationEntity
             
             // Create nodes with consistent IDs
@@ -321,6 +324,10 @@ class VisualizationManager {
                     print("Line highlighted: \(stepEntity.codeHighlightedLine)")
                     print("User input required: \(stepEntity.userInputRequired)")
                     print("Available elements: \(stepEntity.availableElements ?? [])")
+                    print("Frame index: \(stepEntity.frameIndex)")
+                    if let correctLines = stepEntity.correctLines {
+                        print("Correct lines: \(correctLines)")
+                    }
                     
                     // Load nodes in order based on stored index
                     let allNodes = stepEntity.nodes as? Set<NodeEntity> ?? Set()
@@ -378,7 +385,9 @@ class VisualizationManager {
                         cells: cells,
                         connections: loadedConnections,
                         userInputRequired: stepEntity.userInputRequired,
-                        availableElements: stepEntity.availableElements ?? []
+                        availableElements: stepEntity.availableElements ?? [],
+                        frameIndex: Int(stepEntity.frameIndex),
+                        correctLines: stepEntity.correctLines
                     )
                 }
             print("\nLoaded \(loadedSteps.count) steps")
@@ -390,6 +399,7 @@ class VisualizationManager {
         
         print("\nCreating VisualizationQuestion with:")
         print("Layout type: \(layoutType)")
+        print("Type: \(visualizationEntity.type ?? "visualization")")
         
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",
@@ -398,7 +408,8 @@ class VisualizationManager {
             steps: steps,
             initialCells: steps.first?.cells ?? [],
             initialConnections: steps.first?.connections ?? [],
-            layoutType: layoutType
+            layoutType: layoutType,
+            type: visualizationEntity.type ?? "visualization"
         )
     }
 } 

@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10ECBFF07F6964489A84D924 /* DebuggingQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB61604BDA523F4A9B3B4876 /* DebuggingQuestionView.swift */; };
 		286D6A96645E4DF4C17666DF /* DataStructureCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */; };
 		376567F9E0BE9864566D692A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2146F0980C7057C3F6A9D42 /* Assets.xcassets */; };
 		415107C221BB120844AE1EC1 /* VisualizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94C9F12C9A730D177B5071D /* VisualizationManager.swift */; };
 		489B066DC88B0A4F8CD85C97 /* GameProgressionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8C0B43B5FEA91A92A79830 /* GameProgressionManager.swift */; };
 		53F07FBE8D2C85BF67CBADC9 /* DataStructureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777EBBAD80A3D3B0EFFF97DF /* DataStructureView.swift */; };
 		72EC2FDE3B48CF7654E47610 /* DataStructureLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20D3529BFA77BB99EAEFF27D /* DataStructureLayout.swift */; };
+		7FF9AF4A4A7ADD61D085911A /* CodeViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0D1EBAF753CE55605EB47E /* CodeViewer.swift */; };
 		86B1D36C655882E2A7508E28 /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = 205823DB7D12711143EBA2AE /* levels.json */; };
 		8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 257A165A598AFFA2D57D3FDB /* ContentView.swift */; };
 		9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4705BC152C2EE6DBB054CFF /* LevelData.swift */; };
@@ -21,8 +23,8 @@
 		A7594A144A5C6BF2B8C0142C /* VisualizationQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5634AD12888DDEA478554E /* VisualizationQuestion.swift */; };
 		B15E0F6AE1D9FCFC406A254D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */; };
 		B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CDD917C12E442A0B0A48BD6D /* DSAGame.xcdatamodeld */; };
+		BC219659FAE629F9E78FDD5C /* CodeLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1416D44D1BDD269E3C2DAF2 /* CodeLine.swift */; };
 		CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE96D5797E5855965CDE5D /* LevelDetailView.swift */; };
-		CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */; };
 		FEC6D4C7E70E7023F889FB25 /* DSAgameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CB2842E3F8DFDFE09C29AE /* DSAgameApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,12 +41,14 @@
 		777EBBAD80A3D3B0EFFF97DF /* DataStructureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureView.swift; sourceTree = "<group>"; };
 		784243AA1B71FCA929412DF5 /* DSAgame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSAgame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA0D1EBAF753CE55605EB47E /* CodeViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeViewer.swift; sourceTree = "<group>"; };
 		B4705BC152C2EE6DBB054CFF /* LevelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelData.swift; sourceTree = "<group>"; };
 		C2146F0980C7057C3F6A9D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D1416D44D1BDD269E3C2DAF2 /* CodeLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeLine.swift; sourceTree = "<group>"; };
+		DB61604BDA523F4A9B3B4876 /* DebuggingQuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebuggingQuestionView.swift; sourceTree = "<group>"; };
 		DC5634AD12888DDEA478554E /* VisualizationQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizationQuestion.swift; sourceTree = "<group>"; };
 		E94C9F12C9A730D177B5071D /* VisualizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizationManager.swift; sourceTree = "<group>"; };
 		F35EB888349D77B86712E33A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeVisualization.swift; sourceTree = "<group>"; };
 		FF8C0B43B5FEA91A92A79830 /* GameProgressionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameProgressionManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -52,7 +56,9 @@
 		4B6E90C529C3F0E6CA7CACDB /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA0D1EBAF753CE55605EB47E /* CodeViewer.swift */,
 				777EBBAD80A3D3B0EFFF97DF /* DataStructureView.swift */,
+				DB61604BDA523F4A9B3B4876 /* DebuggingQuestionView.swift */,
 				54DE96D5797E5855965CDE5D /* LevelDetailView.swift */,
 			);
 			path = Views;
@@ -108,7 +114,7 @@
 		EEABAD2EDCEAAB47D9B6FA33 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */,
+				D1416D44D1BDD269E3C2DAF2 /* CodeLine.swift */,
 				6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */,
 				04A1B432733E5A6F722AEC38 /* DataStructureConnection.swift */,
 				20D3529BFA77BB99EAEFF27D /* DataStructureLayout.swift */,
@@ -187,7 +193,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */,
+				BC219659FAE629F9E78FDD5C /* CodeLine.swift in Sources */,
+				7FF9AF4A4A7ADD61D085911A /* CodeViewer.swift in Sources */,
 				8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */,
 				B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */,
 				FEC6D4C7E70E7023F889FB25 /* DSAgameApp.swift in Sources */,
@@ -195,6 +202,7 @@
 				A44380C3ED5D12332288D555 /* DataStructureConnection.swift in Sources */,
 				72EC2FDE3B48CF7654E47610 /* DataStructureLayout.swift in Sources */,
 				53F07FBE8D2C85BF67CBADC9 /* DataStructureView.swift in Sources */,
+				10ECBFF07F6964489A84D924 /* DebuggingQuestionView.swift in Sources */,
 				489B066DC88B0A4F8CD85C97 /* GameProgressionManager.swift in Sources */,
 				9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */,
 				CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */,

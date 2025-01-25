@@ -5,6 +5,13 @@ struct LevelDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showingVisualization = false
     @State private var visualization: VisualizationQuestion?
+    @State private var selectedQuestionIndex = 0
+    
+    var questions: [QuestionEntity] {
+        (level.questions?.allObjects as? [QuestionEntity])?.sorted { q1, q2 in
+            q1.type == "visualization" && q2.type == "debugging"
+        } ?? []
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -35,17 +42,38 @@ struct LevelDetailView: View {
                     .font(.body)
                     .multilineTextAlignment(.leading)
                 
-                // Start Visualization Button
+                // Question Picker
+                if !questions.isEmpty {
+                    Picker("Question", selection: $selectedQuestionIndex) {
+                        ForEach(Array(questions.enumerated()), id: \.element.uuid) { index, question in
+                            Text("\(question.type?.capitalized ?? "") \(index + 1)")
+                                .tag(index)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal)
+                    
+                    // Question Description
+                    if let question = questions[safe: selectedQuestionIndex] {
+                        Text(question.title ?? "")
+                            .font(.headline)
+                        Text(question.desc ?? "")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Start Button
                 if let visualization = visualization {
                     Button(action: {
                         showingVisualization = true
                     }) {
-                        Text("Start Visualization")
+                        Text("Start \(visualization.type.capitalized)")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(visualization.type == "debugging" ? Color.orange : Color.blue)
                             .cornerRadius(10)
                     }
                 } else {
@@ -59,18 +87,32 @@ struct LevelDetailView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onChange(of: selectedQuestionIndex) { newIndex in
+            loadVisualization(for: newIndex)
+        }
         .onAppear {
-            // Load visualization from the first question of type "visualization"
-            if let questions = level.questions?.allObjects as? [QuestionEntity],
-               let visualizationQuestion = questions.first(where: { $0.type == "visualization" }) {
-                visualization = VisualizationManager.shared.loadVisualization(for: visualizationQuestion)
-            }
+            loadVisualization(for: selectedQuestionIndex)
         }
         .fullScreenCover(isPresented: $showingVisualization) {
             if let visualization = visualization {
-                VisualizationQuestionView(question: visualization)
+                if visualization.type == "debugging" {
+                    DebuggingQuestionView(question: visualization)
+                } else {
+                    VisualizationQuestionView(question: visualization)
+                }
             }
         }
+    }
+    
+    private func loadVisualization(for index: Int) {
+        guard let question = questions[safe: index] else { return }
+        visualization = VisualizationManager.shared.loadVisualization(for: question)
+    }
+}
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 

@@ -64,6 +64,7 @@
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="layoutType" optional="YES" attributeType="String"/>
         <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String" defaultValueString="visualization"/>
         <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="code" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VisualizationQuestionLineEntity" inverseName="question" inverseEntity="VisualizationQuestionLineEntity"/>
         <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="QuestionEntity" inverseName="visualization" inverseEntity="QuestionEntity"/>
@@ -78,6 +79,8 @@
     <entity name="VisualizationStepEntity" representedClassName="VisualizationStepEntity" syncable="YES" codeGenerationType="class">
         <attribute name="availableElements" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
         <attribute name="codeHighlightedLine" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="correctLines" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int]"/>
+        <attribute name="frameIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lineComment" optional="YES" attributeType="String"/>
         <attribute name="orderIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="userInputRequired" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>

@@ -120,6 +120,103 @@
                             }
                         ]
                     }
+                },
+                {
+                    "type": "debugging",
+                    "title": "Fix the Broken List",
+                    "description": "Find and fix the bug in this linked list implementation",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "func createList() {",
+                            "    let head = Node(5)",
+                            "    head.next = Node(3)",
+                            "    head.next = Node(7)  // Bug: overwrites previous next",
+                            "    // Should be: head.next.next = Node(7)",
+                            "}"
+                        ],
+                        "dataStructureType": "linkedList",
+                        "steps": [
+                            {
+                                "frameIndex": 1,
+                                "lineNumber": 1,
+                                "comment": "Let's see what happens with this code",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "", "label": "head" }
+                                ],
+                                "connections": []
+                            },
+                            {
+                                "frameIndex": 2,
+                                "lineNumber": 2,
+                                "comment": "First we create the head node",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "5", "label": "head" }
+                                ],
+                                "connections": []
+                            },
+                            {
+                                "frameIndex": 3,
+                                "lineNumber": 3,
+                                "comment": "Add node with value 3",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "5", "label": "head" },
+                                    { "value": "3" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "frameIndex": 4,
+                                "lineNumber": 4,
+                                "comment": "But here we overwrite the next pointer!",
+                                "userInputRequired": true,
+                                "availableElements": [],
+                                "correctLines": [4],
+                                "nodes": [
+                                    { "value": "5", "label": "head" },
+                                    { "value": "7" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "frameIndex": 5,
+                                "lineNumber": 4,
+                                "comment": "The node with value 3 is lost!",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "5", "label": "head" },
+                                    { "value": "7" },
+                                    { "value": "3", "style": "faded" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         }

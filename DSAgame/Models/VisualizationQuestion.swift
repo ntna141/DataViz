@@ -1,7 +1,7 @@
 import SwiftUI
 
 // Represents a single step in the visualization
-struct VisualizationStep {
+struct VisualizationStep: Identifiable {
     let id = UUID()
     let codeHighlightedLine: Int
     let lineComment: String?
@@ -9,10 +9,12 @@ struct VisualizationStep {
     var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
     var availableElements: [String] = []
+    var frameIndex: Int = 0  // For debugging mode: tracks animation sequence
+    var correctLines: [Int]? = nil  // For debugging mode: lines that need to be selected
 }
 
 // Represents a visualization question
-struct VisualizationQuestion {
+struct VisualizationQuestion: Identifiable {
     let id = UUID()
     let title: String
     let description: String
@@ -21,6 +23,7 @@ struct VisualizationQuestion {
     let initialCells: [any DataStructureCell]
     let initialConnections: [any DataStructureConnection]
     let layoutType: DataStructureLayoutType
+    let type: String  // "visualization" or "debugging"
 }
 
 // Main visualization question view
@@ -50,12 +53,16 @@ struct VisualizationQuestionView: View {
             Text(question.description).font(.body)
             
             // Code viewer
-            CodeViewer(lines: question.code.map { line in
-                var modifiedLine = line
-                modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
-                modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
-                return modifiedLine
-            })
+            CodeViewer(
+                lines: question.code.map { line in
+                    var modifiedLine = line
+                    modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
+                    modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
+                    return modifiedLine
+                },
+                selectedLines: Set<Int>(),  // No lines selected in visualization mode
+                onLineSelected: { _ in }    // No line selection in visualization mode
+            )
             .frame(maxHeight: 240)  // Increased by 20%
             .overlay(
                 VStack(spacing: 0) {
@@ -229,7 +236,8 @@ struct VisualizationQuestionExample: View {
         ],
         initialCells: [],
         initialConnections: [],
-        layoutType: .linkedList
+        layoutType: .linkedList,
+        type: "visualization"
     )
     
     var body: some View {
