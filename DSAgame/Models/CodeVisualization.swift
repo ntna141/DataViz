@@ -49,36 +49,73 @@ struct SyntaxParser {
         "enum", "protocol", "extension", "import", "init"
     ])
     
-    static let types = Set([
-        "Int", "String", "Double", "Bool", "Array", "Dictionary",
-        "Set", "Character", "Float", "Void"
-    ])
-    
     static func parse(_ line: String) -> [SyntaxToken] {
-        var tokens: [SyntaxToken] = []
-        let words = line.split(separator: " ")
+        guard !line.isEmpty else { return [] }
         
-        for word in words {
-            let cleanWord = word.trimmingCharacters(in: .punctuationCharacters)
-            
-            if keywords.contains(String(cleanWord)) {
-                tokens.append(SyntaxToken(text: String(word), type: .keyword))
-            } else if types.contains(String(cleanWord)) {
-                tokens.append(SyntaxToken(text: String(word), type: .type))
-            } else if cleanWord.hasPrefix("\"") && cleanWord.hasSuffix("\"") {
-                tokens.append(SyntaxToken(text: String(word), type: .string))
-            } else if Double(cleanWord) != nil {
-                tokens.append(SyntaxToken(text: String(word), type: .number))
-            } else if cleanWord.hasSuffix("()") {
-                tokens.append(SyntaxToken(text: String(word), type: .function))
-            } else if line.trimmingCharacters(in: .whitespaces).hasPrefix("//") {
-                tokens.append(SyntaxToken(text: String(word), type: .comment))
-            } else {
-                tokens.append(SyntaxToken(text: String(word), type: .plain))
-            }
+        // Handle comments first
+        if line.trimmingCharacters(in: .whitespaces).hasPrefix("//") {
+            return [SyntaxToken(text: line, type: .comment)]
         }
         
+        var tokens: [SyntaxToken] = []
+        var currentToken = ""
+        
+        func addToken(_ text: String) {
+            guard !text.isEmpty else { return }
+            let type: SyntaxToken.TokenType
+            
+            if keywords.contains(text) {
+                type = .keyword
+            } else if text.hasSuffix("()") {
+                type = .function
+            } else if text == ":" || text == "," || text == "(" || text == ")" || text == "{" || text == "}" {
+                type = .plain
+            } else if text == "Int" || text == "String" || text == "Node" {
+                type = .type
+            } else if text.allSatisfy({ $0.isWhitespace }) {
+                type = .plain
+            } else {
+                type = .variable
+            }
+            
+            tokens.append(SyntaxToken(text: text, type: type))
+        }
+        
+        // Process the line character by character
+        var index = line.startIndex
+        while index < line.endIndex {
+            let char = line[index]
+            
+            if char.isWhitespace {
+                // Add current token if any
+                addToken(currentToken)
+                currentToken = ""
+                // Add whitespace token
+                addToken(String(char))
+            } else if "():,{}".contains(char) {
+                // Add current token if any
+                addToken(currentToken)
+                currentToken = ""
+                // Add punctuation token
+                addToken(String(char))
+            } else {
+                currentToken.append(char)
+            }
+            
+            index = line.index(after: index)
+        }
+        
+        // Add any remaining token
+        addToken(currentToken)
+        
         return tokens
+    }
+}
+
+extension Character {
+    var isPunctuation: Bool {
+        // Add specific punctuation characters used in code
+        return [".", ":", "=", "?", "(", ")", "{", "}", "[", "]", ",", ";"].contains(self)
     }
 }
 
@@ -88,33 +125,44 @@ struct CodeLineView: View {
     let maxLineNumberWidth: CGFloat
     
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            // Line number
-            Text("\(line.number)")
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(.gray)
-                .frame(width: maxLineNumberWidth, alignment: .trailing)
-                .padding(.horizontal, 8)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                // Code content
-                HStack(spacing: 4) {
-                    ForEach(line.syntaxTokens) { token in
-                        Text(token.text)
-                            .foregroundColor(token.type.color)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .top, spacing: 0) {
+                // Line number
+                Text("\(line.number)")
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.gray)
+                    .frame(width: maxLineNumberWidth, alignment: .trailing)
+                    .padding(.horizontal, 4)
+                
+                // Code content with syntax highlighting
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 0) {
+                        if !line.syntaxTokens.isEmpty {
+                            ForEach(line.syntaxTokens) { token in
+                                Text(token.text)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(token.type.color)
+                                    .fixedSize(horizontal: true, vertical: false)  // Prevent text wrapping
+                            }
+                        } else {
+                            Text(line.content)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.primary)
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 2)
-                .background(line.isHighlighted ? Color.yellow.opacity(0.2) : Color.clear)
-                
-                // Inline comment
-                if let comment = line.sideComment {
-                    Text("// \(comment)")
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.gray)
-                        .padding(.leading, 16)
-                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 2)
+            .background(line.isHighlighted ? Color.yellow.opacity(0.2) : Color.clear)
+            
+            // Comment on separate line with indent
+            if let comment = line.sideComment {
+                Text("// \(comment)")
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.gray)
+                    .padding(.leading, maxLineNumberWidth + 12)
             }
         }
     }

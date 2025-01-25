@@ -63,7 +63,6 @@ struct DataStructureView: View {
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
     @State private var droppedElements: [String] = []
-    
     init(
         layoutType: DataStructureLayoutType,
         cells: [any DataStructureCell],
