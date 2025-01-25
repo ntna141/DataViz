@@ -55,12 +55,14 @@ struct DataStructureView: View {
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
+    @State private var currentCells: [any DataStructureCell] = []  // Track current state
     @State private var connectionStates: [(id: String, state: ConnectionDisplayState)] = []
     @State private var dragState: (element: String, location: CGPoint)?
     @State private var hoveredCellIndex: Int?
     @State private var renderCycle = UUID()
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
+    @State private var droppedElements: [String] = []
     
     init(
         layoutType: DataStructureLayoutType,
@@ -75,6 +77,7 @@ struct DataStructureView: View {
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
+        self._currentCells = State(initialValue: cells)  // Initialize current cells
     }
     
     var body: some View {
@@ -127,34 +130,39 @@ struct DataStructureView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
                     // Elements list with fixed height at the bottom
-                    if !availableElements.isEmpty {
-                        HStack(spacing: 15) {
-                            ForEach(availableElements, id: \.self) { element in
-                                if !layoutCells.contains(where: { $0.value == element }) {
-                                    DraggableElementView(
-                                        element: element,
-                                        isDragging: dragState?.element == element,
-                                        onDragStarted: { location in
-                                            let localLocation = geometry.frame(in: .global).convert(from: location)
-                                            dragState = (element: element, location: localLocation)
-                                        },
-                                        onDragChanged: { value in
-                                            handleDragChanged(value, in: geometry.frame(in: .global))
-                                        },
-                                        onDragEnded: handleDragEnded
-                                    )
-                                }
-                            }
+                    HStack(spacing: 15) {
+                        // Show available elements (both initialized and dropped)
+                        ForEach(availableElements + droppedElements, id: \.self) { element in
+                            DraggableElementView(
+                                element: element,
+                                isDragging: dragState?.element == element,
+                                onDragStarted: { location in
+                                    let localLocation = geometry.frame(in: .global).convert(from: location)
+                                    dragState = (element: element, location: localLocation)
+                                },
+                                onDragChanged: { value in
+                                    handleDragChanged(value, in: geometry.frame(in: .global))
+                                },
+                                onDragEnded: handleDragEnded
+                            )
                         }
-                        .padding(8)
-                        .background(
-                            Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
-                        )
-                        .cornerRadius(8)
-                        .frame(height: 50)  // Fixed height for elements
-                        .onHover { isHovered in
-                            isOverElementList = isHovered
+                        
+                        // Add a placeholder when empty
+                        if availableElements.isEmpty && droppedElements.isEmpty {
+                            Text("Drop here to remove")
+                                .foregroundColor(.gray)
+                                .opacity(isOverElementList ? 1.0 : 0.5)
+                                .animation(.easeInOut, value: isOverElementList)
                         }
+                    }
+                    .padding(8)
+                    .background(
+                        Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
+                    )
+                    .cornerRadius(8)
+                    .frame(height: 50)  // Fixed height for elements
+                    .onHover { isHovered in
+                        isOverElementList = isHovered
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -200,9 +208,16 @@ struct DataStructureView: View {
         // Update drag location
         dragState?.location = localLocation
         
+        // Debug prints for drag state
+        if let dragState = dragState {
+            print("Dragging element: \(dragState.element)")
+            print("Drag location: \(localLocation)")
+        }
+        
         // Check if we're over the element list area
         let elementListY = globalFrame.height - 50 // Height of element list area
         isOverElementList = localLocation.y >= elementListY
+        print("Is over element list: \(isOverElementList)")
         
         // Only look for cell targets if not over element list
         if !isOverElementList {
@@ -217,6 +232,7 @@ struct DataStructureView: View {
             if let closest = closestCell,
                distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
                 hoveredCellIndex = closest.offset
+                print("Hovering over cell \(closest.offset) with value: \(closest.element.value)")
             } else {
                 hoveredCellIndex = nil
             }
@@ -226,26 +242,98 @@ struct DataStructureView: View {
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
+        print("\n=== Drag Ended ===")
+        print("Drag state: \(String(describing: dragState))")
+        print("Dragging from cell index: \(String(describing: draggingFromCellIndex))")
+        print("Hovered cell index: \(String(describing: hoveredCellIndex))")
+        print("Is over element list: \(isOverElementList)")
+        print("Available elements: \(availableElements)")
+        print("Dropped elements: \(droppedElements)")
+        print("Layout cells: \(layoutCells.map { "\($0.value)" })")
+        
+        defer {
+            dragState = nil
+            hoveredCellIndex = nil
+            draggingFromCellIndex = nil
+            isOverElementList = false
+        }
+        
         if isOverElementList {
-            // If dragging from a cell, clear that cell
-            if let fromIndex = draggingFromCellIndex {
+            // If dragging from a cell, clear that cell and add to dropped elements
+            if let fromIndex = draggingFromCellIndex,
+               let element = dragState?.element,
+               !element.isEmpty {
+                print("Dropping element \(element) to element list from cell \(fromIndex)")
                 onElementDropped("", fromIndex)
+                // Update current cells
+                var updatedCells = currentCells
+                var cell = updatedCells[fromIndex]
+                cell.setValue("")
+                updatedCells[fromIndex] = cell
+                currentCells = updatedCells
+                // Only add to droppedElements if it wasn't in availableElements originally
+                if !availableElements.contains(element) {
+                    print("Adding \(element) to dropped elements")
+                    droppedElements.append(element)
+                }
+                
+                // Force layout update with current cells
+                let (newCells, newStates) = layoutManager.updateLayout(
+                    cells: currentCells,
+                    connections: connections,
+                    in: frame
+                )
+                layoutCells = newCells
+                connectionStates = newStates.enumerated().map { (index, state) in
+                    (id: "\(index)", state: state)
+                }
+                renderCycle = UUID()
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
+            print("Attempting to drop element \(element) into cell \(cellIndex)")
             // Only drop if the target cell is empty or if we're dragging from a different cell
             if layoutCells[cellIndex].value.isEmpty || cellIndex != draggingFromCellIndex {
                 // If dragging from a cell, clear that cell first
                 if let fromIndex = draggingFromCellIndex {
+                    print("Clearing source cell \(fromIndex)")
                     onElementDropped("", fromIndex)
+                    // Update current cells for source
+                    var updatedCells = currentCells
+                    var sourceCell = updatedCells[fromIndex]
+                    sourceCell.setValue("")
+                    updatedCells[fromIndex] = sourceCell
+                    currentCells = updatedCells
                 }
+                
+                print("Dropping \(element) into cell \(cellIndex)")
                 onElementDropped(element, cellIndex)
+                // Update current cells for target
+                var updatedCells = currentCells
+                var targetCell = updatedCells[cellIndex]
+                targetCell.setValue(element)
+                updatedCells[cellIndex] = targetCell
+                currentCells = updatedCells
+                
+                // Remove the element from droppedElements if it was there
+                if let index = droppedElements.firstIndex(of: element) {
+                    print("Removing \(element) from dropped elements")
+                    droppedElements.remove(at: index)
+                }
+                
+                // Force layout update with current cells
+                let (newCells, newStates) = layoutManager.updateLayout(
+                    cells: currentCells,
+                    connections: connections,
+                    in: frame
+                )
+                layoutCells = newCells
+                connectionStates = newStates.enumerated().map { (index, state) in
+                    (id: "\(index)", state: state)
+                }
+                renderCycle = UUID()
             }
         }
-        dragState = nil
-        hoveredCellIndex = nil
-        draggingFromCellIndex = nil
-        isOverElementList = false
     }
     
     private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
@@ -255,10 +343,10 @@ struct DataStructureView: View {
     private func updateLayout() {
         guard !frame.isEmpty else { return }
         print("Updating layout with frame: \(frame)")
-        print("Current cells: \(cells.map { $0.value })")
+        print("Current cells: \(currentCells.map { $0.value })")
         
         let (newCells, newStates) = layoutManager.updateLayout(
-            cells: cells,
+            cells: currentCells,
             connections: connections,
             in: frame
         )
