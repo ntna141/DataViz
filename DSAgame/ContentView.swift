@@ -12,8 +12,6 @@ struct ContentView: View {
                 Color.blue.opacity(0.1).ignoresSafeArea()
                 
                 VStack {
-                    Spacer()
-                    
                     Text("DSA Adventure")
                         .font(.system(size: 40, weight: .bold))
                         .foregroundColor(.blue)
@@ -33,8 +31,6 @@ struct ContentView: View {
                             .cornerRadius(30)
                             .shadow(radius: 5)
                     }
-                    
-                    Spacer()
                 }
             }
             .navigationBarHidden(true)
@@ -52,34 +48,36 @@ struct MapView: View {
     var body: some View {
         ScrollView {
             ZStack {
-                // Background - treasure map style
-                Color(red: 0.95, green: 0.9, blue: 0.8).ignoresSafeArea()
+                // Darker beige background
+                Color(red: 0.90, green: 0.87, blue: 0.82).ignoresSafeArea()
                 
-                // Path connecting levels
+                // Main vertical line
                 Path { path in
-                    // Start at first level
-                    path.move(to: CGPoint(x: 50, y: 100))
-                    
-                    // Create a winding path
-                    for i in 1...10 {
-                        let x = i % 2 == 0 ? CGFloat(300) : CGFloat(50)
-                        let y = CGFloat(i) * 150
-                        path.addLine(to: CGPoint(x: x, y: y))
-                    }
+                    path.move(to: CGPoint(x: 75, y: 0))  // Moved line more left
+                    path.addLine(to: CGPoint(x: 75, y: 1600))
                 }
-                .stroke(Color.brown, style: StrokeStyle(lineWidth: 4, dash: [10]))
+                .stroke(Color.black, lineWidth: 8)
                 
-                // Level markers
-                VStack(spacing: 50) {
+                // Horizontal markers at each level
+                VStack(spacing: 150) {
                     ForEach(Array(levels.prefix(10)), id: \.uuid) { level in
-                        LevelMarker(level: level)
-                            .offset(x: CGFloat(Int(level.number) % 2 == 0 ? 125 : -125))
+                        HStack(spacing: -20) { // Negative spacing to connect marker to line
+                            Rectangle()
+                                .fill(Color.brown)
+                                .frame(width: 50, height: 8)
+                            
+                            LevelMarker(level: level)
+                        }
                     }
                 }
-                .padding(.top, 100)
+                .offset(x: 75, y: 100) // Moved markers left and added top offset
             }
         }
-        .navigationTitle("Adventure Map")
+        .ignoresSafeArea(.all, edges: .top)
+        .background(Color(red: 0.90, green: 0.87, blue: 0.82))
+        .onAppear {
+    GameProgressionManager.shared.updateLevelLocks()
+}
     }
 }
 
@@ -90,13 +88,11 @@ struct LevelMarker: View {
     var body: some View {
         VStack {
             Button(action: {
-                if level.isUnlocked {
-                    showingDetail = true
-                }
+                showingDetail = true
             }) {
                 ZStack {
-                    Circle()
-                        .fill(level.isUnlocked ? Color.blue : Color.gray)
+                    Rectangle()
+                        .fill(level.isUnlocked ? Color(red: 0.2, green: 0.6, blue: 0.6) : Color.gray)
                         .frame(width: 60, height: 60)
                         .shadow(radius: 3)
                     
@@ -105,7 +101,6 @@ struct LevelMarker: View {
                         .font(.title2.bold())
                 }
             }
-            .disabled(!level.isUnlocked)
             
             Text(level.topic ?? "Topic")
                 .font(.caption)

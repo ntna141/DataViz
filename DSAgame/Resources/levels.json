@@ -350,6 +350,356 @@
                     }
                 }
             ]
+        },
+        {
+            "number": 2,
+            "topic": "Binary Trees",
+            "description": "Learn about binary trees and how they organize data hierarchically.",
+            "requiredStars": 3,
+            "questions": [
+                {
+                    "type": "visualization",
+                    "title": "Building a Binary Tree",
+                    "description": "Learn how to construct a basic binary tree by adding nodes as left and right children",
+                    "hint": "Each node in a binary tree can have up to two children: a left child and a right child.",
+                    "review": "Excellent! You've learned how to create a basic binary tree structure. Remember that each node can have at most two children.",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "class TreeNode {",
+                            "    var value: Int",
+                            "    var left: TreeNode?",
+                            "    var right: TreeNode?",
+                            "}",
+                            "",
+                            "func createTree() {",
+                            "    let root = TreeNode(10)",
+                            "    root.left = TreeNode(5)",
+                            "    root.right = TreeNode(15)",
+                            "}"
+                        ],
+                        "dataStructureType": "binaryTree",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "First, we define our TreeNode class",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "", "label": "root" }
+                                ],
+                                "connections": []
+                            },
+                            {
+                                "lineNumber": 8,
+                                "comment": "Create the root node with value 10",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "10", "label": "root" }
+                                ],
+                                "connections": []
+                            },
+                            {
+                                "lineNumber": 9,
+                                "comment": "Add the left child with value 5",
+                                "userInputRequired": true,
+                                "availableElements": ["5"],
+                                "nodes": [
+                                    { "value": "10", "label": "root" },
+                                    { "value": "" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 10,
+                                "comment": "Add the right child with value 15",
+                                "userInputRequired": true,
+                                "availableElements": ["15"],
+                                "nodes": [
+                                    { "value": "10", "label": "root" },
+                                    { "value": "5" },
+                                    { "value": "" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Inserting into a Binary Search Tree",
+                    "description": "Learn how to insert a new node into a binary search tree while maintaining the ordering property",
+                    "hint": "In a binary search tree, values less than a node go to the left, greater values go to the right.",
+                    "review": "Great job! You've learned how to maintain the binary search tree property when inserting new nodes.",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "func insert(_ value: Int, into node: TreeNode) {",
+                            "    if value < node.value {",
+                            "        if node.left == nil {",
+                            "            node.left = TreeNode(value)",
+                            "        }",
+                            "    } else {",
+                            "        if node.right == nil {",
+                            "            node.right = TreeNode(value)",
+                            "        }",
+                            "    }"
+                        ],
+                        "dataStructureType": "binaryTree",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "Start with an existing binary search tree",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "10", "label": "root" },
+                                    { "value": "5" },
+                                    { "value": "15" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Inserting 7: Compare with root (10). Since 7 < 10, go left",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "10", "label": "root", "isHighlighted": true },
+                                    { "value": "5" },
+                                    { "value": "15" },
+                                    { "value": "7" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "7 > 5, so it becomes the right child of 5",
+                                "userInputRequired": true,
+                                "availableElements": ["7"],
+                                "nodes": [
+                                    { "value": "10", "label": "root" },
+                                    { "value": "5", "isHighlighted": true },
+                                    { "value": "15" },
+                                    { "value": "" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "curved",
+                                        "label": "right",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Tree Traversal",
+                    "description": "Learn how to traverse a binary tree in-order",
+                    "hint": "In-order traversal visits the left subtree, then the current node, then the right subtree.",
+                    "review": "Excellent! You've learned how to perform an in-order traversal of a binary tree.",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "func inorderTraversal(_ node: TreeNode) {",
+                            "    if let left = node.left {",
+                            "        inorderTraversal(left)",
+                            "    }",
+                            "    print(node.value)",
+                            "    if let right = node.right {",
+                            "        inorderTraversal(right)",
+                            "    }",
+                            "}"
+                        ],
+                        "dataStructureType": "binaryTree",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "Start with a binary tree",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "8", "label": "root" },
+                                    { "value": "4" },
+                                    { "value": "12" },
+                                    { "value": "2" },
+                                    { "value": "6" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Visit the leftmost path first",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    { "value": "8", "label": "root" },
+                                    { "value": "4" },
+                                    { "value": "12" },
+                                    { "value": "2", "isHighlighted": true },
+                                    { "value": "6" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "curved",
+                                        "label": "left",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Process nodes in-order: 2, 4, 6, 8, 12",
+                                "userInputRequired": true,
+                                "availableElements": ["2", "4", "6", "8", "12"],
+                                "nodes": [
+                                    { "value": "8", "label": "root" },
+                                    { "value": "4" },
+                                    { "value": "12" },
+                                    { "value": "2" },
+                                    { "value": "6" }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "curved",
+                                        "label": "right"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "curved",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "curved",
+                                        "label": "right"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
         }
     ]
 } 

@@ -154,11 +154,11 @@ struct CellView: View {
     
     var body: some View {
         ZStack {
-            // Cell background with glow
-            Circle()
+            // Changed from Circle() to Rectangle()
+            Rectangle()
                 .fill(state.style.fillColor)
                 .overlay(
-                    Circle()
+                    Rectangle()
                         .stroke(
                             state.style.strokeColor,
                             style: StrokeStyle(
@@ -172,6 +172,7 @@ struct CellView: View {
                     radius: state.style.glowRadius
                 )
                 .frame(width: size, height: size)
+                .cornerRadius(size * 0.1) // Add slight rounding for aesthetics
             
             // Cell value or placeholder
             if !state.value.isEmpty {

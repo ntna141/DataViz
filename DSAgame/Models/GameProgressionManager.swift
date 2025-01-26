@@ -62,8 +62,7 @@ class GameProgressionManager {
                     let level = LevelEntity(context: context)
                     level.uuid = UUID()
                     level.number = Int32(levelSpec.number)
-                    level.isUnlocked = levelSpec.number == 1
-                    level.requiredStars = Int32(levelSpec.requiredStars)
+                    level.isUnlocked = true  // All levels start unlocked
                     level.topic = levelSpec.topic
                     level.desc = levelSpec.description
                     
@@ -220,14 +219,108 @@ class GameProgressionManager {
         }
     }
     
+    func isLevelCompleted(_ number: Int) -> Bool {
+        guard let level = getLevel(number) else {
+            print("Level \(number) not found")
+            return false
+        }
+        guard let questions = level.questions?.allObjects as? [QuestionEntity] else {
+            print("No questions found for level \(number)")
+            return false
+        }
+        
+        let completed = !questions.isEmpty && questions.allSatisfy { $0.isCompleted }
+        print("Level \(number) completion status: \(completed)")
+        print("Questions completed: \(questions.filter { $0.isCompleted }.count)/\(questions.count)")
+        questions.forEach { question in
+            print("  - Question '\(question.title ?? "Untitled")': \(question.isCompleted ? "Completed" : "Incomplete")")
+            print("    Stars: \(question.stars), Attempts: \(question.attempts)")
+        }
+        return completed
+    }
+    
     func unlockLevel(_ number: Int) {
-        guard let level = getLevel(number) else { return }
+        // For level 2 and above, check if previous level is completed
+        if number > 1 {
+            print("Checking completion status of level \(number - 1) before unlocking level \(number)")
+            if !isLevelCompleted(number - 1) {
+                print("Cannot unlock level \(number): Previous level not completed")
+                return
+            }
+        }
+        
+        guard let level = getLevel(number) else {
+            print("Failed to unlock level \(number): Level not found")
+            return
+        }
         level.isUnlocked = true
+        print("Level \(number) unlocked successfully")
         
         do {
             try context.save()
         } catch {
             print("Error unlocking level: \(error)")
+        }
+    }
+    
+    func markQuestionCompleted(_ questionId: UUID) {
+        let fetchRequest: NSFetchRequest<QuestionEntity> = QuestionEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", questionId as CVarArg)
+        
+        do {
+            if let question = try context.fetch(fetchRequest).first {
+                question.isCompleted = true
+                question.stars = 3  // Or however many stars you want to award
+                try context.save()
+                print("Question \(question.title ?? "") marked as completed")
+                
+                // Check if this completes the level
+                if let level = question.level {
+                    print("Checking if level \(level.number) is now completed")
+                    if isLevelCompleted(Int(level.number)) {
+                        // If the level is completed, unlock the next level
+                        let nextLevelNumber = Int(level.number) + 1
+                        print("Level \(level.number) completed, unlocking level \(nextLevelNumber)")
+                        unlockLevel(nextLevelNumber)
+                    }
+                }
+            }
+        } catch {
+            print("Error marking question as completed: \(error)")
+        }
+    }
+    
+    func updateLevelLocks() {
+        let fetchRequest: NSFetchRequest<LevelEntity> = LevelEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \LevelEntity.number, ascending: true)]
+        
+        do {
+            let levels = try context.fetch(fetchRequest)
+            print("Checking level locks...")
+            
+            for level in levels {
+                let levelNumber = Int(level.number)
+                if levelNumber == 1 {
+                    // First level is always unlocked
+                    level.isUnlocked = true
+                    print("Level 1 is always unlocked")
+                } else {
+                    // Check if previous level is completed
+                    let previousLevelCompleted = isLevelCompleted(levelNumber - 1)
+                    print("Level \(levelNumber) previous level completed: \(previousLevelCompleted)")
+                    level.isUnlocked = previousLevelCompleted
+                }
+            }
+            
+            try context.save()
+            print("Level locks updated")
+            
+            // Print current lock status
+            for level in levels {
+                print("Level \(level.number) unlock status: \(level.isUnlocked)")
+            }
+        } catch {
+            print("Error updating level locks: \(error)")
         }
     }
 } 
