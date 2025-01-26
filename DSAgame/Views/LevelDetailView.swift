@@ -104,9 +104,6 @@ struct LevelDetailView: View {
             if let questions = level.questions?.allObjects as? [QuestionEntity] {
                 visualizationQuestions = questions.filter { $0.type == "visualization" }
                 loadCurrentQuestion()
-                if visualization != nil {
-                    showingVisualization = true
-                }
             }
         }
         .fullScreenCover(isPresented: $showingVisualization) {
