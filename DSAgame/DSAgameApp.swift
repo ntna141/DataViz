@@ -14,5 +14,7 @@ struct DSAgameApp: App {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
+        .windowResizability(.contentSize)
+        .defaultSize(width: 1024, height: 768)  // Typical landscape size
     }
 }

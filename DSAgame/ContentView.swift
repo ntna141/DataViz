@@ -11,30 +11,37 @@ struct ContentView: View {
                 // Background color
                 Color.blue.opacity(0.1).ignoresSafeArea()
                 
-                VStack {
-                    Text("DSA Adventure")
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundColor(.blue)
-                        .padding()
-                    
-                    Text("Master Data Structures & Algorithms")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                        .padding(.bottom, 50)
-                    
-                    NavigationLink(destination: MapView(), isActive: $isShowingMap) {
-                        Text("Start Adventure")
-                            .font(.title)
-                            .foregroundColor(.white)
-                            .frame(width: 250, height: 60)
-                            .background(Color.blue)
-                            .cornerRadius(30)
-                            .shadow(radius: 5)
+                HStack {  // Changed from VStack to HStack for better landscape layout
+                    VStack {
+                        Text("DSA Adventure")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.blue)
+                            .padding()
+                        
+                        Text("Master Data Structures & Algorithms")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                            .padding(.bottom, 50)
+                        
+                        NavigationLink(destination: MapView(), isActive: $isShowingMap) {
+                            Text("Start Adventure")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .frame(width: 250, height: 60)
+                                .background(Color.blue)
+                                .cornerRadius(30)
+                                .shadow(radius: 5)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Optional: Add additional content for the right side of the screen
+                    Spacer()
                 }
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)  // Added to prevent split view in landscape
     }
 }
 

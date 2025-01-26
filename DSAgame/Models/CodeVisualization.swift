@@ -132,7 +132,7 @@ struct CodeLineView: View {
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
                     .frame(width: maxLineNumberWidth, alignment: .trailing)
-                    .padding(.horizontal, 4)
+                    .padding(.trailing, 8)
                 
                 // Code content with syntax highlighting
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -162,7 +162,7 @@ struct CodeLineView: View {
                 Text("// \(comment)")
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
-                    .padding(.leading, maxLineNumberWidth + 12)
+                    .padding(.leading, maxLineNumberWidth + 8)
             }
         }
     }
@@ -185,7 +185,8 @@ struct CodeViewer: View {
                     CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
                 }
             }
-            .padding()
+            .padding(.leading, 15)
+            .padding(.vertical, 8)
             .background(Color(.systemBackground))
             .cornerRadius(8)
         }

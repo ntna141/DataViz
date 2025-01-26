@@ -81,87 +81,49 @@ struct DataStructureView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isHorizontal = geometry.size.width > geometry.size.height
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Data structure area at the top
-                    ZStack {
-                        // Draw connections first
-                        ForEach(connectionStates, id: \.id) { connection in
-                            ConnectionView(state: connection.state)
-                        }
-                        
-                        // Draw cells on top
-                        ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
-                            let isHovered = hoveredCellIndex == index
-                            let displayState = CellDisplayState(
-                                value: cell.displayState.value,
-                                isHighlighted: cell.displayState.isHighlighted,
-                                isHovered: isHovered,
-                                label: cell.displayState.label,
-                                position: cell.position,
-                                style: isHovered ? .hovered : cell.displayState.style
-                            )
-                            CellView(
-                                state: displayState,
-                                size: LayoutConfig.cellDiameter
-                            )
-                            .id("\(cell.id)-\(renderCycle)")
-                            .position(cell.position)
-                            .gesture(
-                                // Allow dragging from non-empty cells
-                                DragGesture(coordinateSpace: .global)
-                                    .onChanged { value in
-                                        if !cell.value.isEmpty && dragState == nil {
-                                            draggingFromCellIndex = index
-                                            let localLocation = geometry.frame(in: .global).convert(from: value.location)
-                                            dragState = (element: cell.value, location: localLocation)
-                                        }
-                                        if dragState != nil {
-                                            handleDragChanged(value, in: geometry.frame(in: .global))
-                                        }
-                                    }
-                                    .onEnded { value in
-                                        handleDragEnded(value)
-                                    }
-                            )
-                        }
+                // Data structure area
+                ZStack {
+                    // Draw connections first
+                    ForEach(connectionStates, id: \.id) { connection in
+                        ConnectionView(state: connection.state)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    // Elements list with fixed height at the bottom
-                    HStack(spacing: 15) {
-                        // Show available elements (both initialized and dropped)
-                        ForEach(availableElements + droppedElements, id: \.self) { element in
-                            DraggableElementView(
-                                element: element,
-                                isDragging: dragState?.element == element,
-                                onDragStarted: { location in
-                                    let localLocation = geometry.frame(in: .global).convert(from: location)
-                                    dragState = (element: element, location: localLocation)
-                                },
-                                onDragChanged: { value in
-                                    handleDragChanged(value, in: geometry.frame(in: .global))
-                                },
-                                onDragEnded: handleDragEnded
-                            )
-                        }
-                        
-                        // Add a placeholder when empty
-                        if availableElements.isEmpty && droppedElements.isEmpty {
-                            Text("Drop here to remove")
-                                .foregroundColor(.gray)
-                                .opacity(isOverElementList ? 1.0 : 0.5)
-                                .animation(.easeInOut, value: isOverElementList)
-                        }
-                    }
-                    .padding(8)
-                    .background(
-                        Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
-                    )
-                    .cornerRadius(8)
-                    .frame(height: 50)  // Fixed height for elements
-                    .onHover { isHovered in
-                        isOverElementList = isHovered
+                    // Draw cells on top
+                    ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
+                        let isHovered = hoveredCellIndex == index
+                        let displayState = CellDisplayState(
+                            value: cell.displayState.value,
+                            isHighlighted: cell.displayState.isHighlighted,
+                            isHovered: isHovered,
+                            label: cell.displayState.label,
+                            position: cell.position,
+                            style: isHovered ? .hovered : cell.displayState.style
+                        )
+                        CellView(
+                            state: displayState,
+                            size: LayoutConfig.cellDiameter
+                        )
+                        .id("\(cell.id)-\(renderCycle)")
+                        .position(cell.position)
+                        .gesture(
+                            DragGesture(coordinateSpace: .global)
+                                .onChanged { value in
+                                    if !cell.value.isEmpty && dragState == nil {
+                                        draggingFromCellIndex = index
+                                        let localLocation = geometry.frame(in: .global).convert(from: value.location)
+                                        dragState = (element: cell.value, location: localLocation)
+                                    }
+                                    if dragState != nil {
+                                        handleDragChanged(value, in: geometry.frame(in: .global))
+                                    }
+                                }
+                                .onEnded { value in
+                                    handleDragEnded(value)
+                                }
+                        )
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -178,6 +140,41 @@ struct DataStructureView: View {
                         onDragEnded: handleDragEnded
                     )
                     .position(dragState.location)
+                }
+                
+                // Elements list at the bottom
+                VStack {
+                    Spacer()
+                    HStack(spacing: 15) {
+                        ForEach(availableElements + droppedElements, id: \.self) { element in
+                            DraggableElementView(
+                                element: element,
+                                isDragging: dragState?.element == element,
+                                onDragStarted: { location in
+                                    let localLocation = geometry.frame(in: .global).convert(from: location)
+                                    dragState = (element: element, location: localLocation)
+                                },
+                                onDragChanged: { value in
+                                    handleDragChanged(value, in: geometry.frame(in: .global))
+                                },
+                                onDragEnded: handleDragEnded
+                            )
+                        }
+                        
+                        if availableElements.isEmpty && droppedElements.isEmpty {
+                            Text("Drop here to remove")
+                                .foregroundColor(.gray)
+                                .opacity(isOverElementList ? 1.0 : 0.5)
+                                .animation(.easeInOut, value: isOverElementList)
+                        }
+                    }
+                    .padding(8)
+                    .background(Color.gray.opacity(isOverElementList ? 0.2 : 0.1))
+                    .cornerRadius(8)
+                    .frame(height: 50)
+                    .onHover { isHovered in
+                        isOverElementList = isHovered
+                    }
                 }
             }
             .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: geometry.size))
@@ -203,20 +200,17 @@ struct DataStructureView: View {
     
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
         let localLocation = globalFrame.convert(from: value.location)
-        
-        // Update drag location
         dragState?.location = localLocation
+        
+        // Update element list detection for bottom area only
+        let elementListY = globalFrame.height - 50 // Height of element list area
+        isOverElementList = localLocation.y >= elementListY
         
         // Debug prints for drag state
         if let dragState = dragState {
             print("Dragging element: \(dragState.element)")
             print("Drag location: \(localLocation)")
         }
-        
-        // Check if we're over the element list area
-        let elementListY = globalFrame.height - 50 // Height of element list area
-        isOverElementList = localLocation.y >= elementListY
-        print("Is over element list: \(isOverElementList)")
         
         // Only look for cell targets if not over element list
         if !isOverElementList {

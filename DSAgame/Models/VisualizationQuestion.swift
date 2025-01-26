@@ -50,94 +50,112 @@ struct VisualizationQuestionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 10) {
-            // Header with close and hint buttons
-            HStack {
-                Button(action: {
-                    showingHint = true
-                }) {
-                    Image(systemName: "questionmark.circle")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+        ZStack {
+            HStack(spacing: 0) {
+                // Left half - Code viewer
+                VStack(spacing: 8) {
+                    // Header with close and hint buttons
+                    HStack {
+                        Button(action: {
+                            showingHint = true
+                        }) {
+                            Image(systemName: "questionmark.circle")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.leading, 20)
+                    
+                    // Title and description
+                    Text(question.title)
+                        .font(.title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 20)
+                    Text(question.description)
+                        .font(.body)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 20)
+                    
+                    // Code viewer
+                    CodeViewer(lines: question.code.map { line in
+                        var modifiedLine = line
+                        modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
+                        modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
+                        return modifiedLine
+                    })
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.leading, 20)
                 }
-                
-                Spacer()
-                
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.gray)
-                }
-            }
-            .padding(.horizontal)
-            
-            // Title and description
-            Text(question.title).font(.title)
-            Text(question.description).font(.body)
-            
-            // Code viewer
-            CodeViewer(lines: question.code.map { line in
-                var modifiedLine = line
-                modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
-                modifiedLine.sideComment = line.number == currentStep.codeHighlightedLine ? currentStep.lineComment : nil
-                return modifiedLine
-            })
-            .frame(maxHeight: 240)  // Increased by 20%
-            .overlay(
-                VStack(spacing: 0) {
+                .frame(maxWidth: .infinity)
+                .overlay(
                     Rectangle()
-                        .frame(height: 0.5)
-                        .foregroundColor(.gray.opacity(0.3))
+                        .frame(width: 0.5)
+                        .foregroundColor(.gray.opacity(0.3)),
+                    alignment: .trailing
+                )
+                .ignoresSafeArea(.container, edges: .leading)
+                
+                // Right half - Data structure view
+                DataStructureView(
+                    layoutType: question.layoutType,
+                    cells: currentStep.cells,
+                    connections: currentStep.connections,
+                    availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
+                    onElementDropped: { value, index in
+                        if currentStep.userInputRequired {
+                            setValue(value, forCellAtIndex: index)
+                        }
+                    }
+                )
+                .id(visualizationKey)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            
+            // Navigation buttons at the bottom
+            VStack {
+                Spacer()
+                HStack {
                     Spacer()
-                    Rectangle()
-                        .frame(height: 0.5)
-                        .foregroundColor(.gray.opacity(0.3))
-                }
-            )
-            
-            // Data structure view with key for complete re-render
-            DataStructureView(
-                layoutType: question.layoutType,
-                cells: currentStep.cells,
-                connections: currentStep.connections,
-                availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
-                onElementDropped: { value, index in
-                    if currentStep.userInputRequired {
-                        setValue(value, forCellAtIndex: index)
+                    
+                    Button("Previous") {
+                        if currentStepIndex > 0 {
+                            let prevIndex = currentStepIndex - 1
+                            currentStepIndex = prevIndex
+                            currentStep = question.steps[prevIndex]
+                            visualizationKey = UUID()
+                        }
                     }
-                }
-            )
-            .id(visualizationKey)
-            .frame(maxHeight: .infinity)  // Take up remaining space
-            
-            Spacer()  // Flexible space to push buttons to bottom
-            
-            // Navigation
-            HStack {
-                Button("Previous") {
-                    if currentStepIndex > 0 {
-                        let prevIndex = currentStepIndex - 1
-                        currentStepIndex = prevIndex
-                        currentStep = question.steps[prevIndex]
-                        visualizationKey = UUID()
+                    .disabled(currentStepIndex == 0)
+                    .buttonStyle(.plain)
+                    .foregroundColor(.blue)
+                    .padding(.leading, 120)
+                    
+                    Spacer()
+                    
+                    Button(isLastStep ? "Complete" : "Next") {
+                        if isLastStep {
+                            onComplete()
+                        } else {
+                            moveToNextStep()
+                        }
                     }
+                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                    .buttonStyle(.plain)
+                    .foregroundColor(.blue)
                 }
-                .disabled(currentStepIndex == 0)
-                
-                Spacer()
-                
-                Button(isLastStep ? "Complete" : "Next") {
-                    if isLastStep {
-                        onComplete()
-                    } else {
-                        moveToNextStep()
-                    }
-                }
-                .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                .padding()
             }
-            .padding()
         }
         .alert("Need a hint?", isPresented: $showingHint) {
             Button("Got it") {
