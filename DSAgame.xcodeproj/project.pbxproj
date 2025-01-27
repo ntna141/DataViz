@@ -23,6 +23,7 @@
 		B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CDD917C12E442A0B0A48BD6D /* DSAGame.xcdatamodeld */; };
 		CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE96D5797E5855965CDE5D /* LevelDetailView.swift */; };
 		CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */; };
+		EC55AF8413D5D24A7D525421 /* CellSizeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC26B7A69052108C43D6970 /* CellSizeEnvironment.swift */; };
 		FEC6D4C7E70E7023F889FB25 /* DSAgameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CB2842E3F8DFDFE09C29AE /* DSAgameApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureCell.swift; sourceTree = "<group>"; };
 		777EBBAD80A3D3B0EFFF97DF /* DataStructureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureView.swift; sourceTree = "<group>"; };
 		784243AA1B71FCA929412DF5 /* DSAgame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSAgame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DC26B7A69052108C43D6970 /* CellSizeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellSizeEnvironment.swift; sourceTree = "<group>"; };
 		9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B4705BC152C2EE6DBB054CFF /* LevelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelData.swift; sourceTree = "<group>"; };
 		C2146F0980C7057C3F6A9D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 		EEABAD2EDCEAAB47D9B6FA33 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7DC26B7A69052108C43D6970 /* CellSizeEnvironment.swift */,
 				F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */,
 				6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */,
 				04A1B432733E5A6F722AEC38 /* DataStructureConnection.swift */,
@@ -187,6 +190,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC55AF8413D5D24A7D525421 /* CellSizeEnvironment.swift in Sources */,
 				CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */,
 				8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */,
 				B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */,

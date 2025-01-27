@@ -3,7 +3,7 @@ import SwiftUI
 // Protocol for layout strategies
 protocol DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell]
-    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection]) -> [ConnectionDisplayState]
+    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState]
 }
 
 // Layout configuration
@@ -11,6 +11,7 @@ struct LayoutConfig {
     static let cellRadius: CGFloat = 24
     static let horizontalSpacing: CGFloat = 30
     static let verticalSpacing: CGFloat = 30
+    static let elementListHeight: CGFloat = 100 // Height reserved for element list
     
     static var cellDiameter: CGFloat { cellRadius * 2 }
 }
@@ -25,8 +26,9 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                         CGFloat(cells.count - 1) * LayoutConfig.horizontalSpacing
         
         // Calculate starting position to center the list
+        // Adjust vertical position to account for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = frame.height / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
         
         // Create a copy of cells that we can modify
         var orderedCells = cells
@@ -38,7 +40,6 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
             orderedCells.insert(headCell, at: 0)
         }
         
-        // Set positions
         return orderedCells.enumerated().map { index, cell in
             var mutableCell = cell
             mutableCell.position = CGPoint(
@@ -49,50 +50,35 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
         }
     }
     
-    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection]) -> [ConnectionDisplayState] {
-        connections.compactMap { connection in
+    func updateConnectionPoints(
+        cells: [any DataStructureCell],
+        connections: [any DataStructureConnection],
+        scale: CGFloat
+    ) -> [ConnectionDisplayState] {
+        connections.map { connection in
             guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
-                  let toCell = cells.first(where: { $0.id == connection.toCellId }) else {
-                return nil
+                  let toCell = cells.first(where: { $0.id == connection.toCellId })
+            else {
+                return ConnectionDisplayState(
+                    fromPoint: .zero,
+                    toPoint: .zero,
+                    label: connection.label,
+                    isHighlighted: connection.isHighlighted,
+                    style: connection.style,
+                    visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                    scale: scale
+                )
             }
             
-            // Calculate edge points
-            let angle = atan2(toCell.position.y - fromCell.position.y,
-                            toCell.position.x - fromCell.position.x)
-            
-            // Calculate points on the edge of the circles
-            let fromPoint = CGPoint(
-                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
-                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+            return ConnectionDisplayState(
+                fromPoint: fromCell.position,
+                toPoint: toCell.position,
+                label: connection.label,
+                isHighlighted: connection.isHighlighted,
+                style: connection.style,
+                visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                scale: scale
             )
-            
-            let toPoint = CGPoint(
-                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
-                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
-            )
-            
-            // Create display state with edge points
-            var displayState = (connection as? BasicConnection)?.displayState ?? 
-                             ConnectionDisplayState(
-                                fromPoint: fromPoint,
-                                toPoint: toPoint,
-                                label: connection.label,
-                                isHighlighted: connection.isHighlighted,
-                                style: connection.style,
-                                visualStyle: connection.isHighlighted ? .highlighted : .standard
-                             )
-            
-            // Update points to edge positions
-            displayState = ConnectionDisplayState(
-                fromPoint: fromPoint,
-                toPoint: toPoint,
-                label: displayState.label,
-                isHighlighted: displayState.isHighlighted,
-                style: displayState.style,
-                visualStyle: displayState.visualStyle
-            )
-            
-            return displayState
         }
     }
 }
@@ -102,9 +88,16 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
+        // Calculate tree dimensions
         let levels = Int(log2(Double(cells.count))) + 1
+        let maxNodesInBottomLevel = pow(2.0, Double(levels - 1))
+        let totalWidth = maxNodesInBottomLevel * Double(LayoutConfig.cellDiameter) + 
+                        (maxNodesInBottomLevel - 1) * Double(LayoutConfig.horizontalSpacing)
         let totalHeight = CGFloat(levels - 1) * (LayoutConfig.cellDiameter + LayoutConfig.verticalSpacing)
-        let startY = (frame.height - totalHeight) / 2 + LayoutConfig.cellRadius
+        
+        // Center the tree both horizontally and vertically
+        // Account for element list in vertical centering
+        let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + LayoutConfig.cellRadius
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -126,7 +119,7 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
         }
     }
     
-    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection]) -> [ConnectionDisplayState] {
+    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
         // Similar to linked list but with curved connections
         connections.compactMap { connection in
             guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
@@ -156,7 +149,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
                                 style: .curved, // Use curved style for tree connections
-                                visualStyle: connection.isHighlighted ? .highlighted : .standard
+                                visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                                scale: scale
                              )
             
             displayState = ConnectionDisplayState(
@@ -165,7 +159,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                 label: displayState.label,
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
-                visualStyle: displayState.visualStyle
+                visualStyle: displayState.visualStyle,
+                scale: scale
             )
             
             return displayState
@@ -178,10 +173,13 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
+        // Calculate total width needed
         let totalWidth = CGFloat(cells.count) * LayoutConfig.cellDiameter + 
                         CGFloat(cells.count - 1) * LayoutConfig.horizontalSpacing
+        
+        // Center horizontally and vertically, accounting for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = frame.height / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -193,7 +191,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
         }
     }
     
-    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection]) -> [ConnectionDisplayState] {
+    func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
         // Arrays typically don't have connections, but implement for completeness
         connections.compactMap { connection in
             guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
@@ -223,7 +221,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
                                 style: connection.style,
-                                visualStyle: connection.isHighlighted ? .highlighted : .standard
+                                visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                                scale: scale
                              )
             
             displayState = ConnectionDisplayState(
@@ -232,7 +231,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 label: displayState.label,
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
-                visualStyle: displayState.visualStyle
+                visualStyle: displayState.visualStyle,
+                scale: scale
             )
             
             return displayState
@@ -248,7 +248,12 @@ class DataStructureLayoutManager {
         self.layoutStrategy = Self.createStrategy(for: layoutType)
     }
     
-    func updateLayout(cells: [any DataStructureCell], connections: [any DataStructureConnection], in frame: CGRect) -> (cells: [any DataStructureCell], connectionStates: [ConnectionDisplayState]) {
+    func updateLayout(
+        cells: [any DataStructureCell],
+        connections: [any DataStructureConnection],
+        in frame: CGRect,
+        scale: CGFloat
+    ) -> ([any DataStructureCell], [ConnectionDisplayState]) {
         print("\nLayout manager updating with frame: \(frame)")
         print("Input cells: \(cells.map { $0.value })")
         
@@ -261,7 +266,11 @@ class DataStructureLayoutManager {
         let layoutCells = layoutStrategy.calculateLayout(cells: cells, in: frame)
         print("Calculated positions for cells: \(layoutCells.map { "\($0.value)@\($0.position)" })")
         
-        let connectionStates = layoutStrategy.updateConnectionPoints(cells: layoutCells, connections: connections)
+        let connectionStates = layoutStrategy.updateConnectionPoints(
+            cells: layoutCells,
+            connections: connections,
+            scale: scale
+        )
         print("Updated \(connectionStates.count) connections")
         
         return (layoutCells, connectionStates)

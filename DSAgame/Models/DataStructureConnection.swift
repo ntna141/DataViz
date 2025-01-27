@@ -34,23 +34,28 @@ struct ConnectionDisplayState {
     let isHighlighted: Bool
     let style: ConnectionStyle
     let visualStyle: ConnectionVisualStyle
+    let scale: CGFloat
     
     struct ConnectionVisualStyle {
         let strokeColor: Color
         let strokeWidth: CGFloat
         let isDashed: Bool
         
-        static let standard = ConnectionVisualStyle(
-            strokeColor: .blue,
-            strokeWidth: 2,
-            isDashed: false
-        )
+        static func standard(scale: CGFloat) -> ConnectionVisualStyle {
+            ConnectionVisualStyle(
+                strokeColor: .blue,
+                strokeWidth: 2 * scale,
+                isDashed: false
+            )
+        }
         
-        static let highlighted = ConnectionVisualStyle(
-            strokeColor: .yellow,
-            strokeWidth: 3,
-            isDashed: false
-        )
+        static func highlighted(scale: CGFloat) -> ConnectionVisualStyle {
+            ConnectionVisualStyle(
+                strokeColor: .yellow,
+                strokeWidth: 3 * scale,
+                isDashed: false
+            )
+        }
     }
 }
 
@@ -107,7 +112,8 @@ struct BasicConnection: DataStructureConnection {
             label: label,
             isHighlighted: isHighlighted,
             style: style,
-            visualStyle: isHighlighted ? .highlighted : .standard
+            visualStyle: isHighlighted ? .highlighted(scale: 1) : .standard(scale: 1),
+            scale: 1
         )
     }
 }
@@ -117,11 +123,12 @@ struct ConnectionView: View {
     let state: ConnectionDisplayState
     
     var body: some View {
+        let adjustedPoints = calculateEdgePoints()
         ZStack {
             // Connection line
             switch state.style {
             case .straight:
-                StraightConnectionShape(from: state.fromPoint, to: state.toPoint)
+                StraightConnectionShape(from: adjustedPoints.from, to: adjustedPoints.to)
                     .stroke(
                         state.visualStyle.strokeColor,
                         style: StrokeStyle(
@@ -131,7 +138,7 @@ struct ConnectionView: View {
                     )
                 
             case .curved:
-                CurvedConnectionShape(from: state.fromPoint, to: state.toPoint)
+                CurvedConnectionShape(from: adjustedPoints.from, to: adjustedPoints.to)
                     .stroke(
                         state.visualStyle.strokeColor,
                         style: StrokeStyle(
@@ -151,9 +158,13 @@ struct ConnectionView: View {
                     )
             }
             
-            // Arrow head
+            // Arrow head with scaling
             if state.style != .selfPointing {
-                ArrowHead(from: state.fromPoint, to: state.toPoint)
+                ArrowHead(
+                    from: adjustedPoints.from,
+                    to: adjustedPoints.to,
+                    scale: state.scale
+                )
                     .fill(state.visualStyle.strokeColor)
             }
             
@@ -165,14 +176,32 @@ struct ConnectionView: View {
                     .padding(.horizontal, 4)
                     .background(Color.white.opacity(0.8))
                     .cornerRadius(4)
-                    .position(calculateLabelPosition())
+                    .position(calculateLabelPosition(from: adjustedPoints.from, to: adjustedPoints.to))
             }
         }
     }
     
-    private func calculateLabelPosition() -> CGPoint {
-        let midX = (state.fromPoint.x + state.toPoint.x) / 2
-        let midY = (state.fromPoint.y + state.toPoint.y) / 2
+    private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
+        let cellSize = 40.0 * state.scale // Base cell size * scale
+        let angle = atan2(state.toPoint.y - state.fromPoint.y, state.toPoint.x - state.fromPoint.x)
+        
+        // Calculate the points where the line intersects with the cell edges
+        let fromPoint = CGPoint(
+            x: state.fromPoint.x + cos(angle) * (cellSize / 2),
+            y: state.fromPoint.y + sin(angle) * (cellSize / 2)
+        )
+        
+        let toPoint = CGPoint(
+            x: state.toPoint.x - cos(angle) * (cellSize / 2),
+            y: state.toPoint.y - sin(angle) * (cellSize / 2)
+        )
+        
+        return (from: fromPoint, to: toPoint)
+    }
+    
+    private func calculateLabelPosition(from: CGPoint, to: CGPoint) -> CGPoint {
+        let midX = (from.x + to.x) / 2
+        let midY = (from.y + to.y) / 2
         return CGPoint(x: midX, y: midY - 15) // Offset above the line
     }
 }
@@ -231,12 +260,13 @@ struct SelfPointingConnectionShape: Shape {
 struct ArrowHead: Shape {
     let from: CGPoint
     let to: CGPoint
+    let scale: CGFloat
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
         let angle = atan2(to.y - from.y, to.x - from.x)
-        let arrowLength: CGFloat = 10
+        let arrowLength: CGFloat = 10 * scale
         let arrowAngle: CGFloat = .pi / 6
         
         let point1 = CGPoint(

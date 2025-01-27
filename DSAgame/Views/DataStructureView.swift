@@ -7,12 +7,14 @@ struct DraggableElementView: View {
     let onDragStarted: (CGPoint) -> Void
     let onDragChanged: (DragGesture.Value) -> Void
     let onDragEnded: (DragGesture.Value) -> Void
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
     
     var body: some View {
         Text(element)
-            .padding(10)
+            .font(.system(size: cellSizeManager.size * 0.4))
+            .frame(width: cellSizeManager.size, height: cellSizeManager.size)
             .background(Color.white)
-            .cornerRadius(8)
+            .cornerRadius(cellSizeManager.size * 0.1)
             .shadow(radius: isDragging ? 4 : 2)
             .scaleEffect(isDragging ? 1.1 : 1.0)
             .opacity(isDragging ? 0.3 : 1.0)
@@ -20,12 +22,7 @@ struct DraggableElementView: View {
                 DragGesture(coordinateSpace: .global)
                     .onChanged { value in
                         if !isDragging {
-                            // Adjust initial position to account for the offset
-                            let adjustedLocation = CGPoint(
-                                x: value.location.x,
-                                y: value.location.y - 30
-                            )
-                            onDragStarted(adjustedLocation)
+                            onDragStarted(value.location)
                         }
                         onDragChanged(value)
                     }
@@ -45,6 +42,184 @@ extension CGRect {
     }
 }
 
+// Add this helper view
+struct LayoutCellView: View {
+    let cell: any DataStructureCell
+    let index: Int
+    let hoveredCellIndex: Int?
+    let cellSize: CGFloat
+    let renderCycle: UUID
+    let dragState: (element: String, location: CGPoint)?
+    let draggingFromCellIndex: Int?
+    let onDragChanged: (DragGesture.Value, CGRect) -> Void
+    let onDragEnded: (DragGesture.Value) -> Void
+    let geometryFrame: CGRect
+    
+    var body: some View {
+        let isHovered = hoveredCellIndex == index
+        let displayState = CellDisplayState(
+            value: cell.displayState.value,
+            isHighlighted: cell.displayState.isHighlighted,
+            isHovered: isHovered,
+            label: cell.displayState.label,
+            position: cell.position,
+            style: isHovered ? .hovered : cell.displayState.style
+        )
+        
+        CellView(state: displayState)
+        .id("\(cell.id)-\(renderCycle)")
+        .position(cell.position)
+        .gesture(
+            DragGesture(coordinateSpace: .global)
+                .onChanged { value in
+                    if !cell.value.isEmpty && dragState == nil {
+                        let localLocation = geometryFrame.convert(from: value.location)
+                        // First call to set up initial drag state
+                        onDragChanged(value, geometryFrame)
+                    }
+                    // Subsequent calls to update drag position
+                    onDragChanged(value, geometryFrame)
+                }
+                .onEnded(onDragEnded)
+        )
+    }
+}
+
+// Connection layer component
+struct ConnectionsLayer: View {
+    let connectionStates: [(id: String, state: ConnectionDisplayState)]
+    
+    var body: some View {
+        ForEach(connectionStates, id: \.id) { connection in
+            ConnectionView(state: connection.state)
+        }
+    }
+}
+
+// Cells layer component
+struct CellsLayer: View {
+    let layoutCells: [any DataStructureCell]
+    let hoveredCellIndex: Int?
+    let cellSize: CGFloat
+    let renderCycle: UUID
+    let dragState: (element: String, location: CGPoint)?
+    let draggingFromCellIndex: Int?
+    let geometry: GeometryProxy
+    let onDragChanged: (DragGesture.Value, CGRect) -> Void
+    let onDragEnded: (DragGesture.Value) -> Void
+    
+    var body: some View {
+        let cells = Array(layoutCells.enumerated())
+        ForEach(cells, id: \.element.id) { pair in
+            let (index, cell) = pair
+            createLayoutCell(index: index, cell: cell)
+        }
+    }
+    
+    private func createLayoutCell(index: Int, cell: any DataStructureCell) -> some View {
+        let frame = geometry.frame(in: .global)
+        return LayoutCellView(
+            cell: cell,
+            index: index,
+            hoveredCellIndex: hoveredCellIndex,
+            cellSize: cellSize,
+            renderCycle: renderCycle,
+            dragState: dragState,
+            draggingFromCellIndex: draggingFromCellIndex,
+            onDragChanged: { value, frame in
+                handleDragChange(value: value, frame: frame)
+            },
+            onDragEnded: onDragEnded,
+            geometryFrame: frame
+        )
+    }
+    
+    private func handleDragChange(value: DragGesture.Value, frame: CGRect) {
+        if dragState == nil {
+            // Initialize drag state when starting drag from a cell
+            onDragChanged(value, frame)
+        }
+        // Update drag position
+        onDragChanged(value, frame)
+    }
+}
+
+// Elements list component
+struct ElementsListView: View {
+    let availableElements: [String]
+    let droppedElements: [String]
+    let dragState: (element: String, location: CGPoint)?
+    let isOverElementList: Bool
+    let onDragStarted: (String, CGPoint) -> Void
+    let onDragChanged: (DragGesture.Value, CGRect) -> Void
+    let onDragEnded: (DragGesture.Value) -> Void
+    let geometryFrame: CGRect
+    let cellSize: CGFloat
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: cellSize * 0.2) {
+                let elements = availableElements + droppedElements
+                ForEach(elements, id: \.self) { element in
+                    createDraggableElement(for: element)
+                }
+                
+                if shouldShowDropHint {
+                    createDropHint()
+                }
+            }
+            .padding(cellSize * 0.2)
+        }
+        .background(listBackground)
+        .cornerRadius(cellSize * 0.1)
+        .frame(width: calculateListWidth())
+        .frame(height: cellSize * 1.5)
+        .fixedSize()
+    }
+    
+    private var shouldShowDropHint: Bool {
+        availableElements.isEmpty && droppedElements.isEmpty
+    }
+    
+    private var listBackground: some View {
+        Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
+    }
+    
+    private func calculateListWidth() -> CGFloat {
+        let elements = availableElements + droppedElements
+        if elements.isEmpty {
+            return cellSize * 3 // Width for "Drop here to remove" text
+        } else {
+            // Width calculation: elements * (cellSize + spacing) + padding
+            return CGFloat(elements.count) * (cellSize + cellSize * 0.1)
+        }
+    }
+    
+    private func createDraggableElement(for element: String) -> some View {
+        DraggableElementView(
+            element: element,
+            isDragging: dragState?.element == element,
+            onDragStarted: { location in
+                let localLocation = geometryFrame.convert(from: location)
+                onDragStarted(element, localLocation)
+            },
+            onDragChanged: { value in
+                onDragChanged(value, geometryFrame)
+            },
+            onDragEnded: onDragEnded
+        )
+    }
+    
+    private func createDropHint() -> some View {
+        Text("Drop here to remove")
+            .font(.system(size: cellSize * 0.2))
+            .foregroundColor(.gray)
+            .opacity(isOverElementList ? 1.0 : 0.5)
+            .animation(.easeInOut, value: isOverElementList)
+            .frame(width: cellSize * 2)
+    }
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
@@ -55,7 +230,7 @@ struct DataStructureView: View {
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
-    @State private var currentCells: [any DataStructureCell] = []  // Track current state
+    @State private var currentCells: [any DataStructureCell] = []
     @State private var connectionStates: [(id: String, state: ConnectionDisplayState)] = []
     @State private var dragState: (element: String, location: CGPoint)?
     @State private var hoveredCellIndex: Int?
@@ -63,6 +238,8 @@ struct DataStructureView: View {
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
     @State private var droppedElements: [String] = []
+    @StateObject private var cellSizeManager = CellSizeManager()
+    
     init(
         layoutType: DataStructureLayoutType,
         cells: [any DataStructureCell],
@@ -76,115 +253,15 @@ struct DataStructureView: View {
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
-        self._currentCells = State(initialValue: cells)  // Initialize current cells
+        self._currentCells = State(initialValue: cells)
     }
     
     var body: some View {
         GeometryReader { geometry in
-            let isHorizontal = geometry.size.width > geometry.size.height
-            
-            ZStack {
-                // Data structure area
-                ZStack {
-                    // Draw connections first
-                    ForEach(connectionStates, id: \.id) { connection in
-                        ConnectionView(state: connection.state)
-                    }
-                    
-                    // Draw cells on top
-                    ForEach(Array(layoutCells.enumerated()), id: \.element.id) { index, cell in
-                        let isHovered = hoveredCellIndex == index
-                        let displayState = CellDisplayState(
-                            value: cell.displayState.value,
-                            isHighlighted: cell.displayState.isHighlighted,
-                            isHovered: isHovered,
-                            label: cell.displayState.label,
-                            position: cell.position,
-                            style: isHovered ? .hovered : cell.displayState.style
-                        )
-                        CellView(
-                            state: displayState,
-                            size: LayoutConfig.cellDiameter
-                        )
-                        .id("\(cell.id)-\(renderCycle)")
-                        .position(cell.position)
-                        .gesture(
-                            DragGesture(coordinateSpace: .global)
-                                .onChanged { value in
-                                    if !cell.value.isEmpty && dragState == nil {
-                                        draggingFromCellIndex = index
-                                        let localLocation = geometry.frame(in: .global).convert(from: value.location)
-                                        dragState = (element: cell.value, location: localLocation)
-                                    }
-                                    if dragState != nil {
-                                        handleDragChanged(value, in: geometry.frame(in: .global))
-                                    }
-                                }
-                                .onEnded { value in
-                                    handleDragEnded(value)
-                                }
-                        )
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                // Dragged element overlay
-                if let dragState = dragState {
-                    DraggableElementView(
-                        element: dragState.element,
-                        isDragging: true,
-                        onDragStarted: { _ in },
-                        onDragChanged: { value in
-                            handleDragChanged(value, in: geometry.frame(in: .global))
-                        },
-                        onDragEnded: handleDragEnded
-                    )
-                    .position(dragState.location)
-                }
-                
-                // Elements list at the bottom
-                VStack {
-                    Spacer()
-                    HStack(spacing: 15) {
-                        ForEach(availableElements + droppedElements, id: \.self) { element in
-                            DraggableElementView(
-                                element: element,
-                                isDragging: dragState?.element == element,
-                                onDragStarted: { location in
-                                    let localLocation = geometry.frame(in: .global).convert(from: location)
-                                    dragState = (element: element, location: localLocation)
-                                },
-                                onDragChanged: { value in
-                                    handleDragChanged(value, in: geometry.frame(in: .global))
-                                },
-                                onDragEnded: handleDragEnded
-                            )
-                        }
-                        
-                        if availableElements.isEmpty && droppedElements.isEmpty {
-                            Text("Drop here to remove")
-                                .foregroundColor(.gray)
-                                .opacity(isOverElementList ? 1.0 : 0.5)
-                                .animation(.easeInOut, value: isOverElementList)
-                        }
-                    }
-                    .padding(8)
-                    .background(Color.gray.opacity(isOverElementList ? 0.2 : 0.1))
-                    .cornerRadius(8)
-                    .frame(height: 50)
-                    .onHover { isHovered in
-                        isOverElementList = isHovered
-                    }
-                }
-            }
-            .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: geometry.size))
+            mainContent(geometry: geometry)
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
-            if newFrame != frame {  // Only update if frame actually changed
-                frame = newFrame
-                print("Frame updated to: \(newFrame)")
-                updateLayout()
-            }
+            handleFrameChange(newFrame)
         }
         .onChange(of: cells.map(\.id)) { _ in
             updateLayout()
@@ -193,23 +270,148 @@ struct DataStructureView: View {
             updateLayout()
         }
         .onChange(of: layoutType) { newType in
-            layoutManager.setLayoutType(newType)
+            handleLayoutTypeChange(newType)
+        }
+        .environmentObject(cellSizeManager)
+    }
+    
+    private func mainContent(geometry: GeometryProxy) -> some View {
+        let cellSize = adaptiveCellSize(for: geometry.size)
+        let bottomPadding = adaptiveElementListPadding(for: geometry.size)
+        
+        return ZStack {
+            dataStructureArea(geometry: geometry, cellSize: cellSize)
+            
+            if let dragState = dragState {
+                draggedElementOverlay(dragState: dragState, geometry: geometry)
+            }
+            
+            elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+        }
+        .onChange(of: cellSize) { newSize in
+            cellSizeManager.updateSize(for: geometry.size)
+        }
+        .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: geometry.size))
+    }
+    
+    private func dataStructureArea(geometry: GeometryProxy, cellSize: CGFloat) -> some View {
+        ZStack {
+            ConnectionsLayer(connectionStates: connectionStates)
+            
+            CellsLayer(
+                layoutCells: layoutCells,
+                hoveredCellIndex: hoveredCellIndex,
+                cellSize: cellSize,
+                renderCycle: renderCycle,
+                dragState: dragState,
+                draggingFromCellIndex: draggingFromCellIndex,
+                geometry: geometry,
+                onDragChanged: { value, frame in
+                    if dragState == nil {
+                        // Find the cell being dragged by checking position
+                        let localLocation = frame.convert(from: value.location)
+                        let index = layoutCells.firstIndex { cell in
+                            let distance = sqrt(
+                                pow(cell.position.x - localLocation.x, 2) +
+                                pow(cell.position.y - localLocation.y, 2)
+                            )
+                            return distance < cellSize / 2
+                        }
+                        
+                        if let index = index, !layoutCells[index].value.isEmpty {
+                            draggingFromCellIndex = index
+                            dragState = (element: layoutCells[index].value, location: localLocation)
+                        }
+                    }
+                    handleDragChanged(value, in: frame)
+                },
+                onDragEnded: handleDragEnded
+            )
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private func draggedElementOverlay(dragState: (element: String, location: CGPoint), geometry: GeometryProxy) -> some View {
+        DraggableElementView(
+            element: dragState.element,
+            isDragging: true,
+            onDragStarted: { _ in },
+            onDragChanged: { value in
+                handleDragChanged(value, in: geometry.frame(in: .global))
+            },
+            onDragEnded: handleDragEnded
+        )
+        .position(dragState.location)
+    }
+    
+    private func elementsListArea(geometry: GeometryProxy, cellSize: CGFloat, bottomPadding: CGFloat) -> some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                ElementsListView(
+                    availableElements: availableElements,
+                    droppedElements: droppedElements,
+                    dragState: dragState,
+                    isOverElementList: isOverElementList,
+                    onDragStarted: { element, location in
+                        dragState = (element, location)
+                    },
+                    onDragChanged: handleDragChanged,
+                    onDragEnded: handleDragEnded,
+                    geometryFrame: geometry.frame(in: .global),
+                    cellSize: cellSize
+                )
+                .onHover { isHovered in
+                    isOverElementList = isHovered
+                }
+                Spacer()
+            }
+        }
+        .padding(.bottom, bottomPadding)
+    }
+    
+    private func handleFrameChange(_ newFrame: CGRect) {
+        if newFrame != frame {
+            frame = newFrame
+            print("Frame updated to: \(newFrame)")
             updateLayout()
         }
     }
     
+    private func handleLayoutTypeChange(_ newType: DataStructureLayoutType) {
+        layoutManager.setLayoutType(newType)
+        updateLayout()
+    }
+    
+    private func adaptiveCellSize(for size: CGSize) -> CGFloat {
+        // Base size on the smaller dimension, with a reasonable range
+        let dimension = min(size.width, size.height)
+        let baseSize = dimension * 0.15 // Increased from 0.1 to 0.15 for better visibility
+        return min(max(baseSize, 60), 100) // Increased min and max sizes
+    }
+    
+    private func adaptiveElementListPadding(for size: CGSize) -> CGFloat {
+        // More padding on larger screens
+        return size.height > 800 ? 100 : 8
+    }
+    
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
         let localLocation = globalFrame.convert(from: value.location)
-        dragState?.location = localLocation
+        if dragState != nil {
+            dragState?.location = localLocation
+        }
         
         // Update element list detection for bottom area only
-        let elementListY = globalFrame.height - 50 // Height of element list area
+        let elementListY = globalFrame.height - (adaptiveElementListPadding(for: globalFrame.size) + 58)
         isOverElementList = localLocation.y >= elementListY
         
         // Debug prints for drag state
         if let dragState = dragState {
             print("Dragging element: \(dragState.element)")
             print("Drag location: \(localLocation)")
+            print("Element list Y threshold: \(elementListY)")
+            print("Is over element list: \(isOverElementList)")
         }
         
         // Only look for cell targets if not over element list
@@ -223,7 +425,7 @@ struct DataStructureView: View {
                 })
             
             if let closest = closestCell,
-               distance(from: closest.element.position, to: localLocation) < LayoutConfig.cellDiameter {
+               distance(from: closest.element.position, to: localLocation) < cellSizeManager.size {
                 hoveredCellIndex = closest.offset
                 print("Hovering over cell \(closest.offset) with value: \(closest.element.value)")
             } else {
@@ -264,6 +466,7 @@ struct DataStructureView: View {
                 cell.setValue("")
                 updatedCells[fromIndex] = cell
                 currentCells = updatedCells
+                
                 // Only add to droppedElements if it wasn't in availableElements originally
                 if !availableElements.contains(element) {
                     print("Adding \(element) to dropped elements")
@@ -271,16 +474,7 @@ struct DataStructureView: View {
                 }
                 
                 // Force layout update with current cells
-                let (newCells, newStates) = layoutManager.updateLayout(
-                    cells: currentCells,
-                    connections: connections,
-                    in: frame
-                )
-                layoutCells = newCells
-                connectionStates = newStates.enumerated().map { (index, state) in
-                    (id: "\(index)", state: state)
-                }
-                renderCycle = UUID()
+                updateLayoutWithCurrentCells()
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
@@ -315,16 +509,7 @@ struct DataStructureView: View {
                 }
                 
                 // Force layout update with current cells
-                let (newCells, newStates) = layoutManager.updateLayout(
-                    cells: currentCells,
-                    connections: connections,
-                    in: frame
-                )
-                layoutCells = newCells
-                connectionStates = newStates.enumerated().map { (index, state) in
-                    (id: "\(index)", state: state)
-                }
-                renderCycle = UUID()
+                updateLayoutWithCurrentCells()
             }
         }
     }
@@ -335,16 +520,53 @@ struct DataStructureView: View {
     
     private func updateLayout() {
         guard !frame.isEmpty else { return }
-        print("Updating layout with frame: \(frame)")
-        print("Current cells: \(currentCells.map { $0.value })")
+        
+        // Calculate scale factor based on current cell size
+        let scaleFactor = cellSizeManager.size / 40 // 40 is the base size
+        
+        // Adjust frame for arrow positioning in linked list
+        var adjustedFrame = frame
+        if layoutType == .linkedList {
+            // Move connection points to cell edges instead of center
+            adjustedFrame = CGRect(
+                x: frame.origin.x + cellSizeManager.size / 2,
+                y: frame.origin.y,
+                width: frame.width - cellSizeManager.size,
+                height: frame.height
+            )
+        }
         
         let (newCells, newStates) = layoutManager.updateLayout(
             cells: currentCells,
             connections: connections,
-            in: frame
+            in: adjustedFrame,
+            scale: scaleFactor
         )
         
-        print("New layout cells: \(newCells.map { $0.value })")
+        layoutCells = newCells
+        connectionStates = newStates.enumerated().map { (index, state) in
+            (id: "\(index)", state: state)
+        }
+        renderCycle = UUID()
+    }
+    
+    private func updateLayoutWithCurrentCells() {
+        var adjustedFrame = frame
+        if layoutType == .linkedList {
+            adjustedFrame = CGRect(
+                x: frame.origin.x + cellSizeManager.size / 2,
+                y: frame.origin.y,
+                width: frame.width - cellSizeManager.size,
+                height: frame.height
+            )
+        }
+        
+        let (newCells, newStates) = layoutManager.updateLayout(
+            cells: currentCells,
+            connections: connections,
+            in: adjustedFrame,
+            scale: cellSizeManager.size / 40
+        )
         layoutCells = newCells
         connectionStates = newStates.enumerated().map { (index, state) in
             (id: "\(index)", state: state)
@@ -383,5 +605,56 @@ struct DataStructureView_Previews: PreviewProvider {
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)
+    }
+}
+
+// Update CellView to use the environment object
+struct CellView: View {
+    let state: CellDisplayState
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
+    
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(state.style.fillColor)
+                .overlay(
+                    Rectangle()
+                        .stroke(
+                            state.style.strokeColor,
+                            style: StrokeStyle(
+                                lineWidth: state.style.strokeWidth,
+                                dash: state.style.isDashed ? [5] : []
+                            )
+                        )
+                )
+                .shadow(
+                    color: state.style.strokeColor.opacity(0.5),
+                    radius: state.style.glowRadius
+                )
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                .cornerRadius(cellSizeManager.size * 0.1)
+            
+            // Cell value or placeholder
+            if !state.value.isEmpty {
+                Text(state.value)
+                    .font(.system(size: cellSizeManager.size * 0.4))
+                    .foregroundColor(.black)
+            } else {
+                Text("?")
+                    .font(.system(size: cellSizeManager.size * 0.4))
+                    .foregroundColor(.gray)
+            }
+            
+            // Optional label
+            if let label = state.label {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 4)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(4)
+                    .offset(y: -cellSizeManager.size * 0.8)
+            }
+        }
     }
 } 
