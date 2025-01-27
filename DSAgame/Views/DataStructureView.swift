@@ -220,6 +220,37 @@ class ZoomPanState: ObservableObject {
     @Published var steadyPan: CGSize = .zero
 }
 
+// Add grid background view
+struct GridBackground: View {
+    let cellSize: CGFloat = 20 // Size of each grid cell
+    let lineWidth: CGFloat = 0.3
+    let lineColor: Color = .blue.opacity(0.3)
+    
+    var body: some View {
+        GeometryReader { geometry in
+            Path { path in
+                // Vertical lines
+                let horizontalLineCount = Int(geometry.size.width / cellSize) + 1
+                for i in 0...horizontalLineCount {
+                    let x = CGFloat(i) * cellSize
+                    path.move(to: CGPoint(x: x, y: 0))
+                    path.addLine(to: CGPoint(x: x, y: geometry.size.height))
+                }
+                
+                // Horizontal lines
+                let verticalLineCount = Int(geometry.size.height / cellSize) + 1
+                for i in 0...verticalLineCount {
+                    let y = CGFloat(i) * cellSize
+                    path.move(to: CGPoint(x: 0, y: y))
+                    path.addLine(to: CGPoint(x: geometry.size.width, y: y))
+                }
+            }
+            .stroke(lineColor, lineWidth: lineWidth)
+        }
+        .background(Color.white)
+    }
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
@@ -290,7 +321,7 @@ struct DataStructureView: View {
             // Single container for data structure area
             ZStack {
                 // Background and gesture handler
-                Color.white
+                GridBackground()
                     .contentShape(Rectangle())
                     .gesture(
                         MagnificationGesture()
