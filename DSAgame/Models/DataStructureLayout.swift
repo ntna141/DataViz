@@ -70,6 +70,21 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                 )
             }
             
+            // For highlighted connections (during deletion), use direct points
+            // This will make the arrow go straight from source to destination
+            if connection.isHighlighted {
+                return ConnectionDisplayState(
+                    fromPoint: fromCell.position,
+                    toPoint: toCell.position,
+                    label: connection.label,
+                    isHighlighted: true,
+                    style: .straight,
+                    visualStyle: .highlighted(scale: scale),
+                    scale: scale
+                )
+            }
+            
+            // For normal connections, use the standard layout
             return ConnectionDisplayState(
                 fromPoint: fromCell.position,
                 toPoint: toCell.position,
