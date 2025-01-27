@@ -67,21 +67,15 @@ struct LayoutCellView: View {
         )
         
         CellView(state: displayState)
-        .id("\(cell.id)-\(renderCycle)")
-        .position(cell.position)
-        .gesture(
-            DragGesture(coordinateSpace: .global)
-                .onChanged { value in
-                    if !cell.value.isEmpty && dragState == nil {
-                        let localLocation = geometryFrame.convert(from: value.location)
-                        // First call to set up initial drag state
+            .id("\(cell.id)-\(renderCycle)")
+            .position(cell.position)
+            .gesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                    .onChanged { value in
                         onDragChanged(value, geometryFrame)
                     }
-                    // Subsequent calls to update drag position
-                    onDragChanged(value, geometryFrame)
-                }
-                .onEnded(onDragEnded)
-        )
+                    .onEnded(onDragEnded)
+            )
     }
 }
 
@@ -220,6 +214,12 @@ struct ElementsListView: View {
     }
 }
 
+// Add zoom and pan state manager
+class ZoomPanState: ObservableObject {
+    @Published var steadyZoom: CGFloat = 1.0
+    @Published var steadyPan: CGSize = .zero
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
@@ -239,6 +239,12 @@ struct DataStructureView: View {
     @State private var isOverElementList: Bool = false
     @State private var droppedElements: [String] = []
     @StateObject private var cellSizeManager = CellSizeManager()
+    
+    // Use StateObject for persistent zoom/pan state
+    @StateObject private var zoomPanState = ZoomPanState()
+    // Keep gesture states separate as they are temporary
+    @GestureState private var gestureZoom: CGFloat = 1.0
+    @GestureState private var gesturePan: CGSize = .zero
     
     init(
         layoutType: DataStructureLayoutType,
@@ -280,13 +286,77 @@ struct DataStructureView: View {
         let bottomPadding = adaptiveElementListPadding(for: geometry.size)
         
         return ZStack {
-            dataStructureArea(geometry: geometry, cellSize: cellSize)
+            // Single container for data structure area
+            ZStack {
+                // Background and gesture handler
+                Color.white
+                    .contentShape(Rectangle())
+                    .gesture(
+                        MagnificationGesture()
+                            .updating($gestureZoom) { value, gestureZoom, _ in
+                                gestureZoom = value
+                            }
+                            .onEnded { value in
+                                zoomPanState.steadyZoom = min(max(1.0, zoomPanState.steadyZoom * value), 3.0)
+                            }
+                    )
+                    .simultaneousGesture(
+                        DragGesture()
+                            .updating($gesturePan) { value, gesturePan, _ in
+                                if dragState == nil {  // Only pan when not dragging elements
+                                    gesturePan = value.translation
+                                }
+                            }
+                            .onEnded { value in
+                                if dragState == nil {  // Only update pan when not dragging elements
+                                    zoomPanState.steadyPan = CGSize(
+                                        width: zoomPanState.steadyPan.width + value.translation.width,
+                                        height: zoomPanState.steadyPan.height + value.translation.height
+                                    )
+                                }
+                            }
+                    )
+                
+                // Data structure content
+                dataStructureArea(geometry: geometry, cellSize: cellSize)
+                    .scaleEffect(zoomPanState.steadyZoom * gestureZoom)
+                    .offset(CGSize(
+                        width: zoomPanState.steadyPan.width + gesturePan.width,
+                        height: zoomPanState.steadyPan.height + gesturePan.height
+                    ))
+            }
+            .clipped()
             
+            // Overlay elements that should not be transformed
             if let dragState = dragState {
                 draggedElementOverlay(dragState: dragState, geometry: geometry)
             }
             
-            elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+            VStack {
+                // Reset button
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        withAnimation(.spring()) {
+                            zoomPanState.steadyZoom = 1.0
+                            zoomPanState.steadyPan = .zero
+                        }
+                    }) {
+                        Image(systemName: "arrow.counterclockwise.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.blue)
+                            .padding(8)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
+                    }
+                    .padding()
+                }
+                Spacer()
+                
+                // Elements list at bottom
+                elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+            }
         }
         .onChange(of: cellSize) { newSize in
             cellSizeManager.updateSize(for: geometry.size)
@@ -307,22 +377,6 @@ struct DataStructureView: View {
                 draggingFromCellIndex: draggingFromCellIndex,
                 geometry: geometry,
                 onDragChanged: { value, frame in
-                    if dragState == nil {
-                        // Find the cell being dragged by checking position
-                        let localLocation = frame.convert(from: value.location)
-                        let index = layoutCells.firstIndex { cell in
-                            let distance = sqrt(
-                                pow(cell.position.x - localLocation.x, 2) +
-                                pow(cell.position.y - localLocation.y, 2)
-                            )
-                            return distance < cellSize / 2
-                        }
-                        
-                        if let index = index, !layoutCells[index].value.isEmpty {
-                            draggingFromCellIndex = index
-                            dragState = (element: layoutCells[index].value, location: localLocation)
-                        }
-                    }
                     handleDragChanged(value, in: frame)
                 },
                 onDragEnded: handleDragEnded
@@ -398,36 +452,59 @@ struct DataStructureView: View {
     
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
         let localLocation = globalFrame.convert(from: value.location)
+        let currentScale = zoomPanState.steadyZoom * gestureZoom
+        
+        // Calculate the center of the frame
+        let centerX = globalFrame.width / 2
+        let centerY = globalFrame.height / 2
+        
+        // Calculate total pan offset
+        let totalPanX = zoomPanState.steadyPan.width + gesturePan.width
+        let totalPanY = zoomPanState.steadyPan.height + gesturePan.height
+        
+        // Adjust for zoom and pan, taking into account that zoom happens from center
+        let adjustedLocation = CGPoint(
+            x: ((localLocation.x - totalPanX - centerX) / currentScale) + centerX,
+            y: ((localLocation.y - totalPanY - centerY) / currentScale) + centerY
+        )
+        
         if dragState != nil {
+            // When dragging, use the original location for visual feedback
             dragState?.location = localLocation
+        } else {
+            // When starting a drag, use adjusted coordinates for hit testing
+            let index = layoutCells.firstIndex { cell in
+                let distance = sqrt(
+                    pow(cell.position.x - adjustedLocation.x, 2) +
+                    pow(cell.position.y - adjustedLocation.y, 2)
+                )
+                return distance < cellSizeManager.size / 2
+            }
+            
+            if let index = index, !layoutCells[index].value.isEmpty {
+                draggingFromCellIndex = index
+                // Start the drag at the actual cursor position
+                dragState = (element: layoutCells[index].value, location: localLocation)
+            }
         }
         
         // Update element list detection for bottom area only
         let elementListY = globalFrame.height - (adaptiveElementListPadding(for: globalFrame.size) + 58)
         isOverElementList = localLocation.y >= elementListY
         
-        // Debug prints for drag state
-        if let dragState = dragState {
-            print("Dragging element: \(dragState.element)")
-            print("Drag location: \(localLocation)")
-            print("Element list Y threshold: \(elementListY)")
-            print("Is over element list: \(isOverElementList)")
-        }
-        
         // Only look for cell targets if not over element list
         if !isOverElementList {
-            // Find closest cell
+            // Find closest cell using adjusted coordinates
             let closestCell = layoutCells.enumerated()
                 .min(by: { first, second in
-                    let distance1 = distance(from: first.element.position, to: localLocation)
-                    let distance2 = distance(from: second.element.position, to: localLocation)
+                    let distance1 = distance(from: first.element.position, to: adjustedLocation)
+                    let distance2 = distance(from: second.element.position, to: adjustedLocation)
                     return distance1 < distance2
                 })
             
             if let closest = closestCell,
-               distance(from: closest.element.position, to: localLocation) < cellSizeManager.size {
+               distance(from: closest.element.position, to: adjustedLocation) < cellSizeManager.size {
                 hoveredCellIndex = closest.offset
-                print("Hovering over cell \(closest.offset) with value: \(closest.element.value)")
             } else {
                 hoveredCellIndex = nil
             }
