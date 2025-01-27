@@ -226,6 +226,7 @@ struct DataStructureView: View {
     let connections: [any DataStructureConnection]
     let availableElements: [String]
     let onElementDropped: (String, Int) -> Void
+    let zoomPanState: VisualizationZoomPanState
     
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -240,8 +241,6 @@ struct DataStructureView: View {
     @State private var droppedElements: [String] = []
     @StateObject private var cellSizeManager = CellSizeManager()
     
-    // Use StateObject for persistent zoom/pan state
-    @StateObject private var zoomPanState = ZoomPanState()
     // Keep gesture states separate as they are temporary
     @GestureState private var gestureZoom: CGFloat = 1.0
     @GestureState private var gesturePan: CGSize = .zero
@@ -251,13 +250,15 @@ struct DataStructureView: View {
         cells: [any DataStructureCell],
         connections: [any DataStructureConnection],
         availableElements: [String] = [],
-        onElementDropped: @escaping (String, Int) -> Void = { _, _ in }
+        onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
+        zoomPanState: VisualizationZoomPanState
     ) {
         self.layoutType = layoutType
         self.cells = cells
         self.connections = connections
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
+        self.zoomPanState = zoomPanState
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
     }
@@ -674,11 +675,14 @@ struct DataStructureView_Previews: PreviewProvider {
             BasicConnection(fromCellId: cells[1].id, toCellId: cells[2].id)
         ]
         
+        let zoomPanState = VisualizationZoomPanState()
+        
         DataStructureView(
             layoutType: .linkedList,
             cells: cells,
             connections: connections,
-            availableElements: ["4", "5", "6"]
+            availableElements: ["4", "5", "6"],
+            zoomPanState: zoomPanState
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

@@ -25,6 +25,12 @@ struct VisualizationQuestion {
     let layoutType: DataStructureLayoutType
 }
 
+// Add zoom and pan state manager
+class VisualizationZoomPanState: ObservableObject {
+    @Published var steadyZoom: CGFloat = 1.0
+    @Published var steadyPan: CGSize = .zero
+}
+
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
@@ -34,6 +40,7 @@ struct VisualizationQuestionView: View {
     @State private var currentStep: VisualizationStep
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
+    @StateObject private var zoomPanState = VisualizationZoomPanState()
     
     init(question: VisualizationQuestion, onComplete: @escaping () -> Void = {}) {
         print("\n=== Initializing VisualizationQuestionView ===")
@@ -116,7 +123,8 @@ struct VisualizationQuestionView: View {
                         if currentStep.userInputRequired {
                             setValue(value, forCellAtIndex: index)
                         }
-                    }
+                    },
+                    zoomPanState: zoomPanState
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
