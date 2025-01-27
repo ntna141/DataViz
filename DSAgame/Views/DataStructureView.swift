@@ -151,24 +151,20 @@ struct ElementsListView: View {
     let cellSize: CGFloat
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: cellSize * 0.2) {
-                let elements = availableElements + droppedElements
-                ForEach(elements, id: \.self) { element in
-                    createDraggableElement(for: element)
-                }
-                
-                if shouldShowDropHint {
-                    createDropHint()
-                }
+        HStack(spacing: cellSize * 0.2) {
+            let elements = availableElements + droppedElements
+            ForEach(elements, id: \.self) { element in
+                createDraggableElement(for: element)
             }
-            .padding(cellSize * 0.2)
+            
+            if shouldShowDropHint {
+                createDropHint()
+            }
         }
+        .padding(cellSize * 0.2)
         .background(listBackground)
         .cornerRadius(cellSize * 0.1)
-        .frame(width: calculateListWidth())
-        .frame(height: cellSize * 1.5)
-        .fixedSize()
+        .frame(width: calculateListWidth(), height: cellSize * 1.5)
     }
     
     private var shouldShowDropHint: Bool {
@@ -184,8 +180,9 @@ struct ElementsListView: View {
         if elements.isEmpty {
             return cellSize * 3 // Width for "Drop here to remove" text
         } else {
-            // Width calculation: elements * (cellSize + spacing) + padding
-            return CGFloat(elements.count) * (cellSize + cellSize * 0.1)
+            return CGFloat(elements.count) * cellSize + 
+                   CGFloat(elements.count - 1) * (cellSize * 0.2) + // spacing between elements
+                   (cellSize * 0.4) // padding (0.2 on each side)
         }
     }
     
@@ -433,25 +430,21 @@ struct DataStructureView: View {
     private func elementsListArea(geometry: GeometryProxy, cellSize: CGFloat, bottomPadding: CGFloat) -> some View {
         VStack {
             Spacer()
-            HStack {
-                Spacer()
-                ElementsListView(
-                    availableElements: availableElements,
-                    droppedElements: droppedElements,
-                    dragState: dragState,
-                    isOverElementList: isOverElementList,
-                    onDragStarted: { element, location in
-                        dragState = (element, location)
-                    },
-                    onDragChanged: handleDragChanged,
-                    onDragEnded: handleDragEnded,
-                    geometryFrame: geometry.frame(in: .global),
-                    cellSize: cellSize
-                )
-                .onHover { isHovered in
-                    isOverElementList = isHovered
-                }
-                Spacer()
+            ElementsListView(
+                availableElements: availableElements,
+                droppedElements: droppedElements,
+                dragState: dragState,
+                isOverElementList: isOverElementList,
+                onDragStarted: { element, location in
+                    dragState = (element, location)
+                },
+                onDragChanged: handleDragChanged,
+                onDragEnded: handleDragEnded,
+                geometryFrame: geometry.frame(in: .global),
+                cellSize: cellSize
+            )
+            .onHover { isHovered in
+                isOverElementList = isHovered
             }
         }
         .padding(.bottom, bottomPadding)
@@ -501,7 +494,6 @@ struct DataStructureView: View {
         )
         
         if dragState != nil {
-            // When dragging, use the original location for visual feedback
             dragState?.location = localLocation
         } else {
             // When starting a drag, use adjusted coordinates for hit testing
@@ -520,9 +512,31 @@ struct DataStructureView: View {
             }
         }
         
-        // Update element list detection for bottom area only
-        let elementListY = globalFrame.height - (adaptiveElementListPadding(for: globalFrame.size) + 58)
-        isOverElementList = localLocation.y >= elementListY
+        // Calculate the element list frame with some padding for easier dropping
+        let listHeight = cellSizeManager.size * 1.5
+        let listY = globalFrame.height - bottomPadding - listHeight
+        let listWidth = calculateListWidth()
+        let listX = (globalFrame.width - listWidth) / 2
+        
+        // Add some padding to make the hit area larger
+        let dropPadding: CGFloat = cellSizeManager.size * 0.5
+        let dropZone = CGRect(
+            x: listX - dropPadding,
+            y: listY - dropPadding,
+            width: listWidth + (dropPadding * 2),
+            height: listHeight + (dropPadding * 2)
+        )
+        
+        // Check if any part of the dragged element intersects with the drop zone
+        let draggedElementSize = cellSizeManager.size
+        let draggedElementFrame = CGRect(
+            x: localLocation.x - draggedElementSize/2,
+            y: localLocation.y - draggedElementSize/2,
+            width: draggedElementSize,
+            height: draggedElementSize
+        )
+        
+        isOverElementList = dropZone.intersects(draggedElementFrame)
         
         // Only look for cell targets if not over element list
         if !isOverElementList {
@@ -543,6 +557,10 @@ struct DataStructureView: View {
         } else {
             hoveredCellIndex = nil
         }
+    }
+    
+    private var bottomPadding: CGFloat {
+        adaptiveElementListPadding(for: frame.size)
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
@@ -681,6 +699,17 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
+    }
+    
+    private func calculateListWidth() -> CGFloat {
+        let elements = availableElements + droppedElements
+        if elements.isEmpty {
+            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
+        } else {
+            return CGFloat(elements.count) * cellSizeManager.size + 
+                   CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
+                   (cellSizeManager.size * 0.4) // padding (0.2 on each side)
+        }
     }
 }
 
