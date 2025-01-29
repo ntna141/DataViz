@@ -308,15 +308,28 @@ struct DataStructureView: View {
                             zoomPanState.steadyPan = .zero
                         }
                     }) {
-                        Image(systemName: "arrow.counterclockwise.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.blue)
-                            .padding(8)
-                            .background(Color.white.opacity(0.8))
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main Rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            Image(systemName: "arrow.counterclockwise.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
                     }
-                    .padding()
+                    .frame(width: 44, height: 44)
+                    .padding(.trailing, 30)  // Reduced from default padding (was ~40)
+                    .padding(.top, 30)
                 }
                 Spacer()
                 
