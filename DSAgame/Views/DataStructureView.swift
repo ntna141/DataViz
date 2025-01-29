@@ -291,7 +291,14 @@ struct DataStructureView: View {
                         height: zoomPanState.steadyPan.height + gesturePan.height
                     ))
             }
-            .clipped()
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .center
+            )
+            .background(Color.yellow.opacity(0.1))
+            .padding(.top, 30) // Add top padding for reset button area
+            .padding(6) // Add general padding
             
             // Overlay elements that should not be transformed
             if let dragState = dragState {
@@ -331,6 +338,7 @@ struct DataStructureView: View {
                     .padding(.trailing, 30)  // Reduced from default padding (was ~40)
                     .padding(.top, 30)
                 }
+                
                 Spacer()
                 
                 // Elements list at bottom
@@ -709,12 +717,13 @@ struct CellView: View {
             // Shadow layer
             Rectangle()
                 .fill(Color.black)
-                .offset(x: 6, y: 6)
                 .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                .offset(x: 6, y: 6)
             
-            // Main cell with outline
+            // Main cell layer
             Rectangle()
                 .fill(state.style.fillColor)
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
                 .overlay(
                     Rectangle()
                         .stroke(
@@ -725,7 +734,6 @@ struct CellView: View {
                             )
                         )
                 )
-                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
             
             // Cell value or placeholder
             if !state.value.isEmpty {
