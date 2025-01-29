@@ -134,33 +134,75 @@ struct VisualizationQuestionView: View {
             VStack {
                 Spacer()
                 HStack {
+                    // This Spacer takes 25% of the space
+                    Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
+                    
+                    // Previous button
+                    ZStack {
+                        // Shadow layer
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main rectangle
+                        Rectangle()
+                            .fill(Color.white)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        // Button content
+                        Button("Previous") {
+                            if currentStepIndex > 0 {
+                                let prevIndex = currentStepIndex - 1
+                                currentStepIndex = prevIndex
+                                currentStep = question.steps[prevIndex]
+                                visualizationKey = UUID()
+                            }
+                        }
+                        .disabled(currentStepIndex == 0)
+                        .buttonStyle(.plain)
+                        .foregroundColor(.blue)
+                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    }
+                    .frame(width: 120, height: 40)
+                    .padding(.leading, 40)
+                    
                     Spacer()
                     
-                    Button("Previous") {
-                        if currentStepIndex > 0 {
-                            let prevIndex = currentStepIndex - 1
-                            currentStepIndex = prevIndex
-                            currentStep = question.steps[prevIndex]
-                            visualizationKey = UUID()
+                    // Next/Complete button
+                    ZStack {
+                        // Shadow layer
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main rectangle
+                        Rectangle()
+                            .fill(Color.white)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        // Button content
+                        Button(isLastStep ? "Complete" : "Next") {
+                            if isLastStep {
+                                onComplete()
+                            } else {
+                                moveToNextStep()
+                            }
                         }
+                        .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                        .buttonStyle(.plain)
+                        .foregroundColor(.blue)
+                        .font(.system(.body, design: .monospaced).weight(.bold))
                     }
-                    .disabled(currentStepIndex == 0)
-                    .buttonStyle(.plain)
-                    .foregroundColor(.blue)
-                    .padding(.leading, 120)
+                    .frame(width: 120, height: 40)
+                    .padding(.trailing, 40)
                     
                     Spacer()
-                    
-                    Button(isLastStep ? "Complete" : "Next") {
-                        if isLastStep {
-                            onComplete()
-                        } else {
-                            moveToNextStep()
-                        }
-                    }
-                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
-                    .buttonStyle(.plain)
-                    .foregroundColor(.blue)
                 }
                 .padding()
             }

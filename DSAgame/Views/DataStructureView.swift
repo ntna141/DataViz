@@ -408,8 +408,8 @@ struct DataStructureView: View {
     }
     
     private func adaptiveElementListPadding(for size: CGSize) -> CGFloat {
-        // More padding on larger screens
-        return size.height > 800 ? 100 : 8
+        // More padding on larger screens, increased by 20
+        return size.height > 800 ? 120 : 30  // Increased from 100 to 120 and from 8 to 28
     }
     
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
