@@ -43,7 +43,7 @@ struct ElementsListView: View {
                     createDropHint()
                 }
             }
-            .padding(.horizontal, cellSize * 0.2)
+            .padding(.horizontal, cellSize * 0.05)
         }
         .frame(width: calculateListWidth(), height: cellSize * 0.8)
         .overlay(
@@ -69,7 +69,7 @@ struct ElementsListView: View {
         } else {
             return (CGFloat(elements.count) * cellSize) + // elements width
                    (CGFloat(max(0, elements.count - 1)) * (cellSize * 0.2)) + // spacing between elements
-                   (cellSize * 0.4) // minimal padding
+                   (cellSize * 0.05) // minimal padding
         }
     }
     

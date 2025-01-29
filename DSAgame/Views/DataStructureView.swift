@@ -79,8 +79,9 @@ struct LayoutCellView: View {
         CellView(state: displayState)
             .id("\(cell.id)-\(renderCycle)")
             .position(cell.position)
+            .contentShape(Rectangle())  // Make entire area draggable
             .gesture(
-                DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                DragGesture(coordinateSpace: .global)  // Changed to global coordinate space
                     .onChanged { value in
                         onDragChanged(value, geometryFrame)
                     }
@@ -447,8 +448,8 @@ struct DataStructureView: View {
         
         // Adjust for zoom and pan, taking into account that zoom happens from center
         let adjustedLocation = CGPoint(
-            x: ((localLocation.x - totalPanX - centerX) / currentScale) + centerX,
-            y: ((localLocation.y - totalPanY - centerY) / currentScale) + centerY
+            x: ((localLocation.x - centerX - totalPanX) / currentScale) + centerX,
+            y: ((localLocation.y - centerY - totalPanY) / currentScale) + centerY
         )
         
         if dragState != nil {
