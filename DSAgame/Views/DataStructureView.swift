@@ -10,12 +10,22 @@ struct DraggableElementView: View {
     @EnvironmentObject private var cellSizeManager: CellSizeManager
     
     var body: some View {
-        Text(element)
-            .font(.system(size: cellSizeManager.size * 0.4))
+        // Main element with outline
+        Rectangle()
+            .fill(Color(red: 0.96, green: 0.95, blue: 0.91))  // Same beige as cells
+            .overlay(
+                Rectangle()
+                    .stroke(
+                        Color(red: 0.2, green: 0.2, blue: 0.2),  // Same dark outline as cells
+                        lineWidth: 3.6  // Same as cell stroke width
+                    )
+            )
+            .overlay(
+                Text(element)
+                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                    .foregroundColor(.black)
+            )
             .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-            .background(Color.white)
-            .cornerRadius(cellSizeManager.size * 0.1)
-            .shadow(radius: isDragging ? 4 : 2)
             .scaleEffect(isDragging ? 1.1 : 1.0)
             .opacity(isDragging ? 0.3 : 1.0)
             .gesture(
@@ -135,79 +145,6 @@ struct CellsLayer: View {
         }
         // Update drag position
         onDragChanged(value, frame)
-    }
-}
-
-// Elements list component
-struct ElementsListView: View {
-    let availableElements: [String]
-    let droppedElements: [String]
-    let dragState: (element: String, location: CGPoint)?
-    let isOverElementList: Bool
-    let onDragStarted: (String, CGPoint) -> Void
-    let onDragChanged: (DragGesture.Value, CGRect) -> Void
-    let onDragEnded: (DragGesture.Value) -> Void
-    let geometryFrame: CGRect
-    let cellSize: CGFloat
-    
-    var body: some View {
-        HStack(spacing: cellSize * 0.2) {
-            let elements = availableElements + droppedElements
-            ForEach(elements, id: \.self) { element in
-                createDraggableElement(for: element)
-            }
-            
-            if shouldShowDropHint {
-                createDropHint()
-            }
-        }
-        .padding(cellSize * 0.2)
-        .background(listBackground)
-        .cornerRadius(cellSize * 0.1)
-        .frame(width: calculateListWidth(), height: cellSize * 1.5)
-    }
-    
-    private var shouldShowDropHint: Bool {
-        availableElements.isEmpty && droppedElements.isEmpty
-    }
-    
-    private var listBackground: some View {
-        Color.gray.opacity(isOverElementList ? 0.2 : 0.1)
-    }
-    
-    private func calculateListWidth() -> CGFloat {
-        let elements = availableElements + droppedElements
-        if elements.isEmpty {
-            return cellSize * 3 // Width for "Drop here to remove" text
-        } else {
-            return CGFloat(elements.count) * cellSize + 
-                   CGFloat(elements.count - 1) * (cellSize * 0.2) + // spacing between elements
-                   (cellSize * 0.4) // padding (0.2 on each side)
-        }
-    }
-    
-    private func createDraggableElement(for element: String) -> some View {
-        DraggableElementView(
-            element: element,
-            isDragging: dragState?.element == element,
-            onDragStarted: { location in
-                let localLocation = geometryFrame.convert(from: location)
-                onDragStarted(element, localLocation)
-            },
-            onDragChanged: { value in
-                onDragChanged(value, geometryFrame)
-            },
-            onDragEnded: onDragEnded
-        )
-    }
-    
-    private func createDropHint() -> some View {
-        Text("Drop here to remove")
-            .font(.system(size: cellSize * 0.2))
-            .foregroundColor(.gray)
-            .opacity(isOverElementList ? 1.0 : 0.5)
-            .animation(.easeInOut, value: isOverElementList)
-            .frame(width: cellSize * 2)
     }
 }
 
@@ -756,6 +693,13 @@ struct CellView: View {
     
     var body: some View {
         ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+            
+            // Main cell with outline
             Rectangle()
                 .fill(state.style.fillColor)
                 .overlay(
@@ -768,34 +712,45 @@ struct CellView: View {
                             )
                         )
                 )
-                .shadow(
-                    color: state.style.strokeColor.opacity(0.5),
-                    radius: state.style.glowRadius
-                )
                 .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                .cornerRadius(cellSizeManager.size * 0.1)
             
             // Cell value or placeholder
             if !state.value.isEmpty {
                 Text(state.value)
-                    .font(.system(size: cellSizeManager.size * 0.4))
+                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
                     .foregroundColor(.black)
             } else {
                 Text("?")
-                    .font(.system(size: cellSizeManager.size * 0.4))
+                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
                     .foregroundColor(.gray)
             }
             
             // Optional label
             if let label = state.label {
                 Text(label)
-                    .font(.caption)
+                    .font(.system(.caption, design: .monospaced))
                     .foregroundColor(.gray)
                     .padding(.horizontal, 4)
                     .background(Color.white.opacity(0.8))
-                    .cornerRadius(4)
                     .offset(y: -cellSizeManager.size * 0.8)
             }
         }
     }
+}
+
+#Preview("Elements List") {
+    ElementsListView(
+        availableElements: ["1", "2", "3"],
+        droppedElements: ["4", "5"],
+        dragState: nil,
+        isOverElementList: false,
+        onDragStarted: { _, _ in },
+        onDragChanged: { _, _ in },
+        onDragEnded: { _ in },
+        geometryFrame: CGRect(x: 0, y: 0, width: 500, height: 300),
+        cellSize: 60
+    )
+    .environmentObject(CellSizeManager())
+    .padding()
+    .previewLayout(.sizeThatFits)
 } 

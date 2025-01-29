@@ -34,45 +34,57 @@ struct CellDisplayState {
         let strokeWidth: CGFloat
         let isDashed: Bool
         let glowRadius: CGFloat
+        let font: Font
+        let shadowRadius: CGFloat
         
         static let standard = CellStyle(
-            fillColor: .white,
-            strokeColor: .blue,
-            strokeWidth: 2,
+            fillColor: Color(red: 0.96, green: 0.95, blue: 0.91),
+            strokeColor: Color(red: 0.2, green: 0.2, blue: 0.2),
+            strokeWidth: 3.6,
             isDashed: false,
-            glowRadius: 0
+            glowRadius: 0,
+            font: .system(.body, design: .rounded).weight(.bold).monospaced(),
+            shadowRadius: 12
         )
         
         static let highlighted = CellStyle(
-            fillColor: .yellow.opacity(0.3),
-            strokeColor: .blue,
-            strokeWidth: 2,
+            fillColor: Color(red: 1.5, green: 0.8, blue: 0.8),
+            strokeColor: .red,
+            strokeWidth: 3.6,
             isDashed: false,
-            glowRadius: 0
+            glowRadius: 4,
+            font: .system(.body, design: .rounded).weight(.bold).monospaced(),
+            shadowRadius: 14
         )
         
         static let readyToDrop = CellStyle(
-            fillColor: .green.opacity(0.3),
-            strokeColor: .green,
-            strokeWidth: 2,
+            fillColor: Color(red: 1.0, green: 0.9, blue: 0.9),
+            strokeColor: .red,
+            strokeWidth: 3.6,
             isDashed: false,
-            glowRadius: 8
+            glowRadius: 8,
+            font: .system(.body, design: .rounded).weight(.bold).monospaced(),
+            shadowRadius: 14
         )
         
         static let empty = CellStyle(
-            fillColor: .white,
-            strokeColor: .gray,
-            strokeWidth: 2,
+            fillColor: Color(red: 0.98, green: 0.97, blue: 0.95),
+            strokeColor: Color(red: 0.7, green: 0.7, blue: 0.7),
+            strokeWidth: 2.7,
             isDashed: true,
-            glowRadius: 0
+            glowRadius: 0,
+            font: .system(.body, design: .rounded).weight(.bold).monospaced(),
+            shadowRadius: 10
         )
         
         static let hovered = CellStyle(
-            fillColor: .blue.opacity(0.1),
-            strokeColor: .blue,
-            strokeWidth: 3,
+            fillColor: Color(red: 0.93, green: 0.92, blue: 0.88),
+            strokeColor: Color(red: 0.2, green: 0.2, blue: 0.2),
+            strokeWidth: 3.6,
             isDashed: false,
-            glowRadius: 8
+            glowRadius: 6,
+            font: .system(.body, design: .rounded).weight(.bold).monospaced(),
+            shadowRadius: 16
         )
     }
 }
