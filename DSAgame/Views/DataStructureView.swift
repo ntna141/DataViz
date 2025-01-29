@@ -292,14 +292,6 @@ struct DataStructureView: View {
                         height: zoomPanState.steadyPan.height + gesturePan.height
                     ))
             }
-            .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
-                alignment: .center
-            )
-            .background(Color.yellow.opacity(0.1))
-            .padding(.top, 30) // Add top padding for reset button area
-            .padding(6) // Add general padding
             
             // Overlay elements that should not be transformed
             if let dragState = dragState {

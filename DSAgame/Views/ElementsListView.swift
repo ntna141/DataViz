@@ -65,11 +65,10 @@ struct ElementsListView: View {
     private func calculateListWidth() -> CGFloat {
         let elements = availableElements + droppedElements
         if elements.isEmpty {
-            return cellSize * 2.2 // Reduced width for drop hint
+            return cellSize * 2 // Reduced width for drop hint
         } else {
             return (CGFloat(elements.count) * cellSize) + // elements width
-                   (CGFloat(max(0, elements.count - 1)) * (cellSize * 0.2)) + // spacing between elements
-                   (cellSize * 0.05) // minimal padding
+                   (CGFloat(max(0, elements.count - 1))) // spacing between elements
         }
     }
     
