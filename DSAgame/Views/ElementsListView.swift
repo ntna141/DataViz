@@ -98,6 +98,7 @@ struct ElementsListView: View {
             .opacity(isOverElementList ? 1.0 : 0.8)
             .animation(.easeInOut, value: isOverElementList)
             .frame(width: cellSize * 2)
+            .monospaced()
     }
 }
 

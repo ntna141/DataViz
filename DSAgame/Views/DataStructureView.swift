@@ -192,6 +192,9 @@ struct DataStructureView: View {
     let availableElements: [String]
     let onElementDropped: (String, Int) -> Void
     let zoomPanState: VisualizationZoomPanState
+    @Environment(\.presentationMode) var presentationMode
+    let hint: String
+    @State private var showingHint = false
     
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -216,7 +219,8 @@ struct DataStructureView: View {
         connections: [any DataStructureConnection],
         availableElements: [String] = [],
         onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
-        zoomPanState: VisualizationZoomPanState
+        zoomPanState: VisualizationZoomPanState,
+        hint: String
     ) {
         self.layoutType = layoutType
         self.cells = cells
@@ -224,6 +228,7 @@ struct DataStructureView: View {
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
         self.zoomPanState = zoomPanState
+        self.hint = hint
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
     }
@@ -298,42 +303,63 @@ struct DataStructureView: View {
             }
             
             VStack {
-                // Reset button
+                // Buttons row
                 HStack {
+                    // Exit button
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        buttonBackground {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .padding(.leading, 30)
+                    
                     Spacer()
+                    
+                    // Hint button
+                    Button(action: {
+                        showingHint = true
+                    }) {
+                        buttonBackground {
+                            Image(systemName: "questionmark.circle")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .padding(.trailing, 15)
+                    
+                    // Reset button
                     Button(action: {
                         withAnimation(.spring()) {
                             zoomPanState.steadyZoom = 1.0
                             zoomPanState.steadyPan = .zero
                         }
                     }) {
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
+                        buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
                                 .font(.title)
                                 .foregroundColor(.blue)
                         }
                     }
                     .frame(width: 44, height: 44)
-                    .padding(.trailing, 30)  // Reduced from default padding (was ~40)
-                    .padding(.top, 30)
+                    .padding(.trailing, 30)
                 }
+                .padding(.top, 30)
+                
                 Spacer()
                 
                 // Elements list at bottom
                 elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+            }
+            
+            // Hint overlay
+            if showingHint {
+                hintOverlay
             }
         }
         .onChange(of: cellSize) { newSize in
@@ -660,6 +686,75 @@ struct DataStructureView: View {
                    (cellSizeManager.size * 0.4) // padding (0.2 on each side)
         }
     }
+    
+    private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+            
+            // Main Rectangle
+            Rectangle()
+                .fill(Color.white)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                )
+            
+            content()
+        }
+    }
+    
+    private var hintOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    showingHint = false
+                }
+            
+            ZStack {
+                // Shadow layer for the entire box
+                Rectangle()
+                    .fill(Color.black)
+                    .offset(x: 6, y: 6)
+                
+                // Main box
+                Rectangle()
+                    .fill(Color.white)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                    )
+                
+                VStack(spacing: 20) {
+                    Text("Need a hint?")
+                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    Text(hint)
+                        .font(.system(.body, design: .monospaced))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Button(action: {
+                        showingHint = false
+                    }) {
+                        buttonBackground {
+                            Text("Got it")
+                                .foregroundColor(.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 120, height: 40)
+                    .padding(.top, 40)
+                }
+                .padding(40)
+                .padding(.top, 20)
+            }
+            .frame(width: 400, height: 300)
+        }
+    }
 }
 
 // Helper for getting frame size
@@ -691,7 +786,8 @@ struct DataStructureView_Previews: PreviewProvider {
             cells: cells,
             connections: connections,
             availableElements: ["4", "5", "6"],
-            zoomPanState: zoomPanState
+            zoomPanState: zoomPanState,
+            hint: "This is a sample hint for the preview"
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

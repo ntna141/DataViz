@@ -179,17 +179,35 @@ struct CodeViewer: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(lines) { line in
-                    CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                Text("</> python")
+                    .font(.system(.subheadline, design: .monospaced))
+                    .foregroundColor(.primary)
             }
-            .padding(.leading, 15)
+            .padding(.horizontal, 15)
             .padding(.vertical, 8)
-            .background(Color(.systemBackground))
-            .cornerRadius(8)
+            
+            // Divider
+            Divider()
+            
+            // Code content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(lines) { line in
+                        CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
+                    }
+                }
+                .padding(.horizontal, 15)  // Added right padding to match left
+                .padding(.vertical, 12)
+            }
         }
+        .background(Color(.systemBackground))
+        .overlay(
+            Rectangle()
+                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+        )
     }
 }
 

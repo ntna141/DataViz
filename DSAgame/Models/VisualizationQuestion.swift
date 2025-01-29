@@ -61,71 +61,12 @@ struct VisualizationQuestionView: View {
             HStack(spacing: 0) {
                 // Left half - Code viewer
                 VStack(spacing: 8) {
-                    // Header with close and hint buttons
-                    HStack {
-                        // Back button
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            Button(action: {
-                                presentationMode.wrappedValue.dismiss()
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .frame(width: 44, height: 44)
-                        .padding(.leading, 30)
-                        .padding(.top, 30)
-                        
-                        Spacer()
-                        
-                        // Hint button
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            Button(action: {
-                                showingHint = true
-                            }) {
-                                Image(systemName: "questionmark.circle")
-                                    .font(.title)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .frame(width: 44, height: 44)
-                        .padding(.trailing, 30)
-                        .padding(.top, 30)
-                    }
-                    
                     // Title and description
-                    Spacer().frame(height: 30)
                     Text(question.title)
                         .font(.system(.title, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 20)
+                        .padding(.top, 30)
                     Text(question.description)
                         .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -141,7 +82,7 @@ struct VisualizationQuestionView: View {
                         return modifiedLine
                     })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.leading, 20)
+                    .padding(.horizontal, 20)
                 }
                 .frame(maxWidth: .infinity)
                 .overlay(
@@ -163,162 +104,12 @@ struct VisualizationQuestionView: View {
                             setValue(value, forCellAtIndex: index)
                         }
                     },
-                    zoomPanState: zoomPanState
+                    zoomPanState: zoomPanState,
+                    hint: question.hint
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            
-            // Navigation buttons at the bottom
-            VStack {
-                Spacer()
-                HStack {
-                    // This Spacer takes 25% of the space
-                    Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
-                    
-                    // Previous button
-                    Button(action: {
-                        if currentStepIndex > 0 {
-                            let prevIndex = currentStepIndex - 1
-                            currentStepIndex = prevIndex
-                            currentStep = question.steps[prevIndex]
-                            visualizationKey = UUID()
-                        }
-                    }) {
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            // Button content
-                            Text("Previous")
-                                .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
-                        }
-                    }
-                    .disabled(currentStepIndex == 0)
-                    .buttonStyle(.plain)
-                    .frame(width: 120, height: 40)
-                    .padding(.leading, 40)
-                    
-                    Spacer()
-                    
-                    // Next/Complete button
-                    Button(action: {
-                        if isLastStep {
-                            onComplete()
-                        } else {
-                            moveToNextStep()
-                        }
-                    }) {
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            // Button content
-                            Text(isLastStep ? "Complete" : "Next")
-                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()) ? Color.gray : Color.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
-                        }
-                    }
-                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
-                    .buttonStyle(.plain)
-                    .frame(width: 120, height: 40)
-                    .padding(.trailing, 40)
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-            
-            // Hint overlay
-            .overlay(
-                Group {
-                    if showingHint {
-                        ZStack {
-                            Color.black.opacity(0.3)
-                                .ignoresSafeArea()
-                                .onTapGesture {
-                                    showingHint = false
-                                }
-                            
-                            ZStack {
-                                // Shadow layer for the entire box
-                                Rectangle()
-                                    .fill(Color.black)
-                                    .offset(x: 6, y: 6)
-                                
-                                // Main box
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .overlay(
-                                        Rectangle()
-                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                    )
-                                
-                                VStack(spacing: 20) {
-                                    Text("Need a hint?")
-                                        .font(.system(.body, design: .monospaced).weight(.bold))
-                                    Text(question.hint)
-                                        .font(.system(.body, design: .monospaced))
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal)
-                                    
-                                    Button(action: {
-                                        showingHint = false
-                                    }) {
-                                        ZStack {
-                                            // Shadow layer
-                                            Rectangle()
-                                                .fill(Color.black)
-                                                .offset(x: 6, y: 6)
-                                            
-                                            // Main rectangle
-                                            Rectangle()
-                                                .fill(Color.white)
-                                                .overlay(
-                                                    Rectangle()
-                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                                )
-                                            
-                                            // Button content
-                                            Text("Got it")
-                                                .foregroundColor(.blue)
-                                                .font(.system(.body, design: .monospaced).weight(.bold))
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                    .frame(width: 120, height: 40)
-                                    .padding(.top, 40)
-                                }
-                                .padding(40)
-                                .padding(.top, 20)
-
-                            }
-                            .frame(width: 400, height: 300)
-                        }
-                    }
-                }
-            )
         }
     }
     
