@@ -63,32 +63,69 @@ struct VisualizationQuestionView: View {
                 VStack(spacing: 8) {
                     // Header with close and hint buttons
                     HStack {
-                        Button(action: {
-                            showingHint = true
-                        }) {
-                            Image(systemName: "questionmark.circle")
-                                .font(.title2)
-                                .foregroundColor(.blue)
+                        // Back button
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main Rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            Button(action: {
+                                presentationMode.wrappedValue.dismiss()
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.blue)
+                            }
                         }
+                        .frame(width: 44, height: 44)
+                        .padding(.leading, 30)
+                        .padding(.top, 30)
                         
                         Spacer()
                         
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.gray)
+                        // Hint button
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main Rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            Button(action: {
+                                showingHint = true
+                            }) {
+                                Image(systemName: "questionmark.circle")
+                                    .font(.title)
+                                    .foregroundColor(.blue)
+                            }
                         }
+                        .frame(width: 44, height: 44)
+                        .padding(.trailing, 30)
+                        .padding(.top, 30)
                     }
-                    .padding(.top, 8)
-                    .padding(.leading, 20)
                     
                     // Title and description
                     Text(question.title)
                         .font(.title)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 20)
+                        .padding(.top, 20)
                     Text(question.description)
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)

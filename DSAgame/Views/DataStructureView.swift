@@ -291,7 +291,6 @@ struct DataStructureView: View {
                         height: zoomPanState.steadyPan.height + gesturePan.height
                     ))
             }
-            .clipped()
             
             // Overlay elements that should not be transformed
             if let dragState = dragState {
