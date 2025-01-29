@@ -110,6 +110,87 @@ struct VisualizationQuestionView: View {
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            
+            // Add navigation buttons at the bottom
+           VStack {
+                Spacer()
+                HStack {
+                    // This Spacer takes 25% of the space
+                    Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
+                    
+                    // Previous button
+                    Button(action: {
+                        if currentStepIndex > 0 {
+                            let prevIndex = currentStepIndex - 1
+                            currentStepIndex = prevIndex
+                            currentStep = question.steps[prevIndex]
+                            visualizationKey = UUID()
+                        }
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text("Previous")
+                                .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
+                    }
+                    .disabled(currentStepIndex == 0)
+                    .buttonStyle(.plain)
+                    .frame(width: 120, height: 40)
+                    .padding(.leading, 40)
+                    
+                    Spacer()
+                    
+                    // Next/Complete button
+                    Button(action: {
+                        if isLastStep {
+                            onComplete()
+                        } else {
+                            moveToNextStep()
+                        }
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text(isLastStep ? "Complete" : "Next")
+                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()) ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
+                    }
+                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                    .buttonStyle(.plain)
+                    .frame(width: 120, height: 40)
+                    .padding(.trailing, 40)
+                    
+                    Spacer()
+                }
+                .padding()
+            }
         }
     }
     
