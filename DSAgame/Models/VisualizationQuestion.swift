@@ -121,14 +121,16 @@ struct VisualizationQuestionView: View {
                     }
                     
                     // Title and description
+                    Spacer().frame(height: 30)
                     Text(question.title)
-                        .font(.title)
+                        .font(.system(.title, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 20)
-                        .padding(.top, 20)
                     Text(question.description)
-                        .font(.body)
+                        .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 5)
+                        .padding(.bottom, 20)
                         .padding(.leading, 20)
                     
                     // Code viewer
@@ -175,67 +177,71 @@ struct VisualizationQuestionView: View {
                     Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
                     
                     // Previous button
-                    ZStack {
-                        // Shadow layer
-                        Rectangle()
-                            .fill(Color.black)
-                            .offset(x: 6, y: 6)
-                        
-                        // Main rectangle
-                        Rectangle()
-                            .fill(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                            )
-                        
-                        // Button content
-                        Button("Previous") {
-                            if currentStepIndex > 0 {
-                                let prevIndex = currentStepIndex - 1
-                                currentStepIndex = prevIndex
-                                currentStep = question.steps[prevIndex]
-                                visualizationKey = UUID()
-                            }
+                    Button(action: {
+                        if currentStepIndex > 0 {
+                            let prevIndex = currentStepIndex - 1
+                            currentStepIndex = prevIndex
+                            currentStep = question.steps[prevIndex]
+                            visualizationKey = UUID()
                         }
-                        .disabled(currentStepIndex == 0)
-                        .buttonStyle(.plain)
-                        .foregroundColor(.blue)
-                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text("Previous")
+                                .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
                     }
+                    .disabled(currentStepIndex == 0)
+                    .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.leading, 40)
                     
                     Spacer()
                     
                     // Next/Complete button
-                    ZStack {
-                        // Shadow layer
-                        Rectangle()
-                            .fill(Color.black)
-                            .offset(x: 6, y: 6)
-                        
-                        // Main rectangle
-                        Rectangle()
-                            .fill(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                            )
-                        
-                        // Button content
-                        Button(isLastStep ? "Complete" : "Next") {
-                            if isLastStep {
-                                onComplete()
-                            } else {
-                                moveToNextStep()
-                            }
+                    Button(action: {
+                        if isLastStep {
+                            onComplete()
+                        } else {
+                            moveToNextStep()
                         }
-                        .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
-                        .buttonStyle(.plain)
-                        .foregroundColor(.blue)
-                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text(isLastStep ? "Complete" : "Next")
+                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()) ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
                     }
+                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                    .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.trailing, 40)
                     
@@ -243,13 +249,76 @@ struct VisualizationQuestionView: View {
                 }
                 .padding()
             }
-        }
-        .alert("Need a hint?", isPresented: $showingHint) {
-            Button("Got it") {
-                showingHint = false
-            }
-        } message: {
-            Text(question.hint)
+            
+            // Hint overlay
+            .overlay(
+                Group {
+                    if showingHint {
+                        ZStack {
+                            Color.black.opacity(0.3)
+                                .ignoresSafeArea()
+                                .onTapGesture {
+                                    showingHint = false
+                                }
+                            
+                            ZStack {
+                                // Shadow layer for the entire box
+                                Rectangle()
+                                    .fill(Color.black)
+                                    .offset(x: 6, y: 6)
+                                
+                                // Main box
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .overlay(
+                                        Rectangle()
+                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                    )
+                                
+                                VStack(spacing: 20) {
+                                    Text("Need a hint?")
+                                        .font(.system(.body, design: .monospaced).weight(.bold))
+                                    Text(question.hint)
+                                        .font(.system(.body, design: .monospaced))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                    
+                                    Button(action: {
+                                        showingHint = false
+                                    }) {
+                                        ZStack {
+                                            // Shadow layer
+                                            Rectangle()
+                                                .fill(Color.black)
+                                                .offset(x: 6, y: 6)
+                                            
+                                            // Main rectangle
+                                            Rectangle()
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                                )
+                                            
+                                            // Button content
+                                            Text("Got it")
+                                                .foregroundColor(.blue)
+                                                .font(.system(.body, design: .monospaced).weight(.bold))
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: 120, height: 40)
+                                    .padding(.top, 40)
+                                }
+                                .padding(40)
+                                .padding(.top, 20)
+
+                            }
+                            .frame(width: 400, height: 300)
+                        }
+                    }
+                }
+            )
         }
     }
     
