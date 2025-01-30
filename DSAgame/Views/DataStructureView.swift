@@ -192,10 +192,8 @@ struct DataStructureView: View {
     let availableElements: [String]
     let onElementDropped: (String, Int) -> Void
     let zoomPanState: VisualizationZoomPanState
+    let hint: String?
     @Environment(\.presentationMode) var presentationMode
-    let hint: String
-    @State private var showingHint = false
-    
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
@@ -207,6 +205,7 @@ struct DataStructureView: View {
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
     @State private var droppedElements: [String] = []
+    @State private var showingHint = false
     @StateObject private var cellSizeManager = CellSizeManager()
     
     // Keep gesture states separate as they are temporary
@@ -220,7 +219,7 @@ struct DataStructureView: View {
         availableElements: [String] = [],
         onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
         zoomPanState: VisualizationZoomPanState,
-        hint: String
+        hint: String? = nil
     ) {
         self.layoutType = layoutType
         self.cells = cells
@@ -320,18 +319,26 @@ struct DataStructureView: View {
                     
                     Spacer()
                     
-                    // Hint button
-                    Button(action: {
-                        showingHint = true
-                    }) {
-                        buttonBackground {
-                            Image(systemName: "questionmark.circle")
-                                .font(.title)
-                                .foregroundColor(.blue)
+                    // Hint button - only show if hint is available
+                    if let hint = hint {
+                        Button(action: {
+                            showingHint = true
+                        }) {
+                            buttonBackground {
+                                HStack {
+                                    Image(systemName: "lightbulb.fill")
+                                        .font(.title)
+                                        .foregroundColor(.yellow)
+                                    Text("Need a hint?")
+                                        .foregroundColor(.primary)
+                                        .font(.system(.body, design: .monospaced))
+                                }
+                            }
                         }
+                        .buttonStyle(.plain)
+                        .frame(width: 200, height: 44)
+                        .padding(.trailing, 20)
                     }
-                    .frame(width: 44, height: 44)
-                    .padding(.trailing, 15)
                     
                     // Reset button
                     Button(action: {
@@ -359,7 +366,65 @@ struct DataStructureView: View {
             
             // Hint overlay
             if showingHint {
-                hintOverlay
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingHint = false
+                        }
+                    
+                    VStack(spacing: 20) {
+                        HStack {
+                            Image(systemName: "lightbulb.fill")
+                                .font(.title)
+                                .foregroundColor(.yellow)
+                            Text("Hint")
+                                .font(.system(.title2, design: .monospaced).weight(.bold))
+                        }
+                        
+                        ScrollView {
+                            Text(hint ?? "")
+                                .font(.system(.body, design: .monospaced))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxHeight: 300)  // Maximum height for very long hints
+                        
+                        Button(action: {
+                            showingHint = false
+                        }) {
+                            buttonBackground {
+                                Text("Got it!")
+                                    .foregroundColor(.blue)
+                                    .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                        .padding(.top, 20)
+                    }
+                    .padding(40)
+                    .background(
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main box
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                        }
+                    )
+                    .frame(minWidth: 400, maxWidth: 600)
+                    .fixedSize(horizontal: true, vertical: true)  // Size to fit content
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)  // Center in screen
+                }
             }
         }
         .onChange(of: cellSize) { newSize in
@@ -705,56 +770,6 @@ struct DataStructureView: View {
             content()
         }
     }
-    
-    private var hintOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.3)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    showingHint = false
-                }
-            
-            ZStack {
-                // Shadow layer for the entire box
-                Rectangle()
-                    .fill(Color.black)
-                    .offset(x: 6, y: 6)
-                
-                // Main box
-                Rectangle()
-                    .fill(Color.white)
-                    .overlay(
-                        Rectangle()
-                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                    )
-                
-                VStack(spacing: 20) {
-                    Text("Need a hint?")
-                        .font(.system(.body, design: .monospaced).weight(.bold))
-                    Text(hint)
-                        .font(.system(.body, design: .monospaced))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    Button(action: {
-                        showingHint = false
-                    }) {
-                        buttonBackground {
-                            Text("Got it")
-                                .foregroundColor(.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .frame(width: 120, height: 40)
-                    .padding(.top, 40)
-                }
-                .padding(40)
-                .padding(.top, 20)
-            }
-            .frame(width: 400, height: 300)
-        }
-    }
 }
 
 // Helper for getting frame size
@@ -787,7 +802,7 @@ struct DataStructureView_Previews: PreviewProvider {
             connections: connections,
             availableElements: ["4", "5", "6"],
             zoomPanState: zoomPanState,
-            hint: "This is a sample hint for the preview"
+            hint: "This is a hint"
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

@@ -140,6 +140,7 @@ class GameProgressionManager {
             stepEntity.orderIndex = Int32(index)
             stepEntity.codeHighlightedLine = Int32(stepSpec.lineNumber)
             stepEntity.lineComment = stepSpec.comment
+            stepEntity.hint = stepSpec.hint
             stepEntity.userInputRequired = stepSpec.userInputRequired
             stepEntity.availableElements = stepSpec.availableElements
             stepEntity.question = visualization
@@ -169,23 +170,25 @@ class GameProgressionManager {
             }
             
             // Create connections using node indices
-            for connectionSpec in stepSpec.connections {
-                let connectionEntity = NodeConnectionEntity(context: context)
-                connectionEntity.uuid = UUID()
-                connectionEntity.label = connectionSpec.label
-                connectionEntity.isHighlighted = connectionSpec.isHighlighted ?? false
-                connectionEntity.isSelfPointing = false
-                connectionEntity.style = connectionSpec.style ?? "straight"
-                connectionEntity.step = stepEntity
-                
-                // Link to nodes using indices
-                connectionEntity.fromNode = nodeEntities[connectionSpec.from]
-                connectionEntity.toNode = nodeEntities[connectionSpec.to]
-                
-                print("Created connection: \(connectionSpec.from) -> \(connectionSpec.to)")
-                print("  - From node value: '\(nodeEntities[connectionSpec.from].value ?? "")'")
-                print("  - To node value: '\(nodeEntities[connectionSpec.to].value ?? "")'")
-                print("  - Style: \(connectionEntity.style ?? "straight")")
+            if let connections = stepSpec.connections {
+                for connectionSpec in connections {
+                    let connectionEntity = NodeConnectionEntity(context: context)
+                    connectionEntity.uuid = UUID()
+                    connectionEntity.label = connectionSpec.label
+                    connectionEntity.isHighlighted = connectionSpec.isHighlighted ?? false
+                    connectionEntity.isSelfPointing = false
+                    connectionEntity.style = connectionSpec.style ?? "straight"
+                    connectionEntity.step = stepEntity
+                    
+                    // Link to nodes using indices
+                    connectionEntity.fromNode = nodeEntities[connectionSpec.from]
+                    connectionEntity.toNode = nodeEntities[connectionSpec.to]
+                    
+                    print("Created connection: \(connectionSpec.from) -> \(connectionSpec.to)")
+                    print("  - From node value: '\(nodeEntities[connectionSpec.from].value ?? "")'")
+                    print("  - To node value: '\(nodeEntities[connectionSpec.to].value ?? "")'")
+                    print("  - Style: \(connectionEntity.style ?? "straight")")
+                }
             }
         }
         

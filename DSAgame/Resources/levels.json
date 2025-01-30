@@ -8,119 +8,339 @@
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Building a Linked List",
-                    "description": "Learn how to build a linked list by following the code and completing the visualization",
-                    "hint": "Watch how each node is connected to the next one. The head node is our starting point, and we build the list by connecting nodes in sequence.",
-                    "review": "Great job! You've learned the basics of building a linked list. Each node contains a value and points to the next node in the sequence, forming a chain of data.",
-                    "difficulty": 1,
+                    "title": "Understanding Circular Arrays",
+                    "description": "Learn how circular arrays work by watching the code execute and then building your own operations",
+                    "hint": "Key formulas: 1) For enqueue: rear = (rear + 1) % size moves rear forward, wrapping to 0 when needed. 2) For dequeue: front = (front + 1) % size moves front forward similarly. 3) Array is full when (rear + 1) % size equals front!",
+                    "review": "Excellent! You've mastered both enqueue and dequeue operations on a circular array, including handling empty and full conditions.",
+                    "difficulty": 2,
                     "visualization": {
-                        "code": [
-                            "class Node {",
-                            "    var value: Int",
-                            "    var next: Node?",
-                            "}",
-                            "",
-                            "func createList() {",
-                            "    let head = Node(5)",
-                            "    head.next = Node(3)",
-                            "    head.next.next = Node(7)",
-                            "}"
-                        ],
-                        "dataStructureType": "linkedList",
-                        "steps": [
-                            {
-                                "lineNumber": 1,
-                                "comment": "First, we define our Node class",
-                                "userInputRequired": false,
-                                "availableElements": [],
-                                "nodes": [
-                                    { "value": "", "label": "head" },
-                                    { "value": "" },
-                                    { "value": "" }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 7,
-                                "comment": "Create the head node with value 5",
-                                "userInputRequired": false,
-                                "availableElements": [],
-                                "nodes": [
-                                    { "value": "5", "label": "head" },
-                                    { "value": "" },
-                                    { "value": "" }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 8,
-                                "comment": "Add the second node with value 3",
-                                "userInputRequired": true,
-                                "availableElements": ["3", "7", "9"],
-                                "nodes": [
-                                    { "value": "5", "label": "head" },
-                                    { "value": "" },
-                                    { "value": "" }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 9,
-                                "comment": "Complete the linked list by adding 7",
-                                "userInputRequired": true,
-                                "availableElements": ["7"],
-                                "nodes": [
-                                    { "value": "5", "label": "head" },
-                                    { "value": "3" },
-                                    { "value": "" }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
-                            }
-                        ]
+                      "code": [
+                        "class CircularArray:",
+                        "    def __init__(self, size=6):",
+                        "        self.size = size",
+                        "        self.array = [None] * size",
+                        "        self.front = -1",
+                        "        self.rear = -1",
+                        "",
+                        "    def is_empty(self):",
+                        "        return self.front == -1",
+                        "",
+                        "    def is_full(self):",
+                        "        return (self.rear + 1) % self.size == self.front",
+                        "",
+                        "    def enqueue(self, value):",
+                        "        if self.is_full():",
+                        "            return False",
+                        "        if self.is_empty():",
+                        "            self.front = 0",
+                        "        self.rear = (self.rear + 1) % self.size",
+                        "        self.array[self.rear] = value",
+                        "        return True",
+                        "",
+                        "    def dequeue(self):",
+                        "        if self.is_empty():",
+                        "            return None",
+                        "        value = self.array[self.front]",
+                        "        self.array[self.front] = None",
+                        "        if self.front == self.rear:",
+                        "            self.front = self.rear = -1",
+                        "        else:",
+                        "            self.front = (self.front + 1) % self.size",
+                        "        return value"
+                      ],
+                      "dataStructureType": "array",
+                      "steps": [
+                        {
+                          "lineNumber": 2,
+                          "comment": "Let's understand how CircularArray works. We start with an empty array of size 6, and two pointers: front and rear, both initialized to -1",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": -1,
+                            "rear": -1
+                          }
+                        },
+                        {
+                          "lineNumber": 8,
+                          "comment": "The is_empty() method checks if the array is empty. An array is empty when front is -1",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": -1,
+                            "rear": -1
+                          }
+                        },
+                        {
+                          "lineNumber": 11,
+                          "comment": "The is_full() method is more complex. Let's see how it works with some examples",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 4
+                          }
+                        },
+                        {
+                          "lineNumber": 12,
+                          "comment": "To check if full: we calculate (rear + 1) % size. Here: (4 + 1) % 6 = 5. Since 5 ≠ front(0), array isn't full yet",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "", "highlighted": true, "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 4
+                          }
+                        },
+                        {
+                          "lineNumber": 13,
+                          "comment": "Let's try enqueuing elements. First, let's add 'A' to the empty array, where should we put A?",
+                          "hint": "The rear pointer should be incremented to 0, since the array is empty and we're adding the first element",
+                          "userInputRequired": true,
+                          "availableElements": ["A"],
+                          "nodes": [
+                            {"value": "", "highlighted": true, "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": -1,
+                            "rear": -1
+                          }
+                        },
+                        {
+                          "lineNumber": 16,
+                          "comment": "Since array was empty, front is set to 0. Rear is also set to 0 for the first element",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 0
+                          }
+                        },
+                        {
+                          "lineNumber": 18,
+                          "comment": "For the next element 'B', where should we put B?",
+                          "userInputRequired": true,
+                          "availableElements": ["B"],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "", "highlighted": true, "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 1
+                          }
+                        },
+                        {
+                          "lineNumber": 19,
+                          "comment": "Perfect! Now let's add 'C'. Rear will move to (1 + 1) % 6 = 2",
+                          "userInputRequired": true,
+                          "availableElements": ["C"],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "", "highlighted": true, "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 2
+                          }
+                        },
+                        {
+                          "lineNumber": 19,
+                          "comment": "Great! Let's see what happens when we reach the end. Add 'D', 'E', and 'F'",
+                          "userInputRequired": true,
+                          "availableElements": ["D", "E", "F"],
+                          "nodes": [
+                            {"value": "A", "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 2
+                          }
+                        },
+                        {
+                          "lineNumber": 19,
+                          "comment": "The array is now full! Notice how rear points to the last element and (rear + 1) % size equals front",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "A", "highlighted": true, "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 22,
+                          "comment": "Now let's understand dequeue.",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "A", "highlighted": true, "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 26,
+                          "comment": "Since front (0) doesn't equal rear (5), we enter the else block. This means we still have more elements in the queue",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "B", "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 0,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 29,
+                          "comment": "To move front forward, we use the modulo operation: (front + 1) % size. Here: (0 + 1) % 6 = 1. This wraps around when we reach the end of the array. For example, (5 + 1) % 6 would give us 0, making it circular!",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "B", "highlighted": true, "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 1,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 22,
+                          "comment": "Let's dequeue again. What would the state of the array be?",
+                          "hint": "When we call dequeue(), we: 1) Get the value 'B' from the front position, 2) Set that position to empty (None), and 3) Move front forward. This effectively removes 'B' from our queue while maintaining the order of remaining elements (C, D, E, F)",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "B", "highlighted": true, "label": "1"},
+                            {"value": "C", "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 2,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 26,
+                          "comment": "What if we dequeue all elements? Let's try it! Remove the remaining elements",
+                          "userInputRequired": true,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "C", "highlighted": true, "label": "2"},
+                            {"value": "D", "label": "3"},
+                            {"value": "E", "label": "4"},
+                            {"value": "F", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": 2,
+                            "rear": 5
+                          }
+                        },
+                        {
+                          "lineNumber": 27,
+                          "comment": "When we remove the last element, both front and rear become -1",
+                          "userInputRequired": false,
+                          "availableElements": [],
+                          "nodes": [
+                            {"value": "", "label": "0"},
+                            {"value": "", "label": "1"},
+                            {"value": "", "label": "2"},
+                            {"value": "", "label": "3"},
+                            {"value": "", "label": "4"},
+                            {"value": "", "label": "5"}
+                          ],
+                          "pointers": {
+                            "front": -1,
+                            "rear": -1
+                          }
+                        }
+                      ]
                     }
                 },
                 {

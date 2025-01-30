@@ -381,6 +381,7 @@ class VisualizationManager {
                     return VisualizationStep(
                         codeHighlightedLine: Int(stepEntity.codeHighlightedLine),
                         lineComment: stepEntity.lineComment,
+                        hint: stepEntity.hint,
                         cells: cells,
                         connections: loadedConnections,
                         userInputRequired: stepEntity.userInputRequired,

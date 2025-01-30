@@ -29,10 +29,11 @@ struct LevelData: Codable {
     struct Step: Codable {
         let lineNumber: Int
         let comment: String?
+        let hint: String?
         let userInputRequired: Bool
         let availableElements: [String]
         let nodes: [Node]
-        let connections: [Connection]
+        let connections: [Connection]?
     }
     
     struct Node: Codable {

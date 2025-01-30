@@ -5,6 +5,7 @@ struct VisualizationStep {
     let id = UUID()
     let codeHighlightedLine: Int
     let lineComment: String?
+    let hint: String?
     var cells: [any DataStructureCell]
     var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
@@ -105,10 +106,67 @@ struct VisualizationQuestionView: View {
                         }
                     },
                     zoomPanState: zoomPanState,
-                    hint: question.hint
+                    hint: currentStep.hint
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            
+            // Hint overlay
+            if showingHint {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingHint = false
+                        }
+                    
+                    ZStack {
+                        // Shadow layer for the entire box
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main box
+                        Rectangle()
+                            .fill(Color.white)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        VStack(spacing: 20) {
+                            HStack {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.title)
+                                    .foregroundColor(.yellow)
+                                Text("Hint")
+                                    .font(.system(.title2, design: .monospaced).weight(.bold))
+                            }
+                            
+                            Text(currentStep.hint ?? "")
+                                .font(.system(.body, design: .monospaced))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Button(action: {
+                                showingHint = false
+                            }) {
+                                buttonBackground {
+                                    Text("Got it!")
+                                        .foregroundColor(.blue)
+                                        .font(.system(.body, design: .monospaced).weight(.bold))
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .frame(width: 120, height: 40)
+                            .padding(.top, 40)
+                        }
+                        .padding(40)
+                        .padding(.top, 20)
+                    }
+                    .frame(width: 400, height: 300)
+                }
             }
             
             // Add navigation buttons at the bottom
@@ -250,6 +308,25 @@ struct VisualizationQuestionView: View {
             return current.value == next.value
         }
     }
+    
+    private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+            
+            // Main Rectangle
+            Rectangle()
+                .fill(Color.white)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                )
+            
+            content()
+        }
+    }
 }
 
 extension Collection {
@@ -291,12 +368,14 @@ struct VisualizationQuestionExample: View {
             VisualizationStep(
                 codeHighlightedLine: 1,
                 lineComment: "Starting to build the list",
+                hint: "Start by creating the head node, then connect each new node to the previous one.",
                 cells: [],
                 connections: []
             ),
             VisualizationStep(
                 codeHighlightedLine: 2,
                 lineComment: "Create the head node",
+                hint: "Start by creating the head node, then connect each new node to the previous one.",
                 cells: [
                     BasicCell(value: "1")
                 ],
@@ -305,6 +384,7 @@ struct VisualizationQuestionExample: View {
             VisualizationStep(
                 codeHighlightedLine: 3,
                 lineComment: "Add the second node",
+                hint: "Add the second node",
                 cells: [
                     BasicCell(id: "node1", value: "1"),
                     BasicCell(id: "node2", value: "")
