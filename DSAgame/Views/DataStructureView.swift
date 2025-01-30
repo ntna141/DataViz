@@ -196,6 +196,7 @@ struct DataStructureView: View {
     let autoPlayInterval: TimeInterval
     let zoomPanState: VisualizationZoomPanState
     let hint: String?
+    let lineComment: String?
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -225,7 +226,8 @@ struct DataStructureView: View {
         onPlayPausePressed: @escaping () -> Void = {},
         autoPlayInterval: TimeInterval = 4.0,
         zoomPanState: VisualizationZoomPanState,
-        hint: String? = nil
+        hint: String? = nil,
+        lineComment: String? = nil
     ) {
         self.layoutType = layoutType
         self.cells = cells
@@ -237,6 +239,7 @@ struct DataStructureView: View {
         self.autoPlayInterval = autoPlayInterval
         self.zoomPanState = zoomPanState
         self.hint = hint
+        self.lineComment = lineComment
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
     }
@@ -262,7 +265,7 @@ struct DataStructureView: View {
     
     private func mainContent(geometry: GeometryProxy) -> some View {
         let cellSize = adaptiveCellSize(for: geometry.size)
-        let bottomPadding = adaptiveElementListPadding(for: geometry.size)
+        let topPadding = adaptiveElementListPadding(for: geometry.size)
         
         return ZStack {
             // Single container for data structure area
@@ -311,7 +314,7 @@ struct DataStructureView: View {
             }
             
             VStack {
-                // Buttons row
+                // Top controls
                 HStack {
                     // Exit button
                     Button(action: {
@@ -381,8 +384,37 @@ struct DataStructureView: View {
                 
                 Spacer()
                 
-                // Elements list at bottom
-                elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+                VStack(spacing: 20) {
+                    // Elements list above subtitles
+                    ElementsListView(
+                        availableElements: availableElements,
+                        droppedElements: droppedElements,
+                        dragState: dragState,
+                        isOverElementList: isOverElementList,
+                        onDragStarted: { element, location in
+                            dragState = (element, location)
+                        },
+                        onDragChanged: handleDragChanged,
+                        onDragEnded: handleDragEnded,
+                        geometryFrame: geometry.frame(in: .global),
+                        cellSize: cellSize
+                    )
+                    .onHover { isHovered in
+                        isOverElementList = isHovered
+                    }
+                    .padding(.horizontal, 30)
+                    
+                    // Subtitles at the bottom
+                    if let comment = lineComment {
+                        Text(comment)
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 30)
+                            .padding(.bottom, 120)
+                            .padding(.top, 30)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
             }
             
             // Hint overlay
@@ -410,7 +442,6 @@ struct DataStructureView: View {
                                 .padding(.horizontal)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-                        .frame(maxHeight: 300)  // Maximum height for very long hints
                         
                         Button(action: {
                             showingHint = false
@@ -488,29 +519,6 @@ struct DataStructureView: View {
         .position(dragState.location)
     }
     
-    private func elementsListArea(geometry: GeometryProxy, cellSize: CGFloat, bottomPadding: CGFloat) -> some View {
-        VStack {
-            Spacer()
-            ElementsListView(
-                availableElements: availableElements,
-                droppedElements: droppedElements,
-                dragState: dragState,
-                isOverElementList: isOverElementList,
-                onDragStarted: { element, location in
-                    dragState = (element, location)
-                },
-                onDragChanged: handleDragChanged,
-                onDragEnded: handleDragEnded,
-                geometryFrame: geometry.frame(in: .global),
-                cellSize: cellSize
-            )
-            .onHover { isHovered in
-                isOverElementList = isHovered
-            }
-        }
-        .padding(.bottom, bottomPadding)
-    }
-    
     private func handleFrameChange(_ newFrame: CGRect) {
         if newFrame != frame {
             frame = newFrame
@@ -573,14 +581,14 @@ struct DataStructureView: View {
             }
         }
         
-        // Calculate the element list frame with some padding for easier dropping
+        // Calculate the element list frame at the bottom
         let listHeight = cellSizeManager.size * 1.5
-        let listY = globalFrame.height - bottomPadding - listHeight
+        let listY = globalFrame.height - 180 // Adjusted to account for padding and subtitle
         let listWidth = calculateListWidth()
         let listX = (globalFrame.width - listWidth) / 2
         
-        // Add some padding to make the hit area larger
-        let dropPadding: CGFloat = cellSizeManager.size * 0.5
+        // Add generous padding to make the hit area larger
+        let dropPadding: CGFloat = cellSizeManager.size * 1.2 // Increased padding
         let dropZone = CGRect(
             x: listX - dropPadding,
             y: listY - dropPadding,
@@ -620,7 +628,21 @@ struct DataStructureView: View {
         }
     }
     
-    private var bottomPadding: CGFloat {
+    private func calculateListWidth() -> CGFloat {
+        let elements = availableElements + droppedElements
+        if elements.isEmpty {
+            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
+        } else {
+            return min(
+                CGFloat(elements.count) * cellSizeManager.size +
+                CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
+                (cellSizeManager.size * 0.4), // padding (0.2 on each side)
+                UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
+            )
+        }
+    }
+    
+    private var topPadding: CGFloat {
         adaptiveElementListPadding(for: frame.size)
     }
     
@@ -762,17 +784,6 @@ struct DataStructureView: View {
         renderCycle = UUID()
     }
     
-    private func calculateListWidth() -> CGFloat {
-        let elements = availableElements + droppedElements
-        if elements.isEmpty {
-            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
-        } else {
-            return CGFloat(elements.count) * cellSizeManager.size + 
-                   CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
-                   (cellSizeManager.size * 0.4) // padding (0.2 on each side)
-        }
-    }
-    
     private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
         ZStack {
             // Shadow layer
@@ -832,7 +843,8 @@ struct DataStructureView_Previews: PreviewProvider {
             onPlayPausePressed: {},
             autoPlayInterval: 4.0,
             zoomPanState: zoomPanState,
-            hint: "This is a hint"
+            hint: "This is a hint",
+            lineComment: "This is a line comment"
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

@@ -28,7 +28,7 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
         // Calculate starting position to center the list
         // Adjust vertical position to account for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
         
         // Create a copy of cells that we can modify
         var orderedCells = cells
@@ -112,7 +112,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
         
         // Center the tree both horizontally and vertically
         // Account for element list in vertical centering
-        let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + LayoutConfig.cellRadius
+        let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + 
+                    LayoutConfig.cellRadius - (frame.height * 0.1)
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -194,7 +195,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
         
         // Center horizontally and vertically, accounting for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell

@@ -134,7 +134,8 @@ struct VisualizationQuestionView: View {
                     },
                     autoPlayInterval: calculateAutoPlayInterval(comment: currentStep.lineComment),
                     zoomPanState: zoomPanState,
-                    hint: currentStep.hint
+                    hint: currentStep.hint,
+                    lineComment: currentStep.lineComment
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
