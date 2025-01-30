@@ -42,6 +42,9 @@ struct VisualizationQuestionView: View {
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
     @StateObject private var zoomPanState = VisualizationZoomPanState()
+    @State private var isAutoPlaying = false
+    @State private var autoPlayTimer: Timer?
+    @StateObject private var cellSizeManager = CellSizeManager()
     
     init(question: VisualizationQuestion, onComplete: @escaping () -> Void = {}) {
         print("\n=== Initializing VisualizationQuestionView ===")
@@ -68,6 +71,22 @@ struct VisualizationQuestionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 20)
                         .padding(.top, 30)
+                    
+                    // Top buttons row
+                    HStack {
+                        Spacer()
+                        
+                        // Exit button
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .padding(.trailing, 20)
+                    
                     Text(question.description)
                         .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -105,6 +124,15 @@ struct VisualizationQuestionView: View {
                             setValue(value, forCellAtIndex: index)
                         }
                     },
+                    isAutoPlaying: isAutoPlaying,
+                    onPlayPausePressed: {
+                        if isAutoPlaying {
+                            stopAutoPlay()
+                        } else {
+                            startAutoPlay()
+                        }
+                    },
+                    autoPlayInterval: calculateAutoPlayInterval(comment: currentStep.lineComment),
                     zoomPanState: zoomPanState,
                     hint: currentStep.hint
                 )
@@ -170,7 +198,7 @@ struct VisualizationQuestionView: View {
             }
             
             // Add navigation buttons at the bottom
-           VStack {
+            VStack {
                 Spacer()
                 HStack {
                     // This Spacer takes 25% of the space
@@ -250,6 +278,13 @@ struct VisualizationQuestionView: View {
                 .padding()
             }
         }
+        .onChange(of: question.layoutType) { newType in
+            handleLayoutTypeChange(newType)
+        }
+        .environmentObject(cellSizeManager)
+        .onDisappear {
+            stopAutoPlay()
+        }
     }
     
     private var isLastStep: Bool {
@@ -326,6 +361,62 @@ struct VisualizationQuestionView: View {
             
             content()
         }
+    }
+    
+    private func startAutoPlay() {
+        guard !isLastStep && !currentStep.userInputRequired else {
+            isAutoPlaying = false
+            return
+        }
+        
+        isAutoPlaying = true
+        scheduleNextStep()
+    }
+    
+    private func stopAutoPlay() {
+        isAutoPlaying = false
+        autoPlayTimer?.invalidate()
+        autoPlayTimer = nil
+    }
+    
+    private func scheduleNextStep() {
+        // Cancel any existing timer
+        autoPlayTimer?.invalidate()
+        
+        // Calculate interval based on current step's comment
+        let interval = calculateAutoPlayInterval(comment: currentStep.lineComment)
+        
+        // Schedule next step
+        autoPlayTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [self] _ in
+            if isAutoPlaying && !isLastStep && !currentStep.userInputRequired {
+                moveToNextStep()
+                // If we can continue, schedule the next step
+                if !isLastStep && !currentStep.userInputRequired {
+                    scheduleNextStep()
+                } else {
+                    stopAutoPlay()
+                }
+            } else {
+                stopAutoPlay()
+            }
+        }
+    }
+    
+    private func handleLayoutTypeChange(_ newType: DataStructureLayoutType) {
+        // Implementation of handleLayoutTypeChange method
+    }
+    
+    private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
+        guard let comment = comment else { return 3.0 }  // Default interval if no comment
+        
+        // Base interval of 2 seconds
+        let baseInterval: TimeInterval = 2.0
+        
+        // Add 0.05 seconds per character (about 20 chars per second reading speed)
+        let additionalTime = TimeInterval(comment.count) * 0.05
+        
+        // Clamp the total interval between 2 and 7 seconds
+        return min(max(baseInterval + additionalTime, 2.0), 7.0)
     }
 }
 

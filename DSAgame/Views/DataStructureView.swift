@@ -191,6 +191,9 @@ struct DataStructureView: View {
     let connections: [any DataStructureConnection]
     let availableElements: [String]
     let onElementDropped: (String, Int) -> Void
+    let isAutoPlaying: Bool
+    let onPlayPausePressed: () -> Void
+    let autoPlayInterval: TimeInterval
     let zoomPanState: VisualizationZoomPanState
     let hint: String?
     @Environment(\.presentationMode) var presentationMode
@@ -218,6 +221,9 @@ struct DataStructureView: View {
         connections: [any DataStructureConnection],
         availableElements: [String] = [],
         onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
+        isAutoPlaying: Bool = false,
+        onPlayPausePressed: @escaping () -> Void = {},
+        autoPlayInterval: TimeInterval = 4.0,
         zoomPanState: VisualizationZoomPanState,
         hint: String? = nil
     ) {
@@ -226,6 +232,9 @@ struct DataStructureView: View {
         self.connections = connections
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
+        self.isAutoPlaying = isAutoPlaying
+        self.onPlayPausePressed = onPlayPausePressed
+        self.autoPlayInterval = autoPlayInterval
         self.zoomPanState = zoomPanState
         self.hint = hint
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
@@ -316,6 +325,18 @@ struct DataStructureView: View {
                     }
                     .frame(width: 44, height: 44)
                     .padding(.leading, 30)
+                    
+                    // Play/Pause button
+                    Button(action: onPlayPausePressed) {
+                        buttonBackground {
+                            Image(systemName: isAutoPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.title)
+                                .foregroundColor(canAutoPlay() ? .blue : .gray)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .padding(.leading, 10)
+                    .disabled(!canAutoPlay())
                     
                     Spacer()
                     
@@ -770,6 +791,11 @@ struct DataStructureView: View {
             content()
         }
     }
+    
+    private func canAutoPlay() -> Bool {
+        // Can auto-play if there are cells to display and we're not dragging
+        return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && availableElements.isEmpty
+    }
 }
 
 // Helper for getting frame size
@@ -801,6 +827,10 @@ struct DataStructureView_Previews: PreviewProvider {
             cells: cells,
             connections: connections,
             availableElements: ["4", "5", "6"],
+            onElementDropped: { _, _ in },
+            isAutoPlaying: false,
+            onPlayPausePressed: {},
+            autoPlayInterval: 4.0,
             zoomPanState: zoomPanState,
             hint: "This is a hint"
         )
