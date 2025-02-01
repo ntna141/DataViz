@@ -198,7 +198,7 @@ struct MultipleChoiceView: View {
                 .font(.system(.headline, design: .monospaced))
                 .padding(.bottom, 5)
             
-            HStack(spacing: cellSizeManager.size * 0.2) {
+            HStack(spacing: cellSizeManager.size * 0.5) {
                 ForEach(answers, id: \.self) { answer in
                     Button(action: {
                         onAnswerSelected(answer)
@@ -211,15 +211,16 @@ struct MultipleChoiceView: View {
                             
                             // Main rectangle with outline
                             Rectangle()
-                                .fill(selectedAnswer == answer ? Color.blue.opacity(0.1) : Color(red: 0.96, green: 0.95, blue: 0.91))
+                                .fill(selectedAnswer == answer ? Color.blue : Color(red: 0.96, green: 0.95, blue: 0.91))
                                 .overlay(
                                     Rectangle()
                                         .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
                                 )
+                                .animation(.spring(response: 0.1, dampingFraction: 0.5, blendDuration: 0), value: selectedAnswer)
                             
                             Text(answer)
                                 .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
-                                .foregroundColor(.black)
+                                .foregroundColor(selectedAnswer == answer ? .white : .black)
                         }
                     }
                     .frame(width: cellSizeManager.size, height: cellSizeManager.size)
@@ -987,20 +988,3 @@ struct CellView: View {
         }
     }
 }
-
-#Preview("Elements List") {
-    ElementsListView(
-        availableElements: ["1", "2", "3"],
-        droppedElements: ["4", "5"],
-        dragState: nil,
-        isOverElementList: false,
-        onDragStarted: { _, _ in },
-        onDragChanged: { _, _ in },
-        onDragEnded: { _ in },
-        geometryFrame: CGRect(x: 0, y: 0, width: 500, height: 300),
-        cellSize: 60
-    )
-    .environmentObject(CellSizeManager())
-    .padding()
-    .previewLayout(.sizeThatFits)
-} 
