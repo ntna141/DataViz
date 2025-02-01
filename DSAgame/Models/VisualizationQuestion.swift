@@ -72,21 +72,6 @@ struct VisualizationQuestionView: View {
                         .padding(.leading, 20)
                         .padding(.top, 30)
                     
-                    // Top buttons row
-                    HStack {
-                        Spacer()
-                        
-                        // Exit button
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    .padding(.trailing, 20)
-                    
                     Text(question.description)
                         .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
