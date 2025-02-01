@@ -160,9 +160,12 @@
                             },
                             {
                                 "lineNumber": 12,
-                                "comment": "To check if full: we calculate (rear + 1) % size. Here: (4 + 1) % 6 = 5. Since 5 ≠ front(0), array isn't full yet",
+                                "comment": "What will be the result of (rear + 1) % size in this case?",
                                 "userInputRequired": false,
                                 "availableElements": [],
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": ["0", "1", "4", "5"],
+                                "multipleChoiceCorrectAnswer": "5",
                                 "nodes": [
                                     {
                                         "value": "A",

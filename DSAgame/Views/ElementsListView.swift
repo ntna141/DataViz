@@ -53,10 +53,6 @@ struct ElementsListView: View {
         .overlay(
             GeometryReader { geometry in
                 Color.clear.onAppear {
-                    print("Actual frame size: \(geometry.size)")
-                    print("Calculated width: \(calculateListWidth())")
-                    print("Cell size: \(cellSize)")
-                    print("Elements: \(availableElements + droppedElements)")
                 }
             }
         )

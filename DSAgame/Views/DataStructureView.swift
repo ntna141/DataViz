@@ -185,6 +185,52 @@ struct GridBackground: View {
     }
 }
 
+// Add MultipleChoiceView before DataStructureView
+struct MultipleChoiceView: View {
+    let answers: [String]
+    let selectedAnswer: String
+    let onAnswerSelected: (String) -> Void
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Select the correct answer:")
+                .font(.system(.headline, design: .monospaced))
+                .padding(.bottom, 5)
+            
+            HStack(spacing: cellSizeManager.size * 0.2) {
+                ForEach(answers, id: \.self) { answer in
+                    Button(action: {
+                        onAnswerSelected(answer)
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle with outline
+                            Rectangle()
+                                .fill(selectedAnswer == answer ? Color.blue.opacity(0.1) : Color(red: 0.96, green: 0.95, blue: 0.91))
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                )
+                            
+                            Text(answer)
+                                .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                .foregroundColor(.black)
+                        }
+                    }
+                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, 30)
+    }
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
@@ -197,6 +243,10 @@ struct DataStructureView: View {
     let zoomPanState: VisualizationZoomPanState
     let hint: String?
     let lineComment: String?
+    let isMultipleChoice: Bool
+    let multipleChoiceAnswers: [String]
+    let onMultipleChoiceAnswerSelected: (String) -> Void
+    let selectedMultipleChoiceAnswer: String
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -227,8 +277,19 @@ struct DataStructureView: View {
         autoPlayInterval: TimeInterval = 4.0,
         zoomPanState: VisualizationZoomPanState,
         hint: String? = nil,
-        lineComment: String? = nil
+        lineComment: String? = nil,
+        isMultipleChoice: Bool = false,
+        multipleChoiceAnswers: [String] = [],
+        onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
+        selectedMultipleChoiceAnswer: String = ""
     ) {
+        print("\n=== Initializing DataStructureView ===")
+        print("Multiple choice enabled: \(isMultipleChoice)")
+        if isMultipleChoice {
+            print("Multiple choice answers: \(multipleChoiceAnswers)")
+            print("Selected answer: \(selectedMultipleChoiceAnswer)")
+        }
+        
         self.layoutType = layoutType
         self.cells = cells
         self.connections = connections
@@ -240,8 +301,14 @@ struct DataStructureView: View {
         self.zoomPanState = zoomPanState
         self.hint = hint
         self.lineComment = lineComment
+        self.isMultipleChoice = isMultipleChoice
+        self.multipleChoiceAnswers = multipleChoiceAnswers
+        self.onMultipleChoiceAnswerSelected = onMultipleChoiceAnswerSelected
+        self.selectedMultipleChoiceAnswer = selectedMultipleChoiceAnswer
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
+        
+        print("Initialization complete")
     }
     
     var body: some View {
@@ -252,13 +319,27 @@ struct DataStructureView: View {
             handleFrameChange(newFrame)
         }
         .onChange(of: cells.map(\.id)) { _ in
+            print("\nCells changed in DataStructureView")
+            print("Is multiple choice: \(isMultipleChoice)")
+            print("Multiple choice answers: \(multipleChoiceAnswers)")
+            print("Selected answer: \(selectedMultipleChoiceAnswer)")
             updateLayout()
         }
         .onChange(of: connections.map(\.id)) { _ in
             updateLayout()
         }
-        .onChange(of: layoutType) { newType in
-            handleLayoutTypeChange(newType)
+        .onChange(of: layoutType) { _ in
+            updateLayout()
+        }
+        .onChange(of: frame) { _ in
+            updateLayout()
+        }
+        .onAppear {
+            print("\nDataStructureView body appeared")
+            print("Is multiple choice: \(isMultipleChoice)")
+            print("Multiple choice answers: \(multipleChoiceAnswers)")
+            print("Selected answer: \(selectedMultipleChoiceAnswer)")
+            updateLayout()
         }
         .environmentObject(cellSizeManager)
     }
@@ -385,24 +466,32 @@ struct DataStructureView: View {
                 Spacer()
                 
                 VStack(spacing: 20) {
-                    // Elements list above subtitles
-                    ElementsListView(
-                        availableElements: availableElements,
-                        droppedElements: droppedElements,
-                        dragState: dragState,
-                        isOverElementList: isOverElementList,
-                        onDragStarted: { element, location in
-                            dragState = (element, location)
-                        },
-                        onDragChanged: handleDragChanged,
-                        onDragEnded: handleDragEnded,
-                        geometryFrame: geometry.frame(in: .global),
-                        cellSize: cellSize
-                    )
-                    .onHover { isHovered in
-                        isOverElementList = isHovered
+                    if isMultipleChoice {
+                        MultipleChoiceView(
+                            answers: multipleChoiceAnswers,
+                            selectedAnswer: selectedMultipleChoiceAnswer,
+                            onAnswerSelected: onMultipleChoiceAnswerSelected
+                        )
+                    } else {
+                        // Elements list above subtitles
+                        ElementsListView(
+                            availableElements: availableElements,
+                            droppedElements: droppedElements,
+                            dragState: dragState,
+                            isOverElementList: isOverElementList,
+                            onDragStarted: { element, location in
+                                dragState = (element, location)
+                            },
+                            onDragChanged: handleDragChanged,
+                            onDragEnded: handleDragEnded,
+                            geometryFrame: geometry.frame(in: .global),
+                            cellSize: cellSize
+                        )
+                        .onHover { isHovered in
+                            isOverElementList = isHovered
+                        }
+                        .padding(.horizontal, 30)
                     }
-                    .padding(.horizontal, 30)
                     
                     // Subtitles at the bottom
                     if let comment = lineComment {
@@ -647,14 +736,6 @@ struct DataStructureView: View {
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
-        print("\n=== Drag Ended ===")
-        print("Drag state: \(String(describing: dragState))")
-        print("Dragging from cell index: \(String(describing: draggingFromCellIndex))")
-        print("Hovered cell index: \(String(describing: hoveredCellIndex))")
-        print("Is over element list: \(isOverElementList)")
-        print("Available elements: \(availableElements)")
-        print("Dropped elements: \(droppedElements)")
-        print("Layout cells: \(layoutCells.map { "\($0.value)" })")
         
         defer {
             dragState = nil
@@ -844,7 +925,11 @@ struct DataStructureView_Previews: PreviewProvider {
             autoPlayInterval: 4.0,
             zoomPanState: zoomPanState,
             hint: "This is a hint",
-            lineComment: "This is a line comment"
+            lineComment: "This is a line comment",
+            isMultipleChoice: false,
+            multipleChoiceAnswers: [],
+            onMultipleChoiceAnswerSelected: { _ in },
+            selectedMultipleChoiceAnswer: ""
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

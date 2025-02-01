@@ -10,6 +10,9 @@ struct VisualizationStep {
     var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
     var availableElements: [String] = []
+    var isMultipleChoice: Bool = false
+    var multipleChoiceAnswers: [String] = []
+    var multipleChoiceCorrectAnswer: String = ""
 }
 
 // Represents a visualization question
@@ -41,6 +44,7 @@ struct VisualizationQuestionView: View {
     @State private var currentStep: VisualizationStep
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
+    @State private var selectedAnswer: String = ""
     @StateObject private var zoomPanState = VisualizationZoomPanState()
     @State private var isAutoPlaying = false
     @State private var autoPlayTimer: Timer?
@@ -51,6 +55,16 @@ struct VisualizationQuestionView: View {
         self.question = question
         self.onComplete = onComplete
         _currentStep = State(initialValue: question.steps[0])
+        
+        print("\nFirst step details:")
+        let firstStep = question.steps[0]
+        print("Line highlighted: \(firstStep.codeHighlightedLine)")
+        print("Comment: \(firstStep.lineComment ?? "none")")
+        print("Is multiple choice: \(firstStep.isMultipleChoice)")
+        if firstStep.isMultipleChoice {
+            print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
+            print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
+        }
         
         print("\nFirst step cells:")
         for (i, cell) in question.steps[0].cells.enumerated() {
@@ -103,7 +117,7 @@ struct VisualizationQuestionView: View {
                     layoutType: question.layoutType,
                     cells: currentStep.cells,
                     connections: currentStep.connections,
-                    availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
+                    availableElements: currentStep.availableElements,
                     onElementDropped: { value, index in
                         if currentStep.userInputRequired {
                             setValue(value, forCellAtIndex: index)
@@ -120,10 +134,26 @@ struct VisualizationQuestionView: View {
                     autoPlayInterval: calculateAutoPlayInterval(comment: currentStep.lineComment),
                     zoomPanState: zoomPanState,
                     hint: currentStep.hint,
-                    lineComment: currentStep.lineComment
+                    lineComment: currentStep.lineComment,
+                    isMultipleChoice: currentStep.isMultipleChoice,
+                    multipleChoiceAnswers: currentStep.multipleChoiceAnswers,
+                    onMultipleChoiceAnswerSelected: { answer in
+                        print("\nMultiple choice answer selected: \(answer)")
+                        selectedAnswer = answer
+                        print("Updated selectedAnswer to: \(selectedAnswer)")
+                    },
+                    selectedMultipleChoiceAnswer: selectedAnswer
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onAppear {
+                    print("\nDataStructureView appeared in VisualizationQuestionView:")
+                    print("Current step index: \(currentStepIndex)")
+                    print("Current step is multiple choice: \(currentStep.isMultipleChoice)")
+                    print("Current step multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+                    print("Current step correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+                    print("Selected answer: \(selectedAnswer)")
+                }
             }
             
             // Hint overlay
@@ -196,6 +226,7 @@ struct VisualizationQuestionView: View {
                             let prevIndex = currentStepIndex - 1
                             currentStepIndex = prevIndex
                             currentStep = question.steps[prevIndex]
+                            selectedAnswer = ""  // Reset selected answer for new step
                             visualizationKey = UUID()
                         }
                     }) {
@@ -285,6 +316,16 @@ struct VisualizationQuestionView: View {
         
         let nextStep = question.steps[nextIndex]
         
+        print("\nCurrent step details:")
+        print("Is multiple choice: \(currentStep.isMultipleChoice)")
+        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+        
+        print("\nNext step details:")
+        print("Is multiple choice: \(nextStep.isMultipleChoice)")
+        print("Multiple choice answers: \(nextStep.multipleChoiceAnswers)")
+        print("Correct answer: \(nextStep.multipleChoiceCorrectAnswer)")
+        
         print("\nCurrent step cells:")
         for (i, cell) in currentStep.cells.enumerated() {
             print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
@@ -297,13 +338,15 @@ struct VisualizationQuestionView: View {
         
         currentStepIndex = nextIndex
         currentStep = nextStep
+        selectedAnswer = ""  // Reset selected answer for new step
         visualizationKey = UUID()
         
         print("\nMoved to step \(nextIndex)")
-        print("Updated cells:")
-        for (i, cell) in currentStep.cells.enumerated() {
-            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
-        }
+        print("Updated step details:")
+        print("Is multiple choice: \(currentStep.isMultipleChoice)")
+        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+        print("Selected answer: \(selectedAnswer)")
     }
     
     private func setValue(_ value: String, forCellAtIndex index: Int) {
@@ -317,6 +360,13 @@ struct VisualizationQuestionView: View {
     }
     
     private func isCurrentStepComplete() -> Bool {
+        if currentStep.isMultipleChoice {
+            print("\nChecking multiple choice completion:")
+            print("Selected answer: \(selectedAnswer)")
+            print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+            return selectedAnswer == currentStep.multipleChoiceCorrectAnswer
+        }
+        
         guard let nextStep = question.steps[safe: currentStepIndex + 1] else { return false }
         
         // Check if all cells in the current step match the next step's requirements
@@ -447,7 +497,10 @@ struct VisualizationQuestionExample: View {
                 lineComment: "Starting to build the list",
                 hint: "Start by creating the head node, then connect each new node to the previous one.",
                 cells: [],
-                connections: []
+                connections: [],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["1", "2", "3"],
+                multipleChoiceCorrectAnswer: "1"
             ),
             VisualizationStep(
                 codeHighlightedLine: 2,
@@ -456,7 +509,10 @@ struct VisualizationQuestionExample: View {
                 cells: [
                     BasicCell(value: "1")
                 ],
-                connections: []
+                connections: [],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["1", "2", "3"],
+                multipleChoiceCorrectAnswer: "1"
             ),
             VisualizationStep(
                 codeHighlightedLine: 3,
@@ -474,7 +530,10 @@ struct VisualizationQuestionExample: View {
                     )
                 ],
                 userInputRequired: true,
-                availableElements: ["2", "3", "4"]
+                availableElements: ["2", "3", "4"],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["2", "3", "4"],
+                multipleChoiceCorrectAnswer: "2"
             )
         ],
         initialCells: [],

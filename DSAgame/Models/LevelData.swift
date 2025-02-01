@@ -34,6 +34,9 @@ struct LevelData: Codable {
         let availableElements: [String]
         let nodes: [Node]
         let connections: [Connection]?
+        let isMultipleChoice: Bool?
+        let multipleChoiceAnswers: [String]?
+        let multipleChoiceCorrectAnswer: String?
     }
     
     struct Node: Codable {

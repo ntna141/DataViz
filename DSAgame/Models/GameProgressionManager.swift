@@ -141,7 +141,10 @@ class GameProgressionManager {
             stepEntity.codeHighlightedLine = Int32(stepSpec.lineNumber)
             stepEntity.lineComment = stepSpec.comment
             stepEntity.hint = stepSpec.hint
-            stepEntity.userInputRequired = stepSpec.userInputRequired
+            stepEntity.isMultipleChoice = stepSpec.isMultipleChoice ?? false
+            stepEntity.multipleChoiceAnswers = stepSpec.multipleChoiceAnswers ?? []
+            stepEntity.multipleChoiceCorrectAnswer = stepSpec.multipleChoiceCorrectAnswer ?? ""
+            stepEntity.userInputRequired = stepSpec.isMultipleChoice ?? false || stepSpec.userInputRequired
             stepEntity.availableElements = stepSpec.availableElements
             stepEntity.question = visualization
             
@@ -160,11 +163,6 @@ class GameProgressionManager {
                 nodeEntity.positionX = 0 // Position will be calculated by the layout engine
                 nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
-                
-                print("Creating node at index \(nodeEntity.orderIndex):")
-                print("  - Value: '\(nodeEntity.value ?? "")'")
-                print("  - Label: \(nodeEntity.label ?? "none")")
-                print("  - UUID: \(nodeEntity.uuid?.uuidString ?? "unknown")")
                 
                 return nodeEntity
             }

@@ -270,24 +270,19 @@ class DataStructureLayoutManager {
         in frame: CGRect,
         scale: CGFloat
     ) -> ([any DataStructureCell], [ConnectionDisplayState]) {
-        print("\nLayout manager updating with frame: \(frame)")
-        print("Input cells: \(cells.map { $0.value })")
         
         // Ensure we have a valid frame
         guard frame.width > 0, frame.height > 0 else {
-            print("Invalid frame dimensions")
             return (cells, [])
         }
         
         let layoutCells = layoutStrategy.calculateLayout(cells: cells, in: frame)
-        print("Calculated positions for cells: \(layoutCells.map { "\($0.value)@\($0.position)" })")
         
         let connectionStates = layoutStrategy.updateConnectionPoints(
             cells: layoutCells,
             connections: connections,
             scale: scale
         )
-        print("Updated \(connectionStates.count) connections")
         
         return (layoutCells, connectionStates)
     }
