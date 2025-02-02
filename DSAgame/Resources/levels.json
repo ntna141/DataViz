@@ -199,6 +199,43 @@
                                 }
                             },
                             {
+                                "lineNumber": 12,
+                                "comment": "Since (rear + 1) % size (5) equals front (0), this means the array is full. If they were different, it would mean we have space to add another element.",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "A",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "highlighted": true,
+                                        "label": "5"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4
+                                }
+                            },
+                            {
                                 "lineNumber": 14,
                                 "comment": "Let's try enqueuing elements. First, let's add 'A' to the empty array, where should we put A?",
                                 "hint": "The rear pointer should be incremented to 0, since the array is empty and we're adding the first element",
@@ -289,6 +326,42 @@
                                     {
                                         "value": "",
                                         "highlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 1
+                                }
+                            },
+                            {
+                                "lineNumber": 19,
+                                "comment": "Notice how the rear pointer moved from 0 to 1 using the formula (rear + 1) % size. This is how we maintain the circular nature of the array - when we reach the end, the modulo operation wraps us back to the beginning.",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "A",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
                                         "label": "1"
                                     },
                                     {
