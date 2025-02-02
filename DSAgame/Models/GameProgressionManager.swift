@@ -145,7 +145,7 @@ class GameProgressionManager {
             stepEntity.multipleChoiceAnswers = stepSpec.multipleChoiceAnswers ?? []
             stepEntity.multipleChoiceCorrectAnswer = stepSpec.multipleChoiceCorrectAnswer ?? ""
             stepEntity.userInputRequired = stepSpec.isMultipleChoice ?? false || stepSpec.userInputRequired
-            stepEntity.availableElements = stepSpec.availableElements
+            stepEntity.availableElements = stepSpec.availableElements ?? []
             stepEntity.question = visualization
             
             // Create node IDs based on the actual number of nodes
@@ -181,11 +181,6 @@ class GameProgressionManager {
                     // Link to nodes using indices
                     connectionEntity.fromNode = nodeEntities[connectionSpec.from]
                     connectionEntity.toNode = nodeEntities[connectionSpec.to]
-                    
-                    print("Created connection: \(connectionSpec.from) -> \(connectionSpec.to)")
-                    print("  - From node value: '\(nodeEntities[connectionSpec.from].value ?? "")'")
-                    print("  - To node value: '\(nodeEntities[connectionSpec.to].value ?? "")'")
-                    print("  - Style: \(connectionEntity.style ?? "straight")")
                 }
             }
         }

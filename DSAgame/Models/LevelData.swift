@@ -31,7 +31,7 @@ struct LevelData: Codable {
         let comment: String?
         let hint: String?
         let userInputRequired: Bool
-        let availableElements: [String]
+        let availableElements: [String]?
         let nodes: [Node]
         let connections: [Connection]?
         let isMultipleChoice: Bool?

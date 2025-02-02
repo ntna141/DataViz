@@ -210,6 +210,17 @@ struct CodeViewer: View {
         .overlay(
             Rectangle()
                 .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                .mask(
+                    VStack(spacing: 0) {
+                        Rectangle().frame(height: 1) // Top border
+                        HStack(spacing: 0) {
+                            Rectangle().frame(width: 1) // Left border
+                            Spacer()
+                            Rectangle().frame(width: 1) // Right border
+                        }
+                        Spacer() // No bottom border
+                    }
+                )
         )
     }
 }

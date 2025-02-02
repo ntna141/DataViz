@@ -2,6 +2,498 @@
     "levels": [
         {
             "number": 1,
+            "topic": "Arrays",
+            "description": "Learn the difference between direct array access and sequential search operations",
+            "requiredStars": 0,
+            "questions": [
+                {
+                    "type": "visualization",
+                    "title": "Understanding Array Access Patterns",
+                    "description": "Learn the difference between direct array access and sequential search operations",
+                    "hint": "Key concepts: 1) Direct access uses the index to jump straight to a position 2) Sequential search must check each element until finding the target",
+                    "review": "Great work! You've learned how arrays provide instant access by index but require scanning to find specific values.",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "def direct_access(arr, index):",
+                            "    return arr[index]  # O(1) - instant access",
+                            "",
+                            "def sequential_search(arr, target):",
+                            "    for i in range(len(arr)):  # O(n) - must check each",
+                            "        if arr[i] == target:",
+                            "            return i",
+                            "    return -1"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "In an array, elements are stored one after another, with positions numbered from 0.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "To find any element instantly, the computer uses the formula: starting_address + (index × element_size)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "If our array starts at address 100, and each element takes 4 bytes, where would index 2 be?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4"
+                                ],
+                                "multipleChoiceExplanation": "1: 106, 2: 108, 3: 110, 4: 112",
+                                "multipleChoiceCorrectAnswer": "2",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "highlighted": true,
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "Let's solve it: starting_address (100) + (index (2) × element_size (4)) = 100 + 8 = 108",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "highlighted": true,
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Using the same formula, which index would be at address 112?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4"
+                                ],
+                                "multipleChoiceExplanation": "1: Index 1, 2: Index 2, 3: Index 3, 4: Index 4",
+                                "multipleChoiceCorrectAnswer": "3",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "highlighted": true,
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "We can work backwards: (address - starting_address) ÷ element_size = (112 - 100) ÷ 4 = 3, so it's index 3",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "highlighted": true,
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "This formula is why array access is O(1): no matter how big the array is, we can calculate any element's address instantly!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 1,
+                                "comment": "Let's start with an array of numbers and understand how different access patterns work",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "For direct access, what happens when we access index 5?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4"
+                                ],
+                                "multipleChoiceCorrectAnswer": "2",
+                                "multipleChoiceExplanation": "1: Check each element, 2: Instant jump, 3: Move backward, 4: Binary search",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "highlighted": true,
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Direct access is O(1) - we calculate the memory address using the index and jump straight there",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "highlighted": true,
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "Now let's try to find the value 25. We don't know its index, so we need to search",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "highlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Check first element (64). Is it 25?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "A",
+                                    "B",
+                                    "C",
+                                    "D"
+                                ],
+                                "multipleChoiceCorrectAnswer": "B",
+                                "multipleChoiceExplanation": "A: Yes found it, B: Keep searching, C: Skip ahead, D: Start over",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "highlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Move to next element (34). Is it 25?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4"
+                                ],
+                                "multipleChoiceCorrectAnswer": "2",
+                                "multipleChoiceExplanation": "1: Found it, 2: Keep searching, 3: Skip ahead, 4: Go back",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "highlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Found 25! Notice how we had to check elements one by one until we found it",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "highlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "number": 2,
             "topic": "Linked Lists",
             "description": "Learn about linked lists and how to build them step by step.",
             "requiredStars": 0,
@@ -164,7 +656,12 @@
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "isMultipleChoice": true,
-                                "multipleChoiceAnswers": ["0", "1", "4", "5"],
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1",
+                                    "4",
+                                    "5"
+                                ],
                                 "multipleChoiceCorrectAnswer": "5",
                                 "nodes": [
                                     {
@@ -690,9 +1187,7 @@
                                 "lineNumber": 23,
                                 "comment": "Now let's call dequeue() again. What happens to B?",
                                 "userInputRequired": true,
-                                "availableElements": [
-                                    "B"
-                                ],
+                                "availableElements": [],
                                 "nodes": [
                                     {
                                         "value": "",
@@ -767,161 +1262,484 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Inserting into a Linked List",
-                    "description": "Learn how to insert a new node into the middle of a linked list",
-                    "hint": "When inserting a node in the middle, we need to: 1) Create the new node, 2) Point it to the next node, 3) Update the previous node to point to our new node.",
-                    "review": "Excellent! You've mastered inserting nodes into a linked list. Remember the order of operations: first connect the new node to the next one, then update the previous node's pointer.",
+                    "title": "Understanding Queue Implementation",
+                    "description": "Learn how queues work by watching the code execute and then building your own operations",
+                    "hint": "Key concepts: 1) Front removes elements, Rear adds elements 2) Count tracks number of elements 3) Use modulo (%) for wraparound!",
+                    "review": "Great job! You've mastered how queue operations work with fixed arrays, including empty and full conditions.",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
-                            "func insertNode(value: Int, after: Node) {",
-                            "    let newNode = Node(value)",
-                            "    newNode.next = after.next",
-                            "    after.next = newNode",
-                            "}"
+                            "class FixedQueue:",
+                            "    def __init__(self, size=5):",
+                            "        self.size = size",
+                            "        self.array = [None] * size",
+                            "        self.front = 0",
+                            "        self.rear = -1",
+                            "        self.count = 0",
+                            "",
+                            "    def is_empty(self):",
+                            "        return self.count == 0",
+                            "",
+                            "    def is_full(self):",
+                            "        return self.count == self.size",
+                            "",
+                            "    def enqueue(self, value):",
+                            "        if self.is_full():",
+                            "            return False",
+                            "        self.rear = (self.rear + 1) % self.size",
+                            "        self.array[self.rear] = value",
+                            "        self.count += 1",
+                            "        return True",
+                            "",
+                            "    def dequeue(self):",
+                            "        if self.is_empty():",
+                            "            return None",
+                            "        value = self.array[self.front]",
+                            "        self.array[self.front] = None",
+                            "        self.front = (self.front + 1) % self.size",
+                            "        self.count -= 1",
+                            "        return value"
                         ],
-                        "dataStructureType": "linkedList",
+                        "dataStructureType": "array",
                         "steps": [
                             {
-                                "lineNumber": 1,
-                                "comment": "We start with an existing linked list",
-                                "userInputRequired": false,
-                                "availableElements": [],
-                                "nodes": [
-                                    {
-                                        "value": "1",
-                                        "label": "head"
-                                    },
-                                    {
-                                        "value": "3"
-                                    },
-                                    {
-                                        "value": "5"
-                                    }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
-                            },
-                            {
                                 "lineNumber": 2,
-                                "comment": "Create a new node with value 4",
+                                "comment": "Let's understand how FixedQueue works. We start with an empty array of size 5, front at 0, rear at -1, and count at 0",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": -1,
+                                    "count": 0
+                                }
+                            },
+                            {
+                                "lineNumber": 9,
+                                "comment": "The is_empty() method checks if count is 0. This tells us if there are any elements in the queue",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": -1,
+                                    "count": 0
+                                }
+                            },
+                            {
+                                "lineNumber": 10,
+                                "comment": "If we add element 'A', what will is_empty() return: True(0) or False(1)?",
                                 "userInputRequired": true,
-                                "availableElements": [
-                                    "4"
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1"
                                 ],
+                                "multipleChoiceCorrectAnswer": "0",
+                                "availableElements": [],
                                 "nodes": [
                                     {
-                                        "value": "1",
-                                        "label": "head"
+                                        "value": "A",
+                                        "highlighted": true,
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "3"
+                                        "value": "",
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "5"
+                                        "value": "",
+                                        "label": "2"
                                     },
                                     {
-                                        "value": ""
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
                                     }
                                 ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 0,
+                                    "count": 1
+                                }
                             },
                             {
-                                "lineNumber": 3,
-                                "comment": "Point the new node to the next node (5)",
+                                "lineNumber": 15,
+                                "comment": "Let's try to enqueue value 'F' when queue is full. First step: check if queue is full",
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
                                     {
-                                        "value": "1",
-                                        "label": "head"
+                                        "value": "A",
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "3"
+                                        "value": "B",
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "5"
+                                        "value": "C",
+                                        "label": "2"
                                     },
                                     {
-                                        "value": "4"
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
                                     }
                                 ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 2,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 3,
-                                        "to": 2,
-                                        "style": "straight"
-                                    }
-                                ]
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 5
+                                }
                             },
                             {
-                                "lineNumber": 4,
-                                "comment": "Update the previous node to point to the new node",
+                                "lineNumber": 16,
+                                "comment": "Since count equals size, is_full() returns True. Will enqueue return True(1) or False(0)?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1"
+                                ],
+                                "multipleChoiceCorrectAnswer": "0",
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "A",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 5
+                                }
+                            },
+                            {
+                                "lineNumber": 17,
+                                "comment": "When enqueue fails, we calculate (rear + 1) % size but never assign it. What would this value be?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1",
+                                    "4",
+                                    "5"
+                                ],
+                                "multipleChoiceCorrectAnswer": "0",
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "A",
+                                        "highlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 5
+                                }
+                            },
+                            {
+                                "lineNumber": 18,
+                                "comment": "We never reach this line when full. The queue remains unchanged with count=5",
                                 "userInputRequired": false,
                                 "availableElements": [],
                                 "nodes": [
                                     {
-                                        "value": "1",
-                                        "label": "head"
+                                        "value": "A",
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "3"
+                                        "value": "B",
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "5"
+                                        "value": "C",
+                                        "label": "2"
                                     },
                                     {
-                                        "value": "4"
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
                                     }
                                 ],
-                                "connections": [
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 5
+                                }
+                            },
+                            {
+                                "lineNumber": 22,
+                                "comment": "Let's see what happens when we dequeue. First we check if queue is empty",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
                                     {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight"
+                                        "value": "A",
+                                        "highlighted": true,
+                                        "label": "0"
                                     },
                                     {
-                                        "from": 1,
-                                        "to": 3,
-                                        "style": "straight"
+                                        "value": "B",
+                                        "label": "1"
                                     },
                                     {
-                                        "from": 3,
-                                        "to": 2,
-                                        "style": "straight"
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
                                     }
-                                ]
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 5
+                                }
+                            },
+                            {
+                                "lineNumber": 25,
+                                "comment": "We remove 'A' from front position and set that slot to None",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "highlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 4
+                                }
+                            },
+                            {
+                                "lineNumber": 27,
+                                "comment": "Front moves to next position. What will (front + 1) % size equal?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "availableElements": [],
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1",
+                                    "2",
+                                    "5"
+                                ],
+                                "multipleChoiceCorrectAnswer": "1",
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "B",
+                                        "highlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "C",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "D",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 1,
+                                    "rear": 4,
+                                    "count": 4
+                                }
+                            },
+                            {
+                                "lineNumber": 22,
+                                "comment": "After several dequeues, we're at the end. What happens when we dequeue 'E'?",
+                                "userInputRequired": false,
+                                "availableElements": [],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "E",
+                                        "highlighted": true,
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 4,
+                                    "rear": 4,
+                                    "count": 1
+                                }
+                            },
+                            {
+                                "lineNumber": 27,
+                                "comment": "After removing 'E', front will wrap around. What will (front + 1) % size equal?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "availableElements": [],
+                                "multipleChoiceAnswers": [
+                                    "0",
+                                    "1",
+                                    "4",
+                                    "5"
+                                ],
+                                "multipleChoiceCorrectAnswer": "0",
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "highlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    }
+                                ],
+                                "pointers": {
+                                    "front": 0,
+                                    "rear": 4,
+                                    "count": 0
+                                }
                             }
                         ]
                     }
@@ -1056,7 +1874,7 @@
             ]
         },
         {
-            "number": 2,
+            "number": 3,
             "topic": "Binary Trees",
             "description": "Learn about binary trees and how they organize data hierarchically.",
             "requiredStars": 3,

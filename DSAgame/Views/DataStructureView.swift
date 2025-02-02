@@ -236,7 +236,7 @@ struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
     let connections: [any DataStructureConnection]
-    let availableElements: [String]
+    let availableElements: [String]?
     let onElementDropped: (String, Int) -> Void
     let isAutoPlaying: Bool
     let onPlayPausePressed: () -> Void
@@ -271,7 +271,7 @@ struct DataStructureView: View {
         layoutType: DataStructureLayoutType,
         cells: [any DataStructureCell],
         connections: [any DataStructureConnection],
-        availableElements: [String] = [],
+        availableElements: [String]? = nil,
         onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
         isAutoPlaying: Bool = false,
         onPlayPausePressed: @escaping () -> Void = {},
@@ -473,10 +473,10 @@ struct DataStructureView: View {
                             selectedAnswer: selectedMultipleChoiceAnswer,
                             onAnswerSelected: onMultipleChoiceAnswerSelected
                         )
-                    } else {
+                    } else if let elements = availableElements, !elements.isEmpty {
                         // Elements list above subtitles
                         ElementsListView(
-                            availableElements: availableElements,
+                            availableElements: elements,
                             droppedElements: droppedElements,
                             dragState: dragState,
                             isOverElementList: isOverElementList,
@@ -719,7 +719,7 @@ struct DataStructureView: View {
     }
     
     private func calculateListWidth() -> CGFloat {
-        let elements = availableElements + droppedElements
+        let elements = (availableElements ?? []) + droppedElements
         if elements.isEmpty {
             return cellSizeManager.size * 3 // Width for "Drop here to remove" text
         } else {
@@ -760,7 +760,7 @@ struct DataStructureView: View {
                 currentCells = updatedCells
                 
                 // Only add to droppedElements if it wasn't in availableElements originally
-                if !availableElements.contains(element) {
+                if !(availableElements?.contains(element) ?? false) {
                     print("Adding \(element) to dropped elements")
                     droppedElements.append(element)
                 }
@@ -887,7 +887,7 @@ struct DataStructureView: View {
     
     private func canAutoPlay() -> Bool {
         // Can auto-play if there are cells to display and we're not dragging
-        return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && availableElements.isEmpty
+        return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && (availableElements ?? []).isEmpty
     }
 }
 
