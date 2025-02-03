@@ -2782,7 +2782,7 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     }
                                 ]
@@ -2810,13 +2810,13 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]
@@ -2867,13 +2867,13 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]
@@ -2903,14 +2903,14 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left",
                                         "isHighlighted": true
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]
@@ -2942,19 +2942,19 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     },
                                     {
                                         "from": 1,
                                         "to": 3,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right",
                                         "isHighlighted": true
                                     }
@@ -3011,25 +3011,25 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     },
                                     {
                                         "from": 1,
                                         "to": 3,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 1,
                                         "to": 4,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]
@@ -3062,27 +3062,27 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left",
                                         "isHighlighted": true
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     },
                                     {
                                         "from": 1,
                                         "to": 3,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left",
                                         "isHighlighted": true
                                     },
                                     {
                                         "from": 1,
                                         "to": 4,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]
@@ -3120,25 +3120,25 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     },
                                     {
                                         "from": 1,
                                         "to": 3,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "left"
                                     },
                                     {
                                         "from": 1,
                                         "to": 4,
-                                        "style": "curved",
+                                        "style": "straight",
                                         "label": "right"
                                     }
                                 ]

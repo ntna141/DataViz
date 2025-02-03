@@ -183,17 +183,17 @@ struct ConnectionView: View {
     
     private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
         let cellSize = 40.0 * state.scale // Base cell size * scale
-        let angle = atan2(state.toPoint.y - state.fromPoint.y, state.toPoint.x - state.fromPoint.x)
+        let angle = atan2(state.fromPoint.y - state.toPoint.y, state.fromPoint.x - state.toPoint.x)  // Reverse angle calculation
         
         // Calculate the points where the line intersects with the cell edges
         let fromPoint = CGPoint(
-            x: state.fromPoint.x + cos(angle) * (cellSize / 2),
-            y: state.fromPoint.y + sin(angle) * (cellSize / 2)
+            x: state.fromPoint.x - cos(angle) * (cellSize / 2),  // Change to minus
+            y: state.fromPoint.y - sin(angle) * (cellSize / 2)   // Change to minus
         )
         
         let toPoint = CGPoint(
-            x: state.toPoint.x - cos(angle) * (cellSize / 2),
-            y: state.toPoint.y - sin(angle) * (cellSize / 2)
+            x: state.toPoint.x + cos(angle) * (cellSize / 2),    // Change to plus
+            y: state.toPoint.y + sin(angle) * (cellSize / 2)     // Change to plus
         )
         
         return (from: fromPoint, to: toPoint)
@@ -265,21 +265,21 @@ struct ArrowHead: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        let angle = atan2(to.y - from.y, to.x - from.x)
+        let angle = atan2(from.y - to.y, from.x - to.x)
         let arrowLength: CGFloat = 10 * scale
         let arrowAngle: CGFloat = .pi / 6
         
         let point1 = CGPoint(
-            x: to.x - arrowLength * cos(angle - arrowAngle),
-            y: to.y - arrowLength * sin(angle - arrowAngle)
+            x: from.x - arrowLength * cos(angle - arrowAngle),
+            y: from.y - arrowLength * sin(angle - arrowAngle)
         )
         
         let point2 = CGPoint(
-            x: to.x - arrowLength * cos(angle + arrowAngle),
-            y: to.y - arrowLength * sin(angle + arrowAngle)
+            x: from.x - arrowLength * cos(angle + arrowAngle),
+            y: from.y - arrowLength * sin(angle + arrowAngle)
         )
         
-        path.move(to: to)
+        path.move(to: from)
         path.addLine(to: point1)
         path.addLine(to: point2)
         path.closeSubpath()
