@@ -8,482 +8,898 @@
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Understanding Array Access Patterns",
-                    "description": "Learn the difference between direct array access and sequential search operations",
-                    "hint": "Key concepts: 1) Direct access uses the index to jump straight to a position 2) Sequential search must check each element until finding the target",
-                    "review": "Great work! You've learned how arrays provide instant access by index but require scanning to find specific values.",
-                    "difficulty": 1,
+                    "title": "Understanding Dynamic Arrays",
+                    "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
+                    "hint": "",
+                    "review": "Key concepts: 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
+                    "difficulty": 2,
                     "visualization": {
                         "code": [
-                            "def direct_access(arr, index):",
-                            "    return arr[index]  # O(1) - instant access",
+                            "def append(arr, value):",
+                            "    # Check if array is at capacity",
+                            "    if len(arr) == arr.capacity:",
+                            "        # Double the capacity",
+                            "        new_capacity = arr.capacity * 2",
+                            "        new_arr = [None] * new_capacity",
+                            "        # Copy all elements to new array",
+                            "        for i in range(len(arr)):",
+                            "            new_arr[i] = arr[i]",
+                            "        arr = new_arr",
+                            "        arr.capacity = new_capacity",
                             "",
-                            "def sequential_search(arr, target):",
-                            "    for i in range(len(arr)):  # O(n) - must check each",
-                            "        if arr[i] == target:",
-                            "            return i",
-                            "    return -1"
+                            "    # Add new element",
+                            "    arr[len(arr)] = value",
+                            "",
+                            "def pop(arr):",
+                            "    # Remove and return last element",
+                            "    if len(arr) == 0:",
+                            "        return None",
+                            "    value = arr[len(arr) - 1]",
+                            "    arr[len(arr) - 1] = None",
+                            "    # Shrink array if using less than 25% of capacity",
+                            "    if len(arr) < arr.capacity // 4:",
+                            "        new_capacity = arr.capacity // 2",
+                            "        new_arr = [None] * new_capacity",
+                            "        for i in range(len(arr)):",
+                            "            new_arr[i] = arr[i]",
+                            "        arr = new_arr",
+                            "        arr.capacity = new_capacity",
+                            "    return value"
                         ],
                         "dataStructureType": "array",
                         "steps": [
                             {
                                 "lineNumber": 1,
-                                "comment": "In an array, elements are stored one after another, with positions numbered from 0.",
+                                "comment": "In the last level, we learned that array sizes are fixed, but we can use dynamic arrays to make them more flexible and practical. Let's start with a dynamic array of capacity 4, containing 3 elements:",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "20",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "30",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "",
                                         "label": "3"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 2,
-                                "comment": "To find any element instantly, the computer uses the formula: starting_address + (index × element_size)",
+                                "comment": "When we try to append 40, first we check if we're at capacity",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "20",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "30",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 13,
+                                "comment": "Since we still have space, we can directly append 40",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "isHighlighted": true,
                                         "label": "3"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 3,
-                                "comment": "If our array starts at address 100, and each element takes 4 bytes, where would index 2 be?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "1",
-                                    "2",
-                                    "3",
-                                    "4"
-                                ],
-                                "multipleChoiceExplanation": "1: 106, 2: 108, 3: 110, 4: 112",
-                                "multipleChoiceCorrectAnswer": "2",
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "highlighted": true,
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 4,
-                                "comment": "Let's solve it: starting_address (100) + (index (2) × element_size (4)) = 100 + 8 = 108",
+                                "comment": "Now when we try to append 50, the array is full as we already have 4 elements. Time to resize!",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "label": "100"
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "34",
-                                        "label": "104"
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "25",
-                                        "highlighted": true,
-                                        "label": "108"
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "2"
                                     },
                                     {
-                                        "value": "12",
-                                        "label": "112"
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 5,
-                                "comment": "Using the same formula, which index would be at address 112?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "1",
-                                    "2",
-                                    "3",
-                                    "4"
-                                ],
-                                "multipleChoiceExplanation": "1: Index 1, 2: Index 2, 3: Index 3, 4: Index 4",
-                                "multipleChoiceCorrectAnswer": "3",
+                                "comment": "We create a new array with double the capacity (8 spaces)",
+                                "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "label": "100"
+                                        "value": "",
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "34",
-                                        "label": "104"
+                                        "value": "",
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "25",
-                                        "label": "108"
+                                        "value": "",
+                                        "label": "2"
                                     },
                                     {
-                                        "value": "12",
-                                        "highlighted": true,
-                                        "label": "112"
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 6,
-                                "comment": "We can work backwards: (address - starting_address) ÷ element_size = (112 - 100) ÷ 4 = 3, so it's index 3",
+                                "lineNumber": 8,
+                                "comment": "Copy all existing elements to the new array",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "label": "100"
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
                                     },
                                     {
-                                        "value": "34",
-                                        "label": "104"
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
                                     },
                                     {
-                                        "value": "25",
-                                        "label": "108"
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "2"
                                     },
                                     {
-                                        "value": "12",
-                                        "highlighted": true,
-                                        "label": "112"
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 13,
+                                "comment": "Finally, we can append 50 to the resized array",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "50",
+                                        "isHighlighted": true,
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 16,
+                                "comment": "Let's look at pop operations. Starting with this array:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 20,
+                                "comment": "Pop removes the last element (30)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 23,
+                                "comment": "Now we're using < 25% of capacity (2/8), so we'll shrink the array to save memory",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Understanding Contiguous Memory in Arrays",
+                    "description": "Learn why arrays require continuous memory and the implications for insertions and deletions",
+                    "hint": "",
+                    "review": "Key concepts: 1) Array elements must stay together in memory \n2) Inserting/deleting requires shifting elements \n3) Array size must be declared in advance",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "def insert_at_index(arr, index, value):",
+                            "    # First check if array is full",
+                            "    if len(arr) >= arr.maxsize:",
+                            "        return False",
+                            "",
+                            "    # Shift all elements after index to the right",
+                            "    for i in range(len(arr)-1, index, -1):",
+                            "        arr[i] = arr[i-1]",
+                            "",
+                            "    # Insert the new value",
+                            "    arr[index] = value",
+                            "    return True",
+                            "",
+                            "def delete_at_index(arr, index):",
+                            "    # Shift all elements after index to the left",
+                            "    for i in range(index, len(arr)-1):",
+                            "        arr[i] = arr[i+1]",
+                            "",
+                            "    # Clear last element",
+                            "    arr[len(arr)-1] = None",
+                            "",
+                            "def delete_multiple_elements(arr, indices):",
+                            "    for index in indices:",
+                            "        delete_at_index(arr, index)",
+                            "",
+                            "delete_multiple_elements([10, 20, 30, 40, 50, 60], [1, 3, 5])"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "Let's understand insertion in a fixed-size array. First, we check if there's space in the array.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Trying to insert 25 at position 1. First step: Check if array is full",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Array is full! We return false or throw an error so that we don't overwrite existing data.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Let's try again with a non-full array. Since the array length (3) is less than the maxsize (4), we can insert the new value.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Now we can safely insert 25 at position 1 because there's space",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 7,
-                                "comment": "This formula is why array access is O(1): no matter how big the array is, we can calculate any element's address instantly!",
+                                "comment": "Shift elements right since we have empty space at the end. We start by copying the rightmost element to the empty space.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 1,
-                                "comment": "Let's start with an array of numbers and understand how different access patterns work",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "20",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "30",
+                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 2,
-                                "comment": "For direct access, what happens when we access index 5?",
+                                "lineNumber": 7,
+                                "comment": "After copying 30 to the empty space, we can shift 20 to the next position.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "After copying 20, we can now safely add 25 to 20's old position",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "Finally insert 25 at position 1. And we are done!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 14,
+                                "comment": "Now let's learn about deletion. Starting with this array:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 15,
+                                "comment": "Let's delete the element at position 1 (value 25).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 17,
+                                "comment": "The loop starts with the element we were going to delete, where we take the element next to it and copy it back there",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 17,
+                                "comment": "After the first loop, what will the array look like?",
+                                "hint": "We are copying elements from the left to the right",
                                 "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "1",
-                                    "2",
-                                    "3",
-                                    "4"
+                                "availableElements": [
+                                    "10",
+                                    "25",
+                                    "20",
+                                    "30"
                                 ],
-                                "multipleChoiceCorrectAnswer": "2",
-                                "multipleChoiceExplanation": "1: Check each element, 2: Instant jump, 3: Move backward, 4: Binary search",
                                 "nodes": [
                                     {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "25",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "20",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "30",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "highlighted": true,
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 2,
-                                "comment": "Direct access is O(1) - we calculate the memory address using the index and jump straight there",
+                                "lineNumber": 17,
+                                "comment": "Great! Now we do the same for the rest of the array",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "20",
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "20",
+                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "30",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "highlighted": true,
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 4,
-                                "comment": "Now let's try to find the value 25. We don't know its index, so we need to search",
+                                "lineNumber": 17,
+                                "comment": "Now that we have copied 30 over to index 2, what should we do next?",
+                                "hint": "Look at line 20 of the code",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "highlighted": true,
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "20",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "30",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "30",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 5,
-                                "comment": "Check first element (64). Is it 25?",
+                                "lineNumber": 20,
+                                "comment": "Finally, we clear the last element by setting it to None",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 25,
+                                "comment": "Let's try a more complex example: delete_multiple_elements([10, 20, 30, 40, 50, 60], [1, 3, 5]). Here's our starting array:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "50",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "60",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 25,
+                                "comment": "After deleting elements at indices 1, 3, and 5, what will the array look like? Place the remaining numbers in their correct positions.",
                                 "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "A",
-                                    "B",
-                                    "C",
-                                    "D"
+                                "availableElements": [
+                                    "10",
+                                    "30",
+                                    "50"
                                 ],
-                                "multipleChoiceCorrectAnswer": "B",
-                                "multipleChoiceExplanation": "A: Yes found it, B: Keep searching, C: Skip ahead, D: Start over",
                                 "nodes": [
                                     {
-                                        "value": "64",
-                                        "highlighted": true,
+                                        "value": "",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
+                                        "value": "",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "",
                                         "label": "3"
                                     },
                                     {
-                                        "value": "22",
+                                        "value": "",
                                         "label": "4"
                                     },
                                     {
-                                        "value": "11",
+                                        "value": "",
                                         "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 5,
-                                "comment": "Move to next element (34). Is it 25?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "1",
-                                    "2",
-                                    "3",
-                                    "4"
-                                ],
-                                "multipleChoiceCorrectAnswer": "2",
-                                "multipleChoiceExplanation": "1: Found it, 2: Keep searching, 3: Skip ahead, 4: Go back",
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "highlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 6,
-                                "comment": "Found 25! Notice how we had to check elements one by one until we found it",
+                                "lineNumber": 25,
+                                "comment": "Perfect! Now you understand how multiple deletions work in an array. The remaining elements shift left to fill the gaps.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "64",
+                                        "value": "10",
                                         "label": "0"
                                     },
                                     {
-                                        "value": "34",
+                                        "value": "30",
                                         "label": "1"
                                     },
                                     {
-                                        "value": "25",
-                                        "highlighted": true,
+                                        "value": "50",
                                         "label": "2"
                                     },
                                     {
-                                        "value": "12",
+                                        "value": "",
                                         "label": "3"
                                     },
                                     {
-                                        "value": "22",
+                                        "value": "",
                                         "label": "4"
                                     },
                                     {
-                                        "value": "11",
+                                        "value": "",
                                         "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
                                     }
                                 ]
                             }
@@ -686,7 +1102,7 @@
                                     },
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "5"
                                     }
                                 ],
@@ -723,7 +1139,7 @@
                                     },
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "5"
                                     }
                                 ],
@@ -743,7 +1159,7 @@
                                 "nodes": [
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -822,7 +1238,7 @@
                                     },
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
@@ -901,7 +1317,7 @@
                                     },
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
@@ -970,7 +1386,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1007,7 +1423,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1044,7 +1460,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "value"
                                     },
                                     {
@@ -1081,7 +1497,7 @@
                                 "nodes": [
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1158,7 +1574,7 @@
                                     },
                                     {
                                         "value": "B",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
@@ -1195,7 +1611,7 @@
                                     },
                                     {
                                         "value": "B",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
@@ -1236,7 +1652,7 @@
                                     },
                                     {
                                         "value": "C",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
@@ -1382,7 +1798,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1496,7 +1912,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1563,7 +1979,7 @@
                                 "nodes": [
                                     {
                                         "value": "A",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1597,7 +2013,7 @@
                                 "nodes": [
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
@@ -1643,7 +2059,7 @@
                                     },
                                     {
                                         "value": "B",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
@@ -1689,7 +2105,7 @@
                                     },
                                     {
                                         "value": "E",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "4"
                                     }
                                 ],
@@ -1715,7 +2131,7 @@
                                 "nodes": [
                                     {
                                         "value": "",
-                                        "highlighted": true,
+                                        "isHighlighted": true,
                                         "label": "0"
                                     },
                                     {
