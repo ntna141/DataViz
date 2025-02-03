@@ -241,7 +241,15 @@ class VisualizationManager {
             stepEntity.codeHighlightedLine = Int32(lineNumber)
             stepEntity.lineComment = stepData["comment"] as? String
             stepEntity.userInputRequired = stepData["userInputRequired"] as? Bool ?? false
-            stepEntity.availableElements = stepData["availableElements"] as? [String] ?? []
+            
+            // Only set availableElements if it's explicitly present in the JSON
+            if let availableElements = stepData["availableElements"] as? [String] {
+                stepEntity.availableElements = availableElements
+                print("Step \(index): availableElements set to \(availableElements)")
+            } else {
+                stepEntity.availableElements = nil
+                print("Step \(index): availableElements not present in JSON")
+            }
             
             // Add multiple choice fields with explicit type checking
             if let isMultipleChoice = stepData["isMultipleChoice"] as? Bool {
@@ -388,17 +396,7 @@ class VisualizationManager {
                     print("  - UUID: \(stepEntity.uuid?.uuidString ?? "nil")")
                     print("  - Line highlighted: \(stepEntity.codeHighlightedLine)")
                     print("  - User input required: \(stepEntity.userInputRequired)")
-                    print("  - Available elements: \(stepEntity.availableElements ?? [])")
-                    
-                    print("\nMultiple Choice Data (Raw from Core Data):")
-                    print("  - isMultipleChoice (attribute): \(stepEntity.isMultipleChoice)")
-                    if let answers = stepEntity.multipleChoiceAnswers {
-                        print("  - multipleChoiceAnswers (attribute): \(answers)")
-                        print("  - multipleChoiceAnswers type: \(type(of: answers))")
-                    } else {
-                        print("  - multipleChoiceAnswers is nil")
-                    }
-                    print("  - multipleChoiceCorrectAnswer (attribute): \(stepEntity.multipleChoiceCorrectAnswer ?? "nil")")
+                    print("  - Available elements: \(String(describing: stepEntity.availableElements))")
                     
                     // Load nodes in order based on stored index
                     let allNodes = stepEntity.nodes as? Set<NodeEntity> ?? Set()
@@ -413,7 +411,6 @@ class VisualizationManager {
                     
                     // Convert to BasicCells
                     let cells = orderedNodes.map { nodeEntity -> BasicCell in
-                        
                         return BasicCell(
                             id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,
                             value: nodeEntity.value ?? "",
@@ -453,7 +450,7 @@ class VisualizationManager {
                         cells: cells,
                         connections: loadedConnections,
                         userInputRequired: stepEntity.userInputRequired,
-                        availableElements: stepEntity.availableElements ?? [],
+                        availableElements: stepEntity.availableElements,
                         isMultipleChoice: stepEntity.isMultipleChoice,
                         multipleChoiceAnswers: stepEntity.multipleChoiceAnswers ?? [],
                         multipleChoiceCorrectAnswer: stepEntity.multipleChoiceCorrectAnswer ?? ""

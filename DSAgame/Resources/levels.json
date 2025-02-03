@@ -488,7 +488,7 @@
                             },
                             {
                                 "lineNumber": 3,
-                                "comment": "Let's try again with a non-full array. Since the array length (3) is less than the maxsize (4), we can insert the new value.",
+                                "comment": "Let's try again with a non-full array. Since the array length (3) is less than the maxsize (4), we have space to insert the new value.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -512,7 +512,7 @@
                             },
                             {
                                 "lineNumber": 5,
-                                "comment": "Now we can safely insert 25 at position 1 because there's space",
+                                "comment": "But index 1, where we want to insert 25, is already occupied by 20",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -536,7 +536,7 @@
                             },
                             {
                                 "lineNumber": 7,
-                                "comment": "Shift elements right since we have empty space at the end. We start by copying the rightmost element to the empty space.",
+                                "comment": "So we have to shift elements right since we have empty space at the end. We start by copying the rightmost element to the empty space.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -554,7 +554,15 @@
                                     },
                                     {
                                         "value": "",
-                                        "label": "3"
+                                        "label": "3",
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
                                     }
                                 ]
                             },
@@ -569,18 +577,27 @@
                                     },
                                     {
                                         "value": "20",
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
                                         "value": "30",
+                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
                                         "value": "30",
-                                        "isHighlighted": true,
                                         "label": "3"
                                     }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
                                 ]
+
                             },
                             {
                                 "lineNumber": 7,
@@ -593,11 +610,11 @@
                                     },
                                     {
                                         "value": "20",
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
                                         "value": "20",
-                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
@@ -700,6 +717,13 @@
                                         "value": "30",
                                         "label": "3"
                                     }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
                                 ]
                             },
                             {
@@ -761,7 +785,8 @@
                                 "lineNumber": 17,
                                 "comment": "Now that we have copied 30 over to index 2, what should we do next?",
                                 "hint": "Look at line 20 of the code",
-                                "userInputRequired": false,
+                                "userInputRequired": true,
+                                "availableElements": [],
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -905,6 +930,399 @@
                             }
                         ]
                     }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Understanding Array Access Patterns",
+                    "description": "Learn the difference between direct array access and sequential search operations",
+                    "review": "Key concepts: 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
+                    "hint": "None",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "def direct_access(arr, index):",
+                            "    return arr[index]",
+                            "",
+                            "def sequential_search(arr, target):",
+                            "    for i in range(len(arr)):",
+                            "        if arr[i] == target:",
+                            "            return i",
+                            "    return -1"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "When data is stored in an array, the computer actually does not know what is stored in each position. It just knows where the array is stored in memory and some basic information (length, slotsize, etc.) about the array.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "However, we can use that information to instantly access any index in an array using a formula: \nbaseAddress + (index * elementSize). ",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Let's say our array starts at memory address 100 and each element takes 2 bytes",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "To access index 3 we apply the formula: baseAddress + (index * elementSize). And the computer calculates: 100 + (3 * 2) = 106",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "If we want to access index 5, what value will we get using the formula: 100 + (5 * 2)?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "108",
+                                    "110",
+                                    "112",
+                                    "114"
+                                ],
+                                "multipleChoiceCorrectAnswer": "110",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "This is why array access is instant - no matter the index, we can calculate its exact memory location instantly",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "However, if we do not know the specific index of an item, we will have to search through the array one by one",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "We start with the first index (index 0). Is it 25?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "Yes",
+                                    "No"
+                                ],
+                                "multipleChoiceCorrectAnswer": "No",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Move to next element (index 1). It is still not 25",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Onto index 2 and we have found 25! Notice how we had to check elements one by one until we found it",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         },
@@ -962,7 +1380,7 @@
                                 "lineNumber": 2,
                                 "comment": "Let's understand how CircularArray works. We start with an empty array of size 6, and two pointers: front and rear, both initialized to -1",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -998,7 +1416,7 @@
                                 "lineNumber": 8,
                                 "comment": "The is_empty() method checks if the array is empty. An array is empty when front is -1",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1034,7 +1452,7 @@
                                 "lineNumber": 11,
                                 "comment": "The is_full() method is more complex. Let's see how it works with some examples",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1070,7 +1488,7 @@
                                 "lineNumber": 12,
                                 "comment": "What will be the result of (rear + 1) % size in this case?",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "isMultipleChoice": true,
                                 "multipleChoiceAnswers": [
                                     "0",
@@ -1115,7 +1533,7 @@
                                 "lineNumber": 12,
                                 "comment": "Since (rear + 1) % size (5) equals front (0), this means the array is full. If they were different, it would mean we have space to add another element.",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1192,7 +1610,7 @@
                                 "lineNumber": 19,
                                 "comment": "Since array was empty, front is set to 0. Rear is also set to 0 for the first element",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1267,7 +1685,7 @@
                                 "lineNumber": 19,
                                 "comment": "Notice how the rear pointer moved from 0 to 1 using the formula (rear + 1) % size. This is how we maintain the circular nature of the array - when we reach the end, the modulo operation wraps us back to the beginning.",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1382,7 +1800,7 @@
                                 "lineNumber": 19,
                                 "comment": "The array is now full! Notice how rear points to the last element and (rear + 1) % size equals front",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1419,7 +1837,7 @@
                                 "lineNumber": 23,
                                 "comment": "Let's start the dequeue operation",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1456,7 +1874,7 @@
                                 "lineNumber": 24,
                                 "comment": "First we check if the queue is empty (it's not since front is 0)",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1493,7 +1911,7 @@
                                 "lineNumber": 26,
                                 "comment": "Get the value at front (A) and set that position to None",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1530,7 +1948,7 @@
                                 "lineNumber": 27,
                                 "comment": "Since front (0) doesn't equal rear (5), we go to the else block",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1566,7 +1984,7 @@
                                 "lineNumber": 29,
                                 "comment": "Move front forward using (front + 1) % size = (0 + 1) % 6 = 1",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1603,7 +2021,7 @@
                                 "lineNumber": 23,
                                 "comment": "Now let's call dequeue() again. What happens to B?",
                                 "userInputRequired": true,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1640,7 +2058,7 @@
                                 "lineNumber": 29,
                                 "comment": "Perfect! We dequeued B, set position 1 to None, and moved front to 2. The queue now contains [C, D, E, F]",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1722,7 +2140,7 @@
                                 "lineNumber": 2,
                                 "comment": "Let's understand how FixedQueue works. We start with an empty array of size 5, front at 0, rear at -1, and count at 0",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1755,7 +2173,7 @@
                                 "lineNumber": 9,
                                 "comment": "The is_empty() method checks if count is 0. This tells us if there are any elements in the queue",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -1794,7 +2212,7 @@
                                     "1"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1828,7 +2246,7 @@
                                 "lineNumber": 15,
                                 "comment": "Let's try to enqueue value 'F' when queue is full. First step: check if queue is full",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1867,7 +2285,7 @@
                                     "1"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1908,7 +2326,7 @@
                                     "5"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1942,7 +2360,7 @@
                                 "lineNumber": 18,
                                 "comment": "We never reach this line when full. The queue remains unchanged with count=5",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -1975,7 +2393,7 @@
                                 "lineNumber": 22,
                                 "comment": "Let's see what happens when we dequeue. First we check if queue is empty",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2009,7 +2427,7 @@
                                 "lineNumber": 25,
                                 "comment": "We remove 'A' from front position and set that slot to None",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2044,7 +2462,7 @@
                                 "comment": "Front moves to next position. What will (front + 1) % size equal?",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
-                                "availableElements": [],
+                                
                                 "multipleChoiceAnswers": [
                                     "0",
                                     "1",
@@ -2085,7 +2503,7 @@
                                 "lineNumber": 22,
                                 "comment": "After several dequeues, we're at the end. What happens when we dequeue 'E'?",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2120,7 +2538,7 @@
                                 "comment": "After removing 'E', front will wrap around. What will (front + 1) % size equal?",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
-                                "availableElements": [],
+                                
                                 "multipleChoiceAnswers": [
                                     "0",
                                     "1",
@@ -2180,7 +2598,7 @@
                                 "lineNumber": 1,
                                 "comment": "We start with an existing linked list",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -2218,7 +2636,7 @@
                                 "lineNumber": 3,
                                 "comment": "Update the pointer to skip node with value 6",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -2258,7 +2676,7 @@
                                 "lineNumber": 3,
                                 "comment": "Node is now removed from the list",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -2322,7 +2740,7 @@
                                 "lineNumber": 1,
                                 "comment": "First, we define our TreeNode class",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2335,7 +2753,7 @@
                                 "lineNumber": 8,
                                 "comment": "Create the root node with value 10",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -2432,7 +2850,7 @@
                                 "lineNumber": 1,
                                 "comment": "Start with an existing binary search tree",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -2464,7 +2882,7 @@
                                 "lineNumber": 2,
                                 "comment": "Inserting 7: Compare with root (10). Since 7 < 10, go left",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -2570,7 +2988,7 @@
                                 "lineNumber": 1,
                                 "comment": "Start with a binary tree",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "8",
@@ -2620,7 +3038,7 @@
                                 "lineNumber": 3,
                                 "comment": "Visit the leftmost path first",
                                 "userInputRequired": false,
-                                "availableElements": [],
+                                
                                 "nodes": [
                                     {
                                         "value": "8",

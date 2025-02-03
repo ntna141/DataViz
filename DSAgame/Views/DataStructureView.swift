@@ -284,12 +284,8 @@ struct DataStructureView: View {
         onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
         selectedMultipleChoiceAnswer: String = ""
     ) {
-        print("\n=== Initializing DataStructureView ===")
-        print("Multiple choice enabled: \(isMultipleChoice)")
-        if isMultipleChoice {
-            print("Multiple choice answers: \(multipleChoiceAnswers)")
-            print("Selected answer: \(selectedMultipleChoiceAnswer)")
-        }
+        print("\n=== DataStructureView Init ===")
+        print("availableElements: \(String(describing: availableElements))")
         
         self.layoutType = layoutType
         self.cells = cells
@@ -473,10 +469,10 @@ struct DataStructureView: View {
                             selectedAnswer: selectedMultipleChoiceAnswer,
                             onAnswerSelected: onMultipleChoiceAnswerSelected
                         )
-                    } else if let elements = availableElements, !elements.isEmpty {
-                        // Elements list above subtitles
+                    } else if availableElements != nil {
+                        // Only show elements list if availableElements was explicitly included in the JSON
                         ElementsListView(
-                            availableElements: elements,
+                            availableElements: availableElements!,
                             droppedElements: droppedElements,
                             dragState: dragState,
                             isOverElementList: isOverElementList,
@@ -885,7 +881,7 @@ struct DataStructureView: View {
         }
     }
     
-    private func canAutoPlay() -> Bool {
+     private func canAutoPlay() -> Bool {
         // Can auto-play if there are cells to display and we're not dragging
         return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && (availableElements ?? []).isEmpty
     }

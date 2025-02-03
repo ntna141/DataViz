@@ -144,8 +144,18 @@ class GameProgressionManager {
             stepEntity.isMultipleChoice = stepSpec.isMultipleChoice ?? false
             stepEntity.multipleChoiceAnswers = stepSpec.multipleChoiceAnswers ?? []
             stepEntity.multipleChoiceCorrectAnswer = stepSpec.multipleChoiceCorrectAnswer ?? ""
-            stepEntity.userInputRequired = stepSpec.isMultipleChoice ?? false || stepSpec.userInputRequired
-            stepEntity.availableElements = stepSpec.availableElements ?? []
+            stepEntity.userInputRequired = stepSpec.isMultipleChoice ?? false || 
+                                         stepSpec.userInputRequired || 
+                                         stepSpec.availableElements != nil
+            
+            print("[Step \(index)] Raw availableElements from JSON: \(String(describing: stepSpec.availableElements))")
+            // Only set availableElements if it's explicitly present in the JSON
+            if let elements = stepSpec.availableElements {
+                stepEntity.availableElements = elements
+                print("[Step \(index)] Set availableElements to: \(elements)")
+            } else {
+                print("[Step \(index)] availableElements not present in JSON, leaving as nil")
+            }
             stepEntity.question = visualization
             
             // Create node IDs based on the actual number of nodes

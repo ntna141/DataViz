@@ -9,7 +9,7 @@ struct VisualizationStep {
     var cells: [any DataStructureCell]
     var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
-    var availableElements: [String] = []
+    var availableElements: [String]? = nil
     var isMultipleChoice: Bool = false
     var multipleChoiceAnswers: [String] = []
     var multipleChoiceCorrectAnswer: String = ""
