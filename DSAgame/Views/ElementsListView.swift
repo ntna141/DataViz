@@ -12,11 +12,7 @@ struct ElementsListView: View {
     let cellSize: CGFloat
     
     var body: some View {
-        ZStack {
-            // Debug rectangle to show total frame
-            Rectangle()
-                .fill(Color.yellow.opacity(0.3))
-            
+        ZStack {       
             // Shadow layer
             Rectangle()
                 .fill(Color.black)
@@ -47,7 +43,7 @@ struct ElementsListView: View {
                     createDropHint()
                 }
             }
-            .padding(.horizontal, cellSize * 0.2)
+            .padding(.horizontal, cellSize * 0.05)
         }
         .frame(width: calculateListWidth(), height: cellSize * 0.6)
         .overlay(

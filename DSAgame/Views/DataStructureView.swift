@@ -79,8 +79,9 @@ struct LayoutCellView: View {
         CellView(state: displayState)
             .id("\(cell.id)-\(renderCycle)")
             .position(cell.position)
+            .contentShape(Rectangle())  // Make entire area draggable
             .gesture(
-                DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                DragGesture(coordinateSpace: .global)  // Changed to global coordinate space
                     .onChanged { value in
                         onDragChanged(value, geometryFrame)
                     }
@@ -644,8 +645,8 @@ struct DataStructureView: View {
         
         // Adjust for zoom and pan, taking into account that zoom happens from center
         let adjustedLocation = CGPoint(
-            x: ((localLocation.x - totalPanX - centerX) / currentScale) + centerX,
-            y: ((localLocation.y - totalPanY - centerY) / currentScale) + centerY
+            x: ((localLocation.x - centerX - totalPanX) / currentScale) + centerX,
+            y: ((localLocation.y - centerY - totalPanY) / currentScale) + centerY
         )
         
         if dragState != nil {
@@ -943,12 +944,13 @@ struct CellView: View {
             // Shadow layer
             Rectangle()
                 .fill(Color.black)
-                .offset(x: 6, y: 6)
                 .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                .offset(x: 6, y: 6)
             
-            // Main cell with outline
+            // Main cell layer
             Rectangle()
                 .fill(state.style.fillColor)
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
                 .overlay(
                     Rectangle()
                         .stroke(
@@ -959,7 +961,6 @@ struct CellView: View {
                             )
                         )
                 )
-                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
             
             // Cell value or placeholder
             if !state.value.isEmpty {
@@ -983,4 +984,5 @@ struct CellView: View {
             }
         }
     }
+}
 }
