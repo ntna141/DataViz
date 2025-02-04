@@ -49,16 +49,15 @@
                             "def test_dynamic_array():",
                             "    # Create array with capacity 4",
                             "    arr = DynamicArray(4)",
-                            "    append(arr, 10)    # [10]",
-                            "    append(arr, 20)    # [10, 20]",
-                            "    append(arr, 30)    # [10, 20, 30]",
-                            "    append(arr, 40)    # [10, 20, 30, 40] - Full!",
-                            "    append(arr, 50)    # Doubles to 8: [10, 20, 30, 40, 50]",
-                            "    pop(arr)          # [10, 20, 30, 40]",
-                            "    pop(arr)          # [10, 20, 30]",
-                            "    pop(arr)          # [10, 20] - Using 2/8 = 25%, no shrink",
-                            "    pop(arr)          # [10] - Using 1/8 < 25%, shrinks to 4",
-                            "    append(arr, 15)   # [10, 15]",
+                            "    append(arr, 10)",
+                            "    append(arr, 20)",
+                            "    append(arr, 30)",
+                            "    append(arr, 40)",
+                            "    append(arr, 50)",
+                            "    pop(arr)",
+                            "    pop(arr)",
+                            "    pop(arr)",
+                            "    append(arr, 15)",
                             "    return arr"
                         ],
                         "dataStructureType": "array",
@@ -323,7 +322,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 20,
+                                "lineNumber": 21,
                                 "comment": "Pop removes the last element (30)",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -412,8 +411,9 @@
                                 ]
                             },
                             {
-                                "lineNumber": 42,
+                                "lineNumber": 45,
                                 "comment": "After all these operations, what do you think will be the final capacity of the array?",
+                                "hint": "We doubled the capacity when we ran out of space, and we halved the capacity when we had less than 25% of the array used",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
                                 "multipleChoiceAnswers": [
@@ -443,7 +443,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 42,
+                                "lineNumber": 45,
                                 "comment": "Great, now let's see if you can place the final elements in their correct positions",
                                 "userInputRequired": true,
                                 "availableElements": [
@@ -474,7 +474,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 42,
+                                "lineNumber": 45,
                                 "comment": "Great! Now you know how dynamic arrays work!",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -955,7 +955,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 25,
+                                "lineNumber": 26,
                                 "comment": "Let's try a more complex example: delete_multiple_elements([10, 20, 30, 40, 50, 60], [1, 3, 5]). Here's our starting array:",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -986,9 +986,10 @@
                                 ]
                             },
                             {
-                                "lineNumber": 25,
-                                "comment": "After deleting elements at indices 1, 3, and 5, what will the array look like? Place the remaining numbers in their correct positions.",
+                                "lineNumber": 26,
+                                "comment": "After we run this line of code, what will the array look like? Place the remaining numbers in their correct positions.",
                                 "userInputRequired": true,
+                                "hint": "We are deleting elements at indices 1, 3, and 5",
                                 "availableElements": [
                                     "10",
                                     "20",

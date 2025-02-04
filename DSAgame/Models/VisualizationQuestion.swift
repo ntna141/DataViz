@@ -1,3 +1,5 @@
+import Foundation
+import CoreData
 import SwiftUI
 
 // Represents a single step in the visualization
@@ -35,26 +37,89 @@ class VisualizationZoomPanState: ObservableObject {
     @Published var steadyPan: CGSize = .zero
 }
 
+// Add this before VisualizationQuestionView
+class VisualizationCompletionManager: ObservableObject {
+    private let context: NSManagedObjectContext
+    private var stepEntities: [Int: VisualizationStepEntity] = [:]
+    
+    init(questionEntity: QuestionEntity) {
+        self.context = PersistenceController.shared.container.viewContext
+        if let visualization = questionEntity.visualization,
+           let steps = visualization.steps as? Set<VisualizationStepEntity> {
+            // Create a mapping of step indices to their entities
+            for step in steps {
+                stepEntities[Int(step.orderIndex)] = step
+            }
+        }
+    }
+    
+    func markStepCompleted(_ step: VisualizationStep, answer: String? = nil, cells: [any DataStructureCell]? = nil) {
+        guard let stepEntity = stepEntities[currentStepIndex] else { return }
+        
+        stepEntity.isCompleted = true
+        if let answer = answer {
+            stepEntity.multipleChoiceCorrectAnswer = answer
+        }
+        
+        // Save the context
+        do {
+            try context.save()
+            print("Marked step \(currentStepIndex) as completed")
+        } catch {
+            print("Error saving completion state: \(error)")
+        }
+    }
+    
+    func isStepCompleted(_ step: VisualizationStep) -> Bool {
+        guard let stepEntity = stepEntities[currentStepIndex] else { return false }
+        return stepEntity.isCompleted
+    }
+    
+    func getStoredAnswer(_ step: VisualizationStep) -> String? {
+        guard let stepEntity = stepEntities[currentStepIndex] else { return nil }
+        return stepEntity.multipleChoiceCorrectAnswer
+    }
+    
+    func getStoredCells(_ step: VisualizationStep) -> [any DataStructureCell]? {
+        return nil
+    }
+    
+    private var currentStepIndex: Int = 0
+    
+    func updateCurrentStepIndex(_ index: Int) {
+        currentStepIndex = index
+        print("Updated current step index to: \(index)")
+    }
+}
+
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
+    let questionEntity: QuestionEntity
     let onComplete: () -> Void
     @Environment(\.presentationMode) var presentationMode
-    @State private var currentStepIndex = 0
-    @State private var currentStep: VisualizationStep
+    @State private var currentStepIndex = 0 {
+        didSet {
+            completionManager.updateCurrentStepIndex(currentStepIndex)
+        }
+    }
+    @State private var steps: [VisualizationStep]  // Store all steps to maintain their state
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
     @State private var selectedAnswer: String = ""
     @StateObject private var zoomPanState = VisualizationZoomPanState()
+    @StateObject private var completionManager: VisualizationCompletionManager
     @State private var isAutoPlaying = false
     @State private var autoPlayTimer: Timer?
     @StateObject private var cellSizeManager = CellSizeManager()
     
-    init(question: VisualizationQuestion, onComplete: @escaping () -> Void = {}) {
+    init(question: VisualizationQuestion, questionEntity: QuestionEntity, onComplete: @escaping () -> Void = {}) {
         print("\n=== Initializing VisualizationQuestionView ===")
         self.question = question
+        self.questionEntity = questionEntity
         self.onComplete = onComplete
-        _currentStep = State(initialValue: question.steps[0])
+        _steps = State(initialValue: question.steps)  // Initialize steps array
+        _completionManager = StateObject(wrappedValue: VisualizationCompletionManager(questionEntity: questionEntity))
         
         print("\nFirst step details:")
         let firstStep = question.steps[0]
@@ -72,6 +137,55 @@ struct VisualizationQuestionView: View {
         }
         
         print("\nInitialization complete")
+    }
+    
+    private var currentStep: VisualizationStep {
+        let step = steps[currentStepIndex]
+        print("\n=== Current Step Status ===")
+        print("Step Index: \(currentStepIndex)")
+        print("Step Completion Status: \(completionManager.isStepCompleted(step))")
+        if let answer = completionManager.getStoredAnswer(step) {
+            print("Stored Answer: \(answer)")
+        }
+        return step
+    }
+    
+    private func updateCurrentStep(_ step: VisualizationStep) {
+        steps[currentStepIndex] = step
+        visualizationKey = UUID()
+    }
+    
+    private var isCurrentStepCompleted: Bool {
+        let step = currentStep
+        if completionManager.isStepCompleted(step) {
+            return true
+        }
+        
+        if step.isMultipleChoice {
+            let isCorrect = selectedAnswer == step.multipleChoiceCorrectAnswer
+            if isCorrect {
+                completionManager.markStepCompleted(step, answer: selectedAnswer)
+            }
+            return isCorrect
+        }
+        
+        if step.userInputRequired {
+            guard let nextStep = steps[safe: currentStepIndex + 1] else { return false }
+            
+            let isCorrect = zip(step.cells, nextStep.cells).allSatisfy { current, next in
+                if next.value.isEmpty {
+                    return current.value.isEmpty
+                }
+                return current.value == next.value
+            }
+            
+            if isCorrect {
+                completionManager.markStepCompleted(step, cells: step.cells)
+            }
+            return isCorrect
+        }
+        
+        return false
     }
     
     var body: some View {
@@ -119,7 +233,7 @@ struct VisualizationQuestionView: View {
                     connections: currentStep.connections,
                     availableElements: currentStep.availableElements,
                     onElementDropped: { value, index in
-                        if currentStep.userInputRequired {
+                        if currentStep.userInputRequired && !isCurrentStepCompleted {
                             setValue(value, forCellAtIndex: index)
                         }
                     },
@@ -138,11 +252,15 @@ struct VisualizationQuestionView: View {
                     isMultipleChoice: currentStep.isMultipleChoice,
                     multipleChoiceAnswers: currentStep.multipleChoiceAnswers,
                     onMultipleChoiceAnswerSelected: { answer in
-                        print("\nMultiple choice answer selected: \(answer)")
-                        selectedAnswer = answer
-                        print("Updated selectedAnswer to: \(selectedAnswer)")
+                        if !isCurrentStepCompleted {
+                            print("\nMultiple choice answer selected: \(answer)")
+                            selectedAnswer = answer
+                            print("Updated selectedAnswer to: \(selectedAnswer)")
+                        }
                     },
-                    selectedMultipleChoiceAnswer: selectedAnswer
+                    selectedMultipleChoiceAnswer: selectedAnswer,
+                    onShowAnswer: showAnswer,
+                    isCompleted: isCurrentStepCompleted
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -225,8 +343,7 @@ struct VisualizationQuestionView: View {
                         if currentStepIndex > 0 {
                             let prevIndex = currentStepIndex - 1
                             currentStepIndex = prevIndex
-                            currentStep = question.steps[prevIndex]
-                            selectedAnswer = ""  // Reset selected answer for new step
+                            selectedAnswer = ""  // Always reset selected answer when navigating
                             visualizationKey = UUID()
                         }
                     }) {
@@ -281,11 +398,11 @@ struct VisualizationQuestionView: View {
                             
                             // Button content
                             Text(isLastStep ? "Complete" : "Next")
-                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()) ? Color.gray : Color.blue)
+                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)) ? Color.gray : Color.blue)
                                 .font(.system(.body, design: .monospaced).weight(.bold))
                         }
                     }
-                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)))
                     .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.trailing, 40)
@@ -311,73 +428,57 @@ struct VisualizationQuestionView: View {
     private func moveToNextStep() {
         print("\n=== Moving to Next Step ===")
         
+        // Mark current step as completed if it's not already
+        if !completionManager.isStepCompleted(currentStep) {
+            if currentStep.isMultipleChoice {
+                completionManager.markStepCompleted(currentStep, answer: selectedAnswer)
+            } else {
+                completionManager.markStepCompleted(currentStep, cells: currentStep.cells)
+            }
+        }
+        
         let nextIndex = currentStepIndex + 1
-        guard nextIndex < question.steps.count else { return }
-        
-        let nextStep = question.steps[nextIndex]
-        
-        print("\nCurrent step details:")
-        print("Is multiple choice: \(currentStep.isMultipleChoice)")
-        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
-        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
-        
-        print("\nNext step details:")
-        print("Is multiple choice: \(nextStep.isMultipleChoice)")
-        print("Multiple choice answers: \(nextStep.multipleChoiceAnswers)")
-        print("Correct answer: \(nextStep.multipleChoiceCorrectAnswer)")
-        
-        print("\nCurrent step cells:")
-        for (i, cell) in currentStep.cells.enumerated() {
-            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
-        }
-        
-        print("\nNext step cells:")
-        for (i, cell) in nextStep.cells.enumerated() {
-            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
-        }
+        guard nextIndex < steps.count else { return }
         
         currentStepIndex = nextIndex
-        currentStep = nextStep
-        selectedAnswer = ""  // Reset selected answer for new step
-        visualizationKey = UUID()
+        selectedAnswer = ""  // Always reset selected answer when navigating
         
-        print("\nMoved to step \(nextIndex)")
-        print("Updated step details:")
-        print("Is multiple choice: \(currentStep.isMultipleChoice)")
-        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
-        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
-        print("Selected answer: \(selectedAnswer)")
+        visualizationKey = UUID()
+    }
+    
+    private func showAnswer() {
+        let step = currentStep
+        if step.isMultipleChoice {
+            if let storedAnswer = completionManager.getStoredAnswer(step) {
+                selectedAnswer = storedAnswer
+            } else {
+                selectedAnswer = step.multipleChoiceCorrectAnswer
+            }
+        } else if step.userInputRequired {
+            if let storedCells = completionManager.getStoredCells(step) {
+                var updatedStep = step
+                updatedStep.cells = storedCells
+                steps[currentStepIndex] = updatedStep
+            } else if let nextStep = steps[safe: currentStepIndex + 1] {
+                var updatedStep = step
+                updatedStep.cells = nextStep.cells
+                steps[currentStepIndex] = updatedStep
+                completionManager.markStepCompleted(step, cells: nextStep.cells)
+            }
+        }
+        visualizationKey = UUID()
     }
     
     private func setValue(_ value: String, forCellAtIndex index: Int) {
         guard index < currentStep.cells.count else { return }
-        var newCells = currentStep.cells
+        var updatedStep = steps[currentStepIndex]
+        var newCells = updatedStep.cells
         var updatedCell = newCells[index]
         updatedCell.setValue(value)
         newCells[index] = updatedCell
-        currentStep.cells = newCells
+        updatedStep.cells = newCells
+        steps[currentStepIndex] = updatedStep
         visualizationKey = UUID()
-    }
-    
-    private func isCurrentStepComplete() -> Bool {
-        if currentStep.isMultipleChoice {
-            print("\nChecking multiple choice completion:")
-            print("Selected answer: \(selectedAnswer)")
-            print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
-            return selectedAnswer == currentStep.multipleChoiceCorrectAnswer
-        }
-        
-        guard let nextStep = question.steps[safe: currentStepIndex + 1] else { return false }
-        
-        // Check if all cells in the current step match the next step's requirements
-        return zip(currentStep.cells, nextStep.cells).allSatisfy { current, next in
-            // If next cell is empty, current cell should also be empty
-            if next.value.isEmpty {
-                return current.value.isEmpty
-            }
-            // If next cell has a value, current cell must match exactly
-            return current.value == next.value
-        }
     }
     
     private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
@@ -542,7 +643,7 @@ struct VisualizationQuestionExample: View {
     )
     
     var body: some View {
-        VisualizationQuestionView(question: sampleQuestion)
+        VisualizationQuestionView(question: sampleQuestion, questionEntity: QuestionEntity(context: PersistenceController.shared.container.viewContext))
     }
 }
 

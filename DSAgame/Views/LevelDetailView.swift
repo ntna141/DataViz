@@ -108,12 +108,16 @@ struct LevelDetailView: View {
         }
         .fullScreenCover(isPresented: $showingVisualization) {
             if let visualization = visualization {
-                VisualizationQuestionView(question: visualization) {
-                    let questionId = visualizationQuestions[currentQuestionIndex].uuid!
-                    GameProgressionManager.shared.markQuestionCompleted(questionId)
-                    showingVisualization = false
-                    showingReview = true
-                }
+                VisualizationQuestionView(
+                    question: visualization,
+                    questionEntity: visualizationQuestions[currentQuestionIndex],
+                    onComplete: {
+                        let questionId = visualizationQuestions[currentQuestionIndex].uuid!
+                        GameProgressionManager.shared.markQuestionCompleted(questionId)
+                        showingVisualization = false
+                        showingReview = true
+                    }
+                )
             }
         }
         .fullScreenCover(isPresented: $showingReview) {

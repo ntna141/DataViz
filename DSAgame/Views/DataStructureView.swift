@@ -249,6 +249,8 @@ struct DataStructureView: View {
     let multipleChoiceAnswers: [String]
     let onMultipleChoiceAnswerSelected: (String) -> Void
     let selectedMultipleChoiceAnswer: String
+    let onShowAnswer: () -> Void
+    let isCompleted: Bool
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -283,7 +285,9 @@ struct DataStructureView: View {
         isMultipleChoice: Bool = false,
         multipleChoiceAnswers: [String] = [],
         onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
-        selectedMultipleChoiceAnswer: String = ""
+        selectedMultipleChoiceAnswer: String = "",
+        onShowAnswer: @escaping () -> Void = {},
+        isCompleted: Bool = false
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
@@ -303,6 +307,8 @@ struct DataStructureView: View {
         self.multipleChoiceAnswers = multipleChoiceAnswers
         self.onMultipleChoiceAnswerSelected = onMultipleChoiceAnswerSelected
         self.selectedMultipleChoiceAnswer = selectedMultipleChoiceAnswer
+        self.onShowAnswer = onShowAnswer
+        self.isCompleted = isCompleted
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
         
@@ -419,6 +425,20 @@ struct DataStructureView: View {
                     .frame(width: 44, height: 44)
                     .padding(.leading, 10)
                     .disabled(!canAutoPlay())
+                    
+                    // Show Answer button - only show if step is completed and is interactive (user input or multiple choice)
+                    if isCompleted && (isMultipleChoice || availableElements != nil) {
+                        Button(action: onShowAnswer) {
+                            buttonBackground {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 44, height: 44)
+                        .padding(.leading, 10)
+                    }
                     
                     Spacer()
                     
@@ -927,7 +947,9 @@ struct DataStructureView_Previews: PreviewProvider {
             isMultipleChoice: false,
             multipleChoiceAnswers: [],
             onMultipleChoiceAnswerSelected: { _ in },
-            selectedMultipleChoiceAnswer: ""
+            selectedMultipleChoiceAnswer: "",
+            onShowAnswer: {},
+            isCompleted: false
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

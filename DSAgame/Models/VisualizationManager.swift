@@ -303,7 +303,7 @@ class VisualizationManager {
             let nodeEntities = nodes.enumerated().map { index, nodeData -> NodeEntity in
                 let nodeEntity = NodeEntity(context: context)
                 nodeEntity.uuid = UUID()
-                nodeEntity.value = nodeData["value"] as? String ?? ""
+                nodeEntity.value = nodeData["value"] as? String
                 nodeEntity.label = nodeData["label"] as? String
                 nodeEntity.orderIndex = Int32(index)  // Store the array index
                 nodeEntity.step = stepEntity
@@ -412,7 +412,6 @@ class VisualizationManager {
                     // Convert to BasicCells
                     let cells = orderedNodes.map { nodeEntity -> BasicCell in
                         return BasicCell(
-                            id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,
                             value: nodeEntity.value ?? "",
                             isHighlighted: nodeEntity.isHighlighted,
                             label: nodeEntity.label
@@ -443,7 +442,7 @@ class VisualizationManager {
                         return connection
                     }
                     
-                    let step = VisualizationStep(
+                    return VisualizationStep(
                         codeHighlightedLine: Int(stepEntity.codeHighlightedLine),
                         lineComment: stepEntity.lineComment,
                         hint: stepEntity.hint,
@@ -455,35 +454,20 @@ class VisualizationManager {
                         multipleChoiceAnswers: stepEntity.multipleChoiceAnswers ?? [],
                         multipleChoiceCorrectAnswer: stepEntity.multipleChoiceCorrectAnswer ?? ""
                     )
-                    
-                    print("\nCreated VisualizationStep:")
-                    print("  - Line highlighted: \(step.codeHighlightedLine)")
-                    print("  - Is multiple choice: \(step.isMultipleChoice)")
-                    print("  - Multiple choice answers: \(step.multipleChoiceAnswers)")
-                    print("  - Correct answer: \(step.multipleChoiceCorrectAnswer)")
-                    print("  - User input required: \(step.userInputRequired)")
-                    print("=== End Step \(stepEntity.orderIndex) ===\n")
-                    
-                    return step
                 }
-            print("\nLoaded \(loadedSteps.count) steps")
             return loadedSteps
         }()
-        
-        // Get layout type
-        let layoutType = DataStructureLayoutType(rawValue: visualizationEntity.layoutType ?? "linkedList") ?? .linkedList
-        
         
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",
             description: visualizationEntity.desc ?? "",
-            hint: visualizationEntity.hint ?? "Watch carefully how the data structure changes with each step.",
-            review: visualizationEntity.review ?? "Great job completing this visualization!",
+            hint: visualizationEntity.hint ?? "",
+            review: visualizationEntity.review ?? "",
             code: codeLines,
             steps: steps,
-            initialCells: steps.first?.cells ?? [],
-            initialConnections: steps.first?.connections ?? [],
-            layoutType: layoutType
+            initialCells: [],
+            initialConnections: [],
+            layoutType: DataStructureLayoutType(rawValue: visualizationEntity.layoutType ?? "linkedList") ?? .linkedList
         )
     }
 } 
