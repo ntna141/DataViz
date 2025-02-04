@@ -1482,6 +1482,9 @@
                                 "lineNumber": 6,
                                 "comment": "In the worst-case scenario when we want to search for 25 (assuming it is in the array), where would it be?",
                                 "hint": "The worst-case scenario is when we have to check every element in the array to find the target",
+                                "availableElements": [
+                                    "25"
+                                ],
                                 "userInputRequired": true,
                                 "nodes": [
                                     {
