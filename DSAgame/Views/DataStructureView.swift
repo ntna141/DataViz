@@ -985,4 +985,3 @@ struct CellView: View {
         }
     }
 }
-}

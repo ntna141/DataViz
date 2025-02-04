@@ -44,7 +44,22 @@
                             "            new_arr[i] = arr[i]",
                             "        arr = new_arr",
                             "        arr.capacity = new_capacity",
-                            "    return value"
+                            "    return value",
+                            "",
+                            "def test_dynamic_array():",
+                            "    # Create array with capacity 4",
+                            "    arr = DynamicArray(4)",
+                            "    append(arr, 10)    # [10]",
+                            "    append(arr, 20)    # [10, 20]",
+                            "    append(arr, 30)    # [10, 20, 30]",
+                            "    append(arr, 40)    # [10, 20, 30, 40] - Full!",
+                            "    append(arr, 50)    # Doubles to 8: [10, 20, 30, 40, 50]",
+                            "    pop(arr)          # [10, 20, 30, 40]",
+                            "    pop(arr)          # [10, 20, 30]",
+                            "    pop(arr)          # [10, 20] - Using 2/8 = 25%, no shrink",
+                            "    pop(arr)          # [10] - Using 1/8 < 25%, shrinks to 4",
+                            "    append(arr, 15)   # [10, 15]",
+                            "    return arr"
                         ],
                         "dataStructureType": "array",
                         "steps": [
@@ -360,6 +375,115 @@
                                     {
                                         "value": "20",
                                         "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            
+                            {
+                                "lineNumber": 32,
+                                "comment": "Let's try to combine our knowledge and go through an example. Starting with an empty array of capacity 4",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 42,
+                                "comment": "After all these operations, what do you think will be the final capacity of the array?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "2",
+                                    "4",
+                                    "8",
+                                    "16"
+                                ],
+                                "multipleChoiceCorrectAnswer": "4",
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 42,
+                                "comment": "Great, now let's see if you can place the final elements in their correct positions",
+                                "userInputRequired": true,
+                                "availableElements": [
+                                    "10",
+                                    "15",
+                                    "20",
+                                    "30",
+                                    "40",
+                                    "50"
+                                ],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 42,
+                                "comment": "Great! Now you know how dynamic arrays work!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "15",
                                         "label": "1"
                                     },
                                     {
@@ -808,7 +932,7 @@
                             },
                             {
                                 "lineNumber": 20,
-                                "comment": "Finally, we clear the last element by setting it to None",
+                                "comment": "That is right! We clear the last element by setting it to None",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -867,8 +991,11 @@
                                 "userInputRequired": true,
                                 "availableElements": [
                                     "10",
+                                    "20",
                                     "30",
-                                    "50"
+                                    "40",
+                                    "50",
+                                    "60"
                                 ],
                                 "nodes": [
                                     {
@@ -1209,13 +1336,8 @@
                             },
                             {
                                 "lineNumber": 5,
-                                "comment": "We start with the first index (index 0). Is it 25?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "Yes",
-                                    "No"
-                                ],
+                                "comment": "We start with the first index (index 0). It is not 25, so we move to the next index (index 1)",
+                                "userInputRequired": false,
                                 "multipleChoiceCorrectAnswer": "No",
                                 "nodes": [
                                     {
@@ -1251,7 +1373,7 @@
                             },
                             {
                                 "lineNumber": 5,
-                                "comment": "Move to next element (index 1). It is still not 25",
+                                "comment": "On to next element (index 1). It is still not 25",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1317,6 +1439,113 @@
                                     },
                                     {
                                         "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "While arrays give us instant access when we know the index, the trade-off becomes clear when we need to find specific values - we must resort to checking elements one by one, making our search time depend on the array's size.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "In the worst-case scenario when we want to search for 25 (assuming it is in the array), where would it be?",
+                                "hint": "The worst-case scenario is when we have to check every element in the array to find the target",
+                                "userInputRequired": true,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Exactly! In the worst-case scenario, we would have to check every element in the array to find the target, the only worse case is if the target is not in the array at all",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
                                         "label": "6"
                                     }
                                 ]
