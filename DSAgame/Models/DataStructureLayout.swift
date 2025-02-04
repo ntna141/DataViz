@@ -28,19 +28,10 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
         // Calculate starting position to center the list
         // Adjust vertical position to account for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
         
-        // Create a copy of cells that we can modify
-        var orderedCells = cells
-        
-        // If there's a head cell, ensure it's first
-        if let headIndex = cells.firstIndex(where: { $0.label == "head" }) {
-            let headCell = cells[headIndex]
-            orderedCells.remove(at: headIndex)
-            orderedCells.insert(headCell, at: 0)
-        }
-        
-        return orderedCells.enumerated().map { index, cell in
+        // Use cells directly without reordering
+        return cells.enumerated().map { index, cell in
             var mutableCell = cell
             mutableCell.position = CGPoint(
                 x: startX + CGFloat(index) * (LayoutConfig.cellDiameter + LayoutConfig.horizontalSpacing),
@@ -70,24 +61,21 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                 )
             }
             
-            // For highlighted connections (during deletion), use direct points
-            // This will make the arrow go straight from source to destination
-            if connection.isHighlighted {
-                return ConnectionDisplayState(
-                    fromPoint: fromCell.position,
-                    toPoint: toCell.position,
-                    label: connection.label,
-                    isHighlighted: true,
-                    style: .straight,
-                    visualStyle: .highlighted(scale: scale),
-                    scale: scale
-                )
-            }
+            // For linked lists, we want the arrow to point from left to right
+            // Calculate points on the edge of the circles
+            let fromPoint = CGPoint(
+                x: fromCell.position.x + LayoutConfig.cellRadius,
+                y: fromCell.position.y
+            )
             
-            // For normal connections, use the standard layout
+            let toPoint = CGPoint(
+                x: toCell.position.x - LayoutConfig.cellRadius,
+                y: toCell.position.y
+            )
+            
             return ConnectionDisplayState(
-                fromPoint: fromCell.position,
-                toPoint: toCell.position,
+                fromPoint: fromPoint,
+                toPoint: toPoint,
                 label: connection.label,
                 isHighlighted: connection.isHighlighted,
                 style: connection.style,
@@ -112,7 +100,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
         
         // Center the tree both horizontally and vertically
         // Account for element list in vertical centering
-        let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + LayoutConfig.cellRadius
+        let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + 
+                    LayoutConfig.cellRadius - (frame.height * 0.1)
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -194,7 +183,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
         
         // Center horizontally and vertically, accounting for element list
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2
+        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -269,24 +258,19 @@ class DataStructureLayoutManager {
         in frame: CGRect,
         scale: CGFloat
     ) -> ([any DataStructureCell], [ConnectionDisplayState]) {
-        print("\nLayout manager updating with frame: \(frame)")
-        print("Input cells: \(cells.map { $0.value })")
         
         // Ensure we have a valid frame
         guard frame.width > 0, frame.height > 0 else {
-            print("Invalid frame dimensions")
             return (cells, [])
         }
         
         let layoutCells = layoutStrategy.calculateLayout(cells: cells, in: frame)
-        print("Calculated positions for cells: \(layoutCells.map { "\($0.value)@\($0.position)" })")
         
         let connectionStates = layoutStrategy.updateConnectionPoints(
             cells: layoutCells,
             connections: connections,
             scale: scale
         )
-        print("Updated \(connectionStates.count) connections")
         
         return (layoutCells, connectionStates)
     }

@@ -131,26 +131,26 @@ struct CodeLineView: View {
                 Text("\(line.number)")
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
-                    .frame(width: maxLineNumberWidth, alignment: .trailing)
+                    .frame(minWidth: maxLineNumberWidth, alignment: .trailing)
+                    .lineLimit(1)
                     .padding(.trailing, 8)
                 
                 // Code content with syntax highlighting
-                ScrollView(.horizontal, showsIndicators: false) {
+                if !line.syntaxTokens.isEmpty {
                     HStack(spacing: 0) {
-                        if !line.syntaxTokens.isEmpty {
-                            ForEach(line.syntaxTokens) { token in
-                                Text(token.text)
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(token.type.color)
-                                    .fixedSize(horizontal: true, vertical: false)  // Prevent text wrapping
-                            }
-                        } else {
-                            Text(line.content)
+                        ForEach(line.syntaxTokens) { token in
+                            Text(token.text)
                                 .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.primary)
+                                .foregroundColor(token.type.color)
                                 .fixedSize(horizontal: true, vertical: false)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Text(line.content)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -163,6 +163,8 @@ struct CodeLineView: View {
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
                     .padding(.leading, maxLineNumberWidth + 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .lineLimit(nil) // Allow wrapping
             }
         }
     }
@@ -172,24 +174,54 @@ struct CodeLineView: View {
 struct CodeViewer: View {
     let lines: [CodeLine]
     
-    // Calculate the width needed for line numbers
     private var maxLineNumberWidth: CGFloat {
         let maxDigits = String(lines.count).count
         return CGFloat(maxDigits) * 10
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(lines) { line in
-                    CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                Text("</> python")
+                    .font(.system(.subheadline, design: .monospaced))
+                    .foregroundColor(.primary)
             }
-            .padding(.leading, 15)
+            .padding(.horizontal, 15)
             .padding(.vertical, 8)
-            .background(Color(.systemBackground))
-            .cornerRadius(8)
+            
+            // Divider
+            Divider()
+            
+            // Code content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(lines) { line in
+                        CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
+                    }
+                    // Add empty space at the bottom
+                    Spacer(minLength: 100)
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 12)
+            }
         }
+        .background(Color(.systemBackground))
+        .overlay(
+            Rectangle()
+                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                .mask(
+                    VStack(spacing: 0) {
+                        Rectangle().frame(height: 1) // Top border
+                        HStack(spacing: 0) {
+                            Rectangle().frame(width: 1) // Left border
+                            Spacer()
+                            Rectangle().frame(width: 1) // Right border
+                        }
+                        Spacer() // No bottom border
+                    }
+                )
+        )
     }
 }
 

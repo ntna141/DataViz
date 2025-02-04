@@ -12,18 +12,11 @@ class VisualizationManager {
     
     // Draw an arrow between two cells
     func drawArrow(from fromIndex: Int, to toIndex: Int, label: String? = nil, style: ConnectionStyle = .straight, inStep stepIndex: Int, forQuestion question: QuestionEntity) {
-        print("\n=== Drawing Arrow in Data Structure ===")
-        print("From Cell Index: \(fromIndex)")
-        print("To Cell Index: \(toIndex)")
-        print("Label: \(label ?? "none")")
-        print("Style: \(style.rawValue)")
-        print("Step Index: \(stepIndex)")
         
         guard let visualization = question.visualization,
               let steps = visualization.steps as? Set<VisualizationStepEntity>,
               let targetStep = steps.first(where: { $0.orderIndex == stepIndex }),
               let nodes = targetStep.nodes as? Set<NodeEntity> else {
-            print("Failed to find target step or nodes")
             return
         }
         
@@ -49,11 +42,6 @@ class VisualizationManager {
         connection.step = targetStep
         connection.fromNode = orderedNodes[fromIndex]
         connection.toNode = orderedNodes[toIndex]
-        
-        print("Created connection:")
-        print("  - From: Node \(fromIndex) (value: '\(orderedNodes[fromIndex].value ?? "")')")
-        print("  - To: Node \(toIndex) (value: '\(orderedNodes[toIndex].value ?? "")')")
-        print("  - Label: \(label ?? "none")")
         
         // Save changes
         do {
@@ -214,13 +202,38 @@ class VisualizationManager {
             guard let lineNumber = stepData["lineNumber"] as? Int,
                   let nodes = stepData["nodes"] as? [[String: Any]],
                   let connections = stepData["connections"] as? [[String: Any]] else {
+                print("Failed to load required step data for step \(index)")
                 continue
             }
             
             print("\nProcessing step \(index):")
             print("Line number: \(lineNumber)")
-            print("Nodes data:", nodes)
-            print("Connections data:", connections)
+            print("Comment: \(stepData["comment"] as? String ?? "none")")
+            print("User input required: \(stepData["userInputRequired"] as? Bool ?? false)")
+            
+            // Print raw multiple choice data from JSON with type information
+            print("\nRaw multiple choice data from JSON for step \(index):")
+            print("Raw stepData keys: \(stepData.keys)")
+            if let rawIsMultipleChoice = stepData["isMultipleChoice"] {
+                print("Raw isMultipleChoice value: \(rawIsMultipleChoice)")
+                print("Raw isMultipleChoice type: \(type(of: rawIsMultipleChoice))")
+            } else {
+                print("isMultipleChoice key not found in stepData")
+            }
+            
+            if let rawAnswers = stepData["multipleChoiceAnswers"] {
+                print("Raw multipleChoiceAnswers value: \(rawAnswers)")
+                print("Raw multipleChoiceAnswers type: \(type(of: rawAnswers))")
+            } else {
+                print("multipleChoiceAnswers key not found in stepData")
+            }
+            
+            if let rawCorrectAnswer = stepData["multipleChoiceCorrectAnswer"] {
+                print("Raw multipleChoiceCorrectAnswer value: \(rawCorrectAnswer)")
+                print("Raw multipleChoiceCorrectAnswer type: \(type(of: rawCorrectAnswer))")
+            } else {
+                print("multipleChoiceCorrectAnswer key not found in stepData")
+            }
             
             let stepEntity = VisualizationStepEntity(context: context)
             stepEntity.uuid = UUID()
@@ -228,7 +241,62 @@ class VisualizationManager {
             stepEntity.codeHighlightedLine = Int32(lineNumber)
             stepEntity.lineComment = stepData["comment"] as? String
             stepEntity.userInputRequired = stepData["userInputRequired"] as? Bool ?? false
-            stepEntity.availableElements = stepData["availableElements"] as? [String] ?? []
+            
+            // Only set availableElements if it's explicitly present in the JSON
+            if let availableElements = stepData["availableElements"] as? [String] {
+                stepEntity.availableElements = availableElements
+                print("Step \(index): availableElements set to \(availableElements)")
+            } else {
+                stepEntity.availableElements = nil
+                print("Step \(index): availableElements not present in JSON")
+            }
+            
+            // Add multiple choice fields with explicit type checking
+            if let isMultipleChoice = stepData["isMultipleChoice"] as? Bool {
+                stepEntity.isMultipleChoice = isMultipleChoice
+                print("Set isMultipleChoice to: \(isMultipleChoice) (from Bool)")
+            } else if let isMultipleChoiceNumber = stepData["isMultipleChoice"] as? NSNumber {
+                stepEntity.isMultipleChoice = isMultipleChoiceNumber.boolValue
+                print("Set isMultipleChoice to: \(isMultipleChoiceNumber.boolValue) (from NSNumber)")
+            } else if let isMultipleChoiceInt = stepData["isMultipleChoice"] as? Int {
+                stepEntity.isMultipleChoice = isMultipleChoiceInt != 0
+                print("Set isMultipleChoice to: \(isMultipleChoiceInt != 0) (from Int)")
+            } else {
+                print("Raw isMultipleChoice value: \(String(describing: stepData["isMultipleChoice"]))")
+                print("Raw isMultipleChoice type: \(String(describing: type(of: stepData["isMultipleChoice"])))")
+                stepEntity.isMultipleChoice = false
+                print("Could not convert isMultipleChoice to Bool, defaulting to false")
+            }
+            
+            if let multipleChoiceAnswers = stepData["multipleChoiceAnswers"] as? [String] {
+                stepEntity.multipleChoiceAnswers = multipleChoiceAnswers
+                print("Set multipleChoiceAnswers to: \(multipleChoiceAnswers)")
+            } else if let rawAnswers = stepData["multipleChoiceAnswers"] {
+                print("Raw multipleChoiceAnswers value: \(rawAnswers)")
+                print("Raw multipleChoiceAnswers type: \(type(of: rawAnswers))")
+                stepEntity.multipleChoiceAnswers = []
+            } else {
+                stepEntity.multipleChoiceAnswers = []
+                print("No multipleChoiceAnswers found, defaulting to empty array")
+            }
+            
+            if let multipleChoiceCorrectAnswer = stepData["multipleChoiceCorrectAnswer"] as? String {
+                stepEntity.multipleChoiceCorrectAnswer = multipleChoiceCorrectAnswer
+                print("Set multipleChoiceCorrectAnswer to: \(multipleChoiceCorrectAnswer)")
+            } else if let rawCorrectAnswer = stepData["multipleChoiceCorrectAnswer"] {
+                print("Raw multipleChoiceCorrectAnswer value: \(rawCorrectAnswer)")
+                print("Raw multipleChoiceCorrectAnswer type: \(type(of: rawCorrectAnswer))")
+                stepEntity.multipleChoiceCorrectAnswer = ""
+            } else {
+                stepEntity.multipleChoiceCorrectAnswer = ""
+                print("No multipleChoiceCorrectAnswer found, defaulting to empty string")
+            }
+            
+            print("\nVerifying step entity multiple choice data:")
+            print("  - isMultipleChoice: \(stepEntity.isMultipleChoice)")
+            print("  - multipleChoiceAnswers: \(stepEntity.multipleChoiceAnswers ?? [])")
+            print("  - multipleChoiceCorrectAnswer: \(stepEntity.multipleChoiceCorrectAnswer ?? "")")
+            
             stepEntity.question = visualizationEntity
             
             // Create nodes with consistent IDs
@@ -323,10 +391,12 @@ class VisualizationManager {
             let loadedSteps = stepsSet
                 .sorted(by: { $0.orderIndex < $1.orderIndex })
                 .map { stepEntity -> VisualizationStep in
-                    print("\nLoading step \(stepEntity.orderIndex):")
-                    print("Line highlighted: \(stepEntity.codeHighlightedLine)")
-                    print("User input required: \(stepEntity.userInputRequired)")
-                    print("Available elements: \(stepEntity.availableElements ?? [])")
+                    print("\n=== Loading Step Entity \(stepEntity.orderIndex) ===")
+                    print("Step Entity Details:")
+                    print("  - UUID: \(stepEntity.uuid?.uuidString ?? "nil")")
+                    print("  - Line highlighted: \(stepEntity.codeHighlightedLine)")
+                    print("  - User input required: \(stepEntity.userInputRequired)")
+                    print("  - Available elements: \(String(describing: stepEntity.availableElements))")
                     
                     // Load nodes in order based on stored index
                     let allNodes = stepEntity.nodes as? Set<NodeEntity> ?? Set()
@@ -341,11 +411,6 @@ class VisualizationManager {
                     
                     // Convert to BasicCells
                     let cells = orderedNodes.map { nodeEntity -> BasicCell in
-                        print("\nLoading cell with index \(nodeEntity.orderIndex):")
-                        print("  - Value: '\(nodeEntity.value ?? "")'")
-                        print("  - Label: \(nodeEntity.label ?? "none")")
-                        print("  - UUID: \(nodeEntity.uuid?.uuidString ?? "unknown")")
-                        
                         return BasicCell(
                             id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,
                             value: nodeEntity.value ?? "",
@@ -378,14 +443,28 @@ class VisualizationManager {
                         return connection
                     }
                     
-                    return VisualizationStep(
+                    let step = VisualizationStep(
                         codeHighlightedLine: Int(stepEntity.codeHighlightedLine),
                         lineComment: stepEntity.lineComment,
+                        hint: stepEntity.hint,
                         cells: cells,
                         connections: loadedConnections,
                         userInputRequired: stepEntity.userInputRequired,
-                        availableElements: stepEntity.availableElements ?? []
+                        availableElements: stepEntity.availableElements,
+                        isMultipleChoice: stepEntity.isMultipleChoice,
+                        multipleChoiceAnswers: stepEntity.multipleChoiceAnswers ?? [],
+                        multipleChoiceCorrectAnswer: stepEntity.multipleChoiceCorrectAnswer ?? ""
                     )
+                    
+                    print("\nCreated VisualizationStep:")
+                    print("  - Line highlighted: \(step.codeHighlightedLine)")
+                    print("  - Is multiple choice: \(step.isMultipleChoice)")
+                    print("  - Multiple choice answers: \(step.multipleChoiceAnswers)")
+                    print("  - Correct answer: \(step.multipleChoiceCorrectAnswer)")
+                    print("  - User input required: \(step.userInputRequired)")
+                    print("=== End Step \(stepEntity.orderIndex) ===\n")
+                    
+                    return step
                 }
             print("\nLoaded \(loadedSteps.count) steps")
             return loadedSteps
@@ -394,8 +473,6 @@ class VisualizationManager {
         // Get layout type
         let layoutType = DataStructureLayoutType(rawValue: visualizationEntity.layoutType ?? "linkedList") ?? .linkedList
         
-        print("\nCreating VisualizationQuestion with:")
-        print("Layout type: \(layoutType)")
         
         return VisualizationQuestion(
             title: visualizationEntity.title ?? "",

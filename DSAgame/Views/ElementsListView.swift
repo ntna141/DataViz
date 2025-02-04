@@ -45,14 +45,10 @@ struct ElementsListView: View {
             }
             .padding(.horizontal, cellSize * 0.05)
         }
-        .frame(width: calculateListWidth(), height: cellSize * 0.8)
+        .frame(width: calculateListWidth(), height: cellSize * 0.6)
         .overlay(
             GeometryReader { geometry in
                 Color.clear.onAppear {
-                    print("Actual frame size: \(geometry.size)")
-                    print("Calculated width: \(calculateListWidth())")
-                    print("Cell size: \(cellSize)")
-                    print("Elements: \(availableElements + droppedElements)")
                 }
             }
         )
@@ -89,11 +85,12 @@ struct ElementsListView: View {
     
     private func createDropHint() -> some View {
         Text("Drop here to remove")
-            .font(.system(size: cellSize * 0.22))
+            .font(.system(size: cellSize * 0.15))
             .foregroundColor(.gray)
             .opacity(isOverElementList ? 1.0 : 0.8)
             .animation(.easeInOut, value: isOverElementList)
             .frame(width: cellSize * 2)
+            .monospaced()
     }
 }
 

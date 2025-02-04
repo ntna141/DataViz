@@ -5,10 +5,14 @@ struct VisualizationStep {
     let id = UUID()
     let codeHighlightedLine: Int
     let lineComment: String?
+    let hint: String?
     var cells: [any DataStructureCell]
     var connections: [any DataStructureConnection]
     var userInputRequired: Bool = false
-    var availableElements: [String] = []
+    var availableElements: [String]? = nil
+    var isMultipleChoice: Bool = false
+    var multipleChoiceAnswers: [String] = []
+    var multipleChoiceCorrectAnswer: String = ""
 }
 
 // Represents a visualization question
@@ -40,13 +44,27 @@ struct VisualizationQuestionView: View {
     @State private var currentStep: VisualizationStep
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
+    @State private var selectedAnswer: String = ""
     @StateObject private var zoomPanState = VisualizationZoomPanState()
+    @State private var isAutoPlaying = false
+    @State private var autoPlayTimer: Timer?
+    @StateObject private var cellSizeManager = CellSizeManager()
     
     init(question: VisualizationQuestion, onComplete: @escaping () -> Void = {}) {
         print("\n=== Initializing VisualizationQuestionView ===")
         self.question = question
         self.onComplete = onComplete
         _currentStep = State(initialValue: question.steps[0])
+        
+        print("\nFirst step details:")
+        let firstStep = question.steps[0]
+        print("Line highlighted: \(firstStep.codeHighlightedLine)")
+        print("Comment: \(firstStep.lineComment ?? "none")")
+        print("Is multiple choice: \(firstStep.isMultipleChoice)")
+        if firstStep.isMultipleChoice {
+            print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
+            print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
+        }
         
         print("\nFirst step cells:")
         for (i, cell) in question.steps[0].cells.enumerated() {
@@ -61,74 +79,18 @@ struct VisualizationQuestionView: View {
             HStack(spacing: 0) {
                 // Left half - Code viewer
                 VStack(spacing: 8) {
-                    // Header with close and hint buttons
-                    HStack {
-                        // Back button
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            Button(action: {
-                                presentationMode.wrappedValue.dismiss()
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .frame(width: 44, height: 44)
-                        .padding(.leading, 30)
-                        .padding(.top, 30)
-                        
-                        Spacer()
-                        
-                        // Hint button
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            Button(action: {
-                                showingHint = true
-                            }) {
-                                Image(systemName: "questionmark.circle")
-                                    .font(.title)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .frame(width: 44, height: 44)
-                        .padding(.trailing, 30)
-                        .padding(.top, 30)
-                    }
-                    
                     // Title and description
                     Text(question.title)
-                        .font(.title)
+                        .font(.system(.title, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, 20)
-                        .padding(.top, 20)
+                        .padding(.top, 30)
+                    
                     Text(question.description)
-                        .font(.body)
+                        .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 5)
+                        .padding(.bottom, 20)
                         .padding(.leading, 20)
                     
                     // Code viewer
@@ -139,7 +101,7 @@ struct VisualizationQuestionView: View {
                         return modifiedLine
                     })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.leading, 20)
+                    .padding(.horizontal, 20)
                 }
                 .frame(maxWidth: .infinity)
                 .overlay(
@@ -155,19 +117,103 @@ struct VisualizationQuestionView: View {
                     layoutType: question.layoutType,
                     cells: currentStep.cells,
                     connections: currentStep.connections,
-                    availableElements: currentStep.userInputRequired ? currentStep.availableElements : [],
+                    availableElements: currentStep.availableElements,
                     onElementDropped: { value, index in
                         if currentStep.userInputRequired {
                             setValue(value, forCellAtIndex: index)
                         }
                     },
-                    zoomPanState: zoomPanState
+                    isAutoPlaying: isAutoPlaying,
+                    onPlayPausePressed: {
+                        if isAutoPlaying {
+                            stopAutoPlay()
+                        } else {
+                            startAutoPlay()
+                        }
+                    },
+                    autoPlayInterval: calculateAutoPlayInterval(comment: currentStep.lineComment),
+                    zoomPanState: zoomPanState,
+                    hint: currentStep.hint,
+                    lineComment: currentStep.lineComment,
+                    isMultipleChoice: currentStep.isMultipleChoice,
+                    multipleChoiceAnswers: currentStep.multipleChoiceAnswers,
+                    onMultipleChoiceAnswerSelected: { answer in
+                        print("\nMultiple choice answer selected: \(answer)")
+                        selectedAnswer = answer
+                        print("Updated selectedAnswer to: \(selectedAnswer)")
+                    },
+                    selectedMultipleChoiceAnswer: selectedAnswer
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onAppear {
+                    print("\nDataStructureView appeared in VisualizationQuestionView:")
+                    print("Current step index: \(currentStepIndex)")
+                    print("Current step is multiple choice: \(currentStep.isMultipleChoice)")
+                    print("Current step multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+                    print("Current step correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+                    print("Selected answer: \(selectedAnswer)")
+                }
             }
             
-            // Navigation buttons at the bottom
+            // Hint overlay
+            if showingHint {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingHint = false
+                        }
+                    
+                    ZStack {
+                        // Shadow layer for the entire box
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main box
+                        Rectangle()
+                            .fill(Color.white)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        VStack(spacing: 20) {
+                            HStack {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.title)
+                                    .foregroundColor(.yellow)
+                                Text("Hint")
+                                    .font(.system(.title2, design: .monospaced).weight(.bold))
+                            }
+                            
+                            Text(currentStep.hint ?? "")
+                                .font(.system(.body, design: .monospaced))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Button(action: {
+                                showingHint = false
+                            }) {
+                                buttonBackground {
+                                    Text("Got it!")
+                                        .foregroundColor(.blue)
+                                        .font(.system(.body, design: .monospaced).weight(.bold))
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .frame(width: 120, height: 40)
+                            .padding(.top, 40)
+                        }
+                        .padding(40)
+                        .padding(.top, 20)
+                    }
+                    .frame(width: 400, height: 300)
+                }
+            }
+            
+            // Add navigation buttons at the bottom
             VStack {
                 Spacer()
                 HStack {
@@ -175,67 +221,72 @@ struct VisualizationQuestionView: View {
                     Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
                     
                     // Previous button
-                    ZStack {
-                        // Shadow layer
-                        Rectangle()
-                            .fill(Color.black)
-                            .offset(x: 6, y: 6)
-                        
-                        // Main rectangle
-                        Rectangle()
-                            .fill(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                            )
-                        
-                        // Button content
-                        Button("Previous") {
-                            if currentStepIndex > 0 {
-                                let prevIndex = currentStepIndex - 1
-                                currentStepIndex = prevIndex
-                                currentStep = question.steps[prevIndex]
-                                visualizationKey = UUID()
-                            }
+                    Button(action: {
+                        if currentStepIndex > 0 {
+                            let prevIndex = currentStepIndex - 1
+                            currentStepIndex = prevIndex
+                            currentStep = question.steps[prevIndex]
+                            selectedAnswer = ""  // Reset selected answer for new step
+                            visualizationKey = UUID()
                         }
-                        .disabled(currentStepIndex == 0)
-                        .buttonStyle(.plain)
-                        .foregroundColor(.blue)
-                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text("Previous")
+                                .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
                     }
+                    .disabled(currentStepIndex == 0)
+                    .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.leading, 40)
                     
                     Spacer()
                     
                     // Next/Complete button
-                    ZStack {
-                        // Shadow layer
-                        Rectangle()
-                            .fill(Color.black)
-                            .offset(x: 6, y: 6)
-                        
-                        // Main rectangle
-                        Rectangle()
-                            .fill(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                            )
-                        
-                        // Button content
-                        Button(isLastStep ? "Complete" : "Next") {
-                            if isLastStep {
-                                onComplete()
-                            } else {
-                                moveToNextStep()
-                            }
+                    Button(action: {
+                        if isLastStep {
+                            onComplete()
+                        } else {
+                            moveToNextStep()
                         }
-                        .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
-                        .buttonStyle(.plain)
-                        .foregroundColor(.blue)
-                        .font(.system(.body, design: .monospaced).weight(.bold))
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            // Button content
+                            Text(isLastStep ? "Complete" : "Next")
+                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()) ? Color.gray : Color.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        }
                     }
+                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepComplete()))
+                    .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.trailing, 40)
                     
@@ -244,12 +295,12 @@ struct VisualizationQuestionView: View {
                 .padding()
             }
         }
-        .alert("Need a hint?", isPresented: $showingHint) {
-            Button("Got it") {
-                showingHint = false
-            }
-        } message: {
-            Text(question.hint)
+        .onChange(of: question.layoutType) { newType in
+            handleLayoutTypeChange(newType)
+        }
+        .environmentObject(cellSizeManager)
+        .onDisappear {
+            stopAutoPlay()
         }
     }
     
@@ -265,6 +316,16 @@ struct VisualizationQuestionView: View {
         
         let nextStep = question.steps[nextIndex]
         
+        print("\nCurrent step details:")
+        print("Is multiple choice: \(currentStep.isMultipleChoice)")
+        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+        
+        print("\nNext step details:")
+        print("Is multiple choice: \(nextStep.isMultipleChoice)")
+        print("Multiple choice answers: \(nextStep.multipleChoiceAnswers)")
+        print("Correct answer: \(nextStep.multipleChoiceCorrectAnswer)")
+        
         print("\nCurrent step cells:")
         for (i, cell) in currentStep.cells.enumerated() {
             print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
@@ -277,13 +338,15 @@ struct VisualizationQuestionView: View {
         
         currentStepIndex = nextIndex
         currentStep = nextStep
+        selectedAnswer = ""  // Reset selected answer for new step
         visualizationKey = UUID()
         
         print("\nMoved to step \(nextIndex)")
-        print("Updated cells:")
-        for (i, cell) in currentStep.cells.enumerated() {
-            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
-        }
+        print("Updated step details:")
+        print("Is multiple choice: \(currentStep.isMultipleChoice)")
+        print("Multiple choice answers: \(currentStep.multipleChoiceAnswers)")
+        print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+        print("Selected answer: \(selectedAnswer)")
     }
     
     private func setValue(_ value: String, forCellAtIndex index: Int) {
@@ -297,6 +360,13 @@ struct VisualizationQuestionView: View {
     }
     
     private func isCurrentStepComplete() -> Bool {
+        if currentStep.isMultipleChoice {
+            print("\nChecking multiple choice completion:")
+            print("Selected answer: \(selectedAnswer)")
+            print("Correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
+            return selectedAnswer == currentStep.multipleChoiceCorrectAnswer
+        }
+        
         guard let nextStep = question.steps[safe: currentStepIndex + 1] else { return false }
         
         // Check if all cells in the current step match the next step's requirements
@@ -308,6 +378,81 @@ struct VisualizationQuestionView: View {
             // If next cell has a value, current cell must match exactly
             return current.value == next.value
         }
+    }
+    
+    private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+            
+            // Main Rectangle
+            Rectangle()
+                .fill(Color.white)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                )
+            
+            content()
+        }
+    }
+    
+    private func startAutoPlay() {
+        guard !isLastStep && !currentStep.userInputRequired else {
+            isAutoPlaying = false
+            return
+        }
+        
+        isAutoPlaying = true
+        scheduleNextStep()
+    }
+    
+    private func stopAutoPlay() {
+        isAutoPlaying = false
+        autoPlayTimer?.invalidate()
+        autoPlayTimer = nil
+    }
+    
+    private func scheduleNextStep() {
+        // Cancel any existing timer
+        autoPlayTimer?.invalidate()
+        
+        // Calculate interval based on current step's comment
+        let interval = calculateAutoPlayInterval(comment: currentStep.lineComment)
+        
+        // Schedule next step
+        autoPlayTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [self] _ in
+            if isAutoPlaying && !isLastStep && !currentStep.userInputRequired {
+                moveToNextStep()
+                // If we can continue, schedule the next step
+                if !isLastStep && !currentStep.userInputRequired {
+                    scheduleNextStep()
+                } else {
+                    stopAutoPlay()
+                }
+            } else {
+                stopAutoPlay()
+            }
+        }
+    }
+    
+    private func handleLayoutTypeChange(_ newType: DataStructureLayoutType) {
+        // Implementation of handleLayoutTypeChange method
+    }
+    
+    private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
+        guard let comment = comment else { return 3.0 }  // Default interval if no comment
+        
+        // Base interval of 2 seconds
+        let baseInterval: TimeInterval = 2.0
+        
+        // Add 0.05 seconds per character (about 20 chars per second reading speed)
+        let additionalTime = TimeInterval(comment.count) * 0.05
+        
+        // Clamp the total interval between 2 and 7 seconds
+        return min(max(baseInterval + additionalTime, 2.0), 7.0)
     }
 }
 
@@ -350,20 +495,29 @@ struct VisualizationQuestionExample: View {
             VisualizationStep(
                 codeHighlightedLine: 1,
                 lineComment: "Starting to build the list",
+                hint: "Start by creating the head node, then connect each new node to the previous one.",
                 cells: [],
-                connections: []
+                connections: [],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["1", "2", "3"],
+                multipleChoiceCorrectAnswer: "1"
             ),
             VisualizationStep(
                 codeHighlightedLine: 2,
                 lineComment: "Create the head node",
+                hint: "Start by creating the head node, then connect each new node to the previous one.",
                 cells: [
                     BasicCell(value: "1")
                 ],
-                connections: []
+                connections: [],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["1", "2", "3"],
+                multipleChoiceCorrectAnswer: "1"
             ),
             VisualizationStep(
                 codeHighlightedLine: 3,
                 lineComment: "Add the second node",
+                hint: "Add the second node",
                 cells: [
                     BasicCell(id: "node1", value: "1"),
                     BasicCell(id: "node2", value: "")
@@ -376,7 +530,10 @@ struct VisualizationQuestionExample: View {
                     )
                 ],
                 userInputRequired: true,
-                availableElements: ["2", "3", "4"]
+                availableElements: ["2", "3", "4"],
+                isMultipleChoice: true,
+                multipleChoiceAnswers: ["2", "3", "4"],
+                multipleChoiceCorrectAnswer: "2"
             )
         ],
         initialCells: [],

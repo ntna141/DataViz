@@ -140,8 +140,22 @@ class GameProgressionManager {
             stepEntity.orderIndex = Int32(index)
             stepEntity.codeHighlightedLine = Int32(stepSpec.lineNumber)
             stepEntity.lineComment = stepSpec.comment
-            stepEntity.userInputRequired = stepSpec.userInputRequired
-            stepEntity.availableElements = stepSpec.availableElements
+            stepEntity.hint = stepSpec.hint
+            stepEntity.isMultipleChoice = stepSpec.isMultipleChoice ?? false
+            stepEntity.multipleChoiceAnswers = stepSpec.multipleChoiceAnswers ?? []
+            stepEntity.multipleChoiceCorrectAnswer = stepSpec.multipleChoiceCorrectAnswer ?? ""
+            stepEntity.userInputRequired = stepSpec.isMultipleChoice ?? false || 
+                                         stepSpec.userInputRequired || 
+                                         stepSpec.availableElements != nil
+            
+            print("[Step \(index)] Raw availableElements from JSON: \(String(describing: stepSpec.availableElements))")
+            // Only set availableElements if it's explicitly present in the JSON
+            if let elements = stepSpec.availableElements {
+                stepEntity.availableElements = elements
+                print("[Step \(index)] Set availableElements to: \(elements)")
+            } else {
+                print("[Step \(index)] availableElements not present in JSON, leaving as nil")
+            }
             stepEntity.question = visualization
             
             // Create node IDs based on the actual number of nodes
@@ -160,32 +174,24 @@ class GameProgressionManager {
                 nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
                 
-                print("Creating node at index \(nodeEntity.orderIndex):")
-                print("  - Value: '\(nodeEntity.value ?? "")'")
-                print("  - Label: \(nodeEntity.label ?? "none")")
-                print("  - UUID: \(nodeEntity.uuid?.uuidString ?? "unknown")")
-                
                 return nodeEntity
             }
             
             // Create connections using node indices
-            for connectionSpec in stepSpec.connections {
-                let connectionEntity = NodeConnectionEntity(context: context)
-                connectionEntity.uuid = UUID()
-                connectionEntity.label = connectionSpec.label
-                connectionEntity.isHighlighted = connectionSpec.isHighlighted ?? false
-                connectionEntity.isSelfPointing = false
-                connectionEntity.style = connectionSpec.style ?? "straight"
-                connectionEntity.step = stepEntity
-                
-                // Link to nodes using indices
-                connectionEntity.fromNode = nodeEntities[connectionSpec.from]
-                connectionEntity.toNode = nodeEntities[connectionSpec.to]
-                
-                print("Created connection: \(connectionSpec.from) -> \(connectionSpec.to)")
-                print("  - From node value: '\(nodeEntities[connectionSpec.from].value ?? "")'")
-                print("  - To node value: '\(nodeEntities[connectionSpec.to].value ?? "")'")
-                print("  - Style: \(connectionEntity.style ?? "straight")")
+            if let connections = stepSpec.connections {
+                for connectionSpec in connections {
+                    let connectionEntity = NodeConnectionEntity(context: context)
+                    connectionEntity.uuid = UUID()
+                    connectionEntity.label = connectionSpec.label
+                    connectionEntity.isHighlighted = connectionSpec.isHighlighted ?? false
+                    connectionEntity.isSelfPointing = false
+                    connectionEntity.style = connectionSpec.style ?? "straight"
+                    connectionEntity.step = stepEntity
+                    
+                    // Link to nodes using indices
+                    connectionEntity.fromNode = nodeEntities[connectionSpec.from]
+                    connectionEntity.toNode = nodeEntities[connectionSpec.to]
+                }
             }
         }
         

@@ -186,14 +186,70 @@ struct GridBackground: View {
     }
 }
 
+// Add MultipleChoiceView before DataStructureView
+struct MultipleChoiceView: View {
+    let answers: [String]
+    let selectedAnswer: String
+    let onAnswerSelected: (String) -> Void
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Select the correct answer:")
+                .font(.system(.headline, design: .monospaced))
+                .padding(.bottom, 5)
+            
+            HStack(spacing: cellSizeManager.size * 0.5) {
+                ForEach(answers, id: \.self) { answer in
+                    Button(action: {
+                        onAnswerSelected(answer)
+                    }) {
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main rectangle with outline
+                            Rectangle()
+                                .fill(selectedAnswer == answer ? Color.blue : Color(red: 0.96, green: 0.95, blue: 0.91))
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                )
+                                .animation(.spring(response: 0.1, dampingFraction: 0.5, blendDuration: 0), value: selectedAnswer)
+                            
+                            Text(answer)
+                                .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                .foregroundColor(selectedAnswer == answer ? .white : .black)
+                        }
+                    }
+                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, 30)
+    }
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
     let connections: [any DataStructureConnection]
-    let availableElements: [String]
+    let availableElements: [String]?
     let onElementDropped: (String, Int) -> Void
+    let isAutoPlaying: Bool
+    let onPlayPausePressed: () -> Void
+    let autoPlayInterval: TimeInterval
     let zoomPanState: VisualizationZoomPanState
-    
+    let hint: String?
+    let lineComment: String?
+    let isMultipleChoice: Bool
+    let multipleChoiceAnswers: [String]
+    let onMultipleChoiceAnswerSelected: (String) -> Void
+    let selectedMultipleChoiceAnswer: String
+    @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
@@ -205,6 +261,7 @@ struct DataStructureView: View {
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
     @State private var droppedElements: [String] = []
+    @State private var showingHint = false
     @StateObject private var cellSizeManager = CellSizeManager()
     
     // Keep gesture states separate as they are temporary
@@ -215,18 +272,41 @@ struct DataStructureView: View {
         layoutType: DataStructureLayoutType,
         cells: [any DataStructureCell],
         connections: [any DataStructureConnection],
-        availableElements: [String] = [],
+        availableElements: [String]? = nil,
         onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
-        zoomPanState: VisualizationZoomPanState
+        isAutoPlaying: Bool = false,
+        onPlayPausePressed: @escaping () -> Void = {},
+        autoPlayInterval: TimeInterval = 4.0,
+        zoomPanState: VisualizationZoomPanState,
+        hint: String? = nil,
+        lineComment: String? = nil,
+        isMultipleChoice: Bool = false,
+        multipleChoiceAnswers: [String] = [],
+        onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
+        selectedMultipleChoiceAnswer: String = ""
     ) {
+        print("\n=== DataStructureView Init ===")
+        print("availableElements: \(String(describing: availableElements))")
+        
         self.layoutType = layoutType
         self.cells = cells
         self.connections = connections
         self.availableElements = availableElements
         self.onElementDropped = onElementDropped
+        self.isAutoPlaying = isAutoPlaying
+        self.onPlayPausePressed = onPlayPausePressed
+        self.autoPlayInterval = autoPlayInterval
         self.zoomPanState = zoomPanState
+        self.hint = hint
+        self.lineComment = lineComment
+        self.isMultipleChoice = isMultipleChoice
+        self.multipleChoiceAnswers = multipleChoiceAnswers
+        self.onMultipleChoiceAnswerSelected = onMultipleChoiceAnswerSelected
+        self.selectedMultipleChoiceAnswer = selectedMultipleChoiceAnswer
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
+        
+        print("Initialization complete")
     }
     
     var body: some View {
@@ -237,20 +317,34 @@ struct DataStructureView: View {
             handleFrameChange(newFrame)
         }
         .onChange(of: cells.map(\.id)) { _ in
+            print("\nCells changed in DataStructureView")
+            print("Is multiple choice: \(isMultipleChoice)")
+            print("Multiple choice answers: \(multipleChoiceAnswers)")
+            print("Selected answer: \(selectedMultipleChoiceAnswer)")
             updateLayout()
         }
         .onChange(of: connections.map(\.id)) { _ in
             updateLayout()
         }
-        .onChange(of: layoutType) { newType in
-            handleLayoutTypeChange(newType)
+        .onChange(of: layoutType) { _ in
+            updateLayout()
+        }
+        .onChange(of: frame) { _ in
+            updateLayout()
+        }
+        .onAppear {
+            print("\nDataStructureView body appeared")
+            print("Is multiple choice: \(isMultipleChoice)")
+            print("Multiple choice answers: \(multipleChoiceAnswers)")
+            print("Selected answer: \(selectedMultipleChoiceAnswer)")
+            updateLayout()
         }
         .environmentObject(cellSizeManager)
     }
     
     private func mainContent(geometry: GeometryProxy) -> some View {
         let cellSize = adaptiveCellSize(for: geometry.size)
-        let bottomPadding = adaptiveElementListPadding(for: geometry.size)
+        let topPadding = adaptiveElementListPadding(for: geometry.size)
         
         return ZStack {
             // Single container for data structure area
@@ -299,43 +393,177 @@ struct DataStructureView: View {
             }
             
             VStack {
-                // Reset button
+                // Top controls
                 HStack {
+                    // Exit button
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        buttonBackground {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .padding(.leading, 30)
+                    
+                    // Play/Pause button
+                    Button(action: onPlayPausePressed) {
+                        buttonBackground {
+                            Image(systemName: isAutoPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.title)
+                                .foregroundColor(canAutoPlay() ? .blue : .gray)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .padding(.leading, 10)
+                    .disabled(!canAutoPlay())
+                    
                     Spacer()
+                    
+                    // Hint button - only show if hint is available
+                    if let hint = hint {
+                        Button(action: {
+                            showingHint = true
+                        }) {
+                            buttonBackground {
+                                HStack {
+                                    Image(systemName: "lightbulb.fill")
+                                        .font(.title)
+                                        .foregroundColor(.yellow)
+                                    Text("Need a hint?")
+                                        .foregroundColor(.primary)
+                                        .font(.system(.body, design: .monospaced))
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 200, height: 44)
+                        .padding(.trailing, 20)
+                    }
+                    
+                    // Reset button
                     Button(action: {
                         withAnimation(.spring()) {
                             zoomPanState.steadyZoom = 1.0
                             zoomPanState.steadyPan = .zero
                         }
                     }) {
-                        ZStack {
-                            // Shadow layer
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            // Main Rectangle
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
+                        buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
                                 .font(.title)
                                 .foregroundColor(.blue)
                         }
                     }
                     .frame(width: 44, height: 44)
-                    .padding(.trailing, 30)  // Reduced from default padding (was ~40)
-                    .padding(.top, 30)
+                    .padding(.trailing, 30)
                 }
+                .padding(.top, 30)
                 
                 Spacer()
                 
-                // Elements list at bottom
-                elementsListArea(geometry: geometry, cellSize: cellSize, bottomPadding: bottomPadding)
+                VStack(spacing: 20) {
+                    if isMultipleChoice {
+                        MultipleChoiceView(
+                            answers: multipleChoiceAnswers,
+                            selectedAnswer: selectedMultipleChoiceAnswer,
+                            onAnswerSelected: onMultipleChoiceAnswerSelected
+                        )
+                    } else if availableElements != nil {
+                        // Only show elements list if availableElements was explicitly included in the JSON
+                        ElementsListView(
+                            availableElements: availableElements!,
+                            droppedElements: droppedElements,
+                            dragState: dragState,
+                            isOverElementList: isOverElementList,
+                            onDragStarted: { element, location in
+                                dragState = (element, location)
+                            },
+                            onDragChanged: handleDragChanged,
+                            onDragEnded: handleDragEnded,
+                            geometryFrame: geometry.frame(in: .global),
+                            cellSize: cellSize
+                        )
+                        .onHover { isHovered in
+                            isOverElementList = isHovered
+                        }
+                        .padding(.horizontal, 30)
+                    }
+                    
+                    // Subtitles at the bottom
+                    if let comment = lineComment {
+                        Text(comment)
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 30)
+                            .padding(.bottom, 120)
+                            .padding(.top, 30)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            
+            // Hint overlay
+            if showingHint {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingHint = false
+                        }
+                    
+                    VStack(spacing: 20) {
+                        HStack {
+                            Image(systemName: "lightbulb.fill")
+                                .font(.title)
+                                .foregroundColor(.yellow)
+                            Text("Hint")
+                                .font(.system(.title2, design: .monospaced).weight(.bold))
+                        }
+                        
+                        ScrollView {
+                            Text(hint ?? "")
+                                .font(.system(.body, design: .monospaced))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        
+                        Button(action: {
+                            showingHint = false
+                        }) {
+                            buttonBackground {
+                                Text("Got it!")
+                                    .foregroundColor(.blue)
+                                    .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                        .padding(.top, 20)
+                    }
+                    .padding(40)
+                    .background(
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main box
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                        }
+                    )
+                    .frame(minWidth: 400, maxWidth: 600)
+                    .fixedSize(horizontal: true, vertical: true)  // Size to fit content
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)  // Center in screen
+                }
             }
         }
         .onChange(of: cellSize) { newSize in
@@ -376,29 +604,6 @@ struct DataStructureView: View {
             onDragEnded: handleDragEnded
         )
         .position(dragState.location)
-    }
-    
-    private func elementsListArea(geometry: GeometryProxy, cellSize: CGFloat, bottomPadding: CGFloat) -> some View {
-        VStack {
-            Spacer()
-            ElementsListView(
-                availableElements: availableElements,
-                droppedElements: droppedElements,
-                dragState: dragState,
-                isOverElementList: isOverElementList,
-                onDragStarted: { element, location in
-                    dragState = (element, location)
-                },
-                onDragChanged: handleDragChanged,
-                onDragEnded: handleDragEnded,
-                geometryFrame: geometry.frame(in: .global),
-                cellSize: cellSize
-            )
-            .onHover { isHovered in
-                isOverElementList = isHovered
-            }
-        }
-        .padding(.bottom, bottomPadding)
     }
     
     private func handleFrameChange(_ newFrame: CGRect) {
@@ -463,14 +668,14 @@ struct DataStructureView: View {
             }
         }
         
-        // Calculate the element list frame with some padding for easier dropping
+        // Calculate the element list frame at the bottom
         let listHeight = cellSizeManager.size * 1.5
-        let listY = globalFrame.height - bottomPadding - listHeight
+        let listY = globalFrame.height - 180 // Adjusted to account for padding and subtitle
         let listWidth = calculateListWidth()
         let listX = (globalFrame.width - listWidth) / 2
         
-        // Add some padding to make the hit area larger
-        let dropPadding: CGFloat = cellSizeManager.size * 0.5
+        // Add generous padding to make the hit area larger
+        let dropPadding: CGFloat = cellSizeManager.size * 1.2 // Increased padding
         let dropZone = CGRect(
             x: listX - dropPadding,
             y: listY - dropPadding,
@@ -510,19 +715,25 @@ struct DataStructureView: View {
         }
     }
     
-    private var bottomPadding: CGFloat {
+    private func calculateListWidth() -> CGFloat {
+        let elements = (availableElements ?? []) + droppedElements
+        if elements.isEmpty {
+            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
+        } else {
+            return min(
+                CGFloat(elements.count) * cellSizeManager.size +
+                CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
+                (cellSizeManager.size * 0.4), // padding (0.2 on each side)
+                UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
+            )
+        }
+    }
+    
+    private var topPadding: CGFloat {
         adaptiveElementListPadding(for: frame.size)
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
-        print("\n=== Drag Ended ===")
-        print("Drag state: \(String(describing: dragState))")
-        print("Dragging from cell index: \(String(describing: draggingFromCellIndex))")
-        print("Hovered cell index: \(String(describing: hoveredCellIndex))")
-        print("Is over element list: \(isOverElementList)")
-        print("Available elements: \(availableElements)")
-        print("Dropped elements: \(droppedElements)")
-        print("Layout cells: \(layoutCells.map { "\($0.value)" })")
         
         defer {
             dragState = nil
@@ -546,7 +757,7 @@ struct DataStructureView: View {
                 currentCells = updatedCells
                 
                 // Only add to droppedElements if it wasn't in availableElements originally
-                if !availableElements.contains(element) {
+                if !(availableElements?.contains(element) ?? false) {
                     print("Adding \(element) to dropped elements")
                     droppedElements.append(element)
                 }
@@ -652,15 +863,28 @@ struct DataStructureView: View {
         renderCycle = UUID()
     }
     
-    private func calculateListWidth() -> CGFloat {
-        let elements = availableElements + droppedElements
-        if elements.isEmpty {
-            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
-        } else {
-            return CGFloat(elements.count) * cellSizeManager.size + 
-                   CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
-                   (cellSizeManager.size * 0.4) // padding (0.2 on each side)
+    private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+            
+            // Main Rectangle
+            Rectangle()
+                .fill(Color.white)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                )
+            
+            content()
         }
+    }
+    
+     private func canAutoPlay() -> Bool {
+        // Can auto-play if there are cells to display and we're not dragging
+        return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && (availableElements ?? []).isEmpty
     }
 }
 
@@ -693,7 +917,17 @@ struct DataStructureView_Previews: PreviewProvider {
             cells: cells,
             connections: connections,
             availableElements: ["4", "5", "6"],
-            zoomPanState: zoomPanState
+            onElementDropped: { _, _ in },
+            isAutoPlaying: false,
+            onPlayPausePressed: {},
+            autoPlayInterval: 4.0,
+            zoomPanState: zoomPanState,
+            hint: "This is a hint",
+            lineComment: "This is a line comment",
+            isMultipleChoice: false,
+            multipleChoiceAnswers: [],
+            onMultipleChoiceAnswerSelected: { _ in },
+            selectedMultipleChoiceAnswer: ""
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)
@@ -751,20 +985,4 @@ struct CellView: View {
         }
     }
 }
-
-#Preview("Elements List") {
-    ElementsListView(
-        availableElements: ["1", "2", "3"],
-        droppedElements: ["4", "5"],
-        dragState: nil,
-        isOverElementList: false,
-        onDragStarted: { _, _ in },
-        onDragChanged: { _, _ in },
-        onDragEnded: { _ in },
-        geometryFrame: CGRect(x: 0, y: 0, width: 500, height: 300),
-        cellSize: 60
-    )
-    .environmentObject(CellSizeManager())
-    .padding()
-    .previewLayout(.sizeThatFits)
-} 
+}
