@@ -67,7 +67,7 @@ class GameProgressionManager {
                     level.desc = levelSpec.description
                     
                     // Create questions
-                    for questionSpec in levelSpec.questions {
+                    for (index, questionSpec) in levelSpec.questions.enumerated() {
                         print("Creating question: \(questionSpec.title) of type \(questionSpec.type)")
                         let question = QuestionEntity(context: context)
                         question.uuid = UUID()
@@ -77,6 +77,7 @@ class GameProgressionManager {
                         question.desc = questionSpec.description
                         question.difficulty = Int16(questionSpec.difficulty)
                         question.isCompleted = false
+                        question.orderIndex = Int32(index)  // Set the order index based on position in JSON
                         question.stars = 0
                         question.attempts = 0
                         

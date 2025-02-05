@@ -102,7 +102,9 @@ struct LevelDetailView: View {
         .onAppear {
             // Load all visualization questions
             if let questions = level.questions?.allObjects as? [QuestionEntity] {
-                visualizationQuestions = questions.filter { $0.type == "visualization" }
+                visualizationQuestions = questions
+                    .filter { $0.type == "visualization" }
+                    .sorted { $0.orderIndex < $1.orderIndex }
                 loadCurrentQuestion()
             }
         }

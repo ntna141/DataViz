@@ -8,6 +8,504 @@
             "questions": [
                 {
                     "type": "visualization",
+                    "title": "Understanding Array Access Patterns",
+                    "description": "Learn the difference between direct array access and sequential search operations",
+                    "review": "Key concepts: 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
+                    "hint": "None",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "def direct_access(arr, index):",
+                            "    return arr[index]",
+                            "",
+                            "def sequential_search(arr, target):",
+                            "    for i in range(len(arr)):",
+                            "        if arr[i] == target:",
+                            "            return i",
+                            "    return -1"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "When data is stored in an array, the computer actually does not know what is stored in each position. It just knows where the array is stored in memory and some basic information (length, slotsize, etc.) about the array.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "However, we can use that information to instantly access any index in an array using a formula: \nbaseAddress + (index * elementSize). ",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Let's say our array starts at memory address 100 and each element takes 2 bytes",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "To access index 3 we apply the formula: baseAddress + (index * elementSize). And the computer calculates: 100 + (3 * 2) = 106",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "If we want to access index 5, what value will we get using the formula: 100 + (5 * 2)?",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "108",
+                                    "110",
+                                    "112",
+                                    "114"
+                                ],
+                                "multipleChoiceCorrectAnswer": "110",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "This is why array access is instant - no matter the index, we can calculate its exact memory location instantly",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "102"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "104"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "106"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "108"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "110",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "112"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 4,
+                                "comment": "However, if we do not know the specific index of an item, we will have to search through the array one by one",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "We start with the first index (index 0). It is not 25, so we move to the next index (index 1)",
+                                "userInputRequired": false,
+                                "multipleChoiceCorrectAnswer": "No",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "On to next element (index 1). It is still not 25",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Onto index 2 and we have found 25! Notice how we had to check elements one by one until we found it",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "While arrays give us instant access when we know the index, the trade-off becomes clear when we need to find specific values - we must resort to checking elements one by one, making our search time depend on the array's size.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "In the worst-case scenario when we want to search for 25 (assuming it is in the array), where would it be?",
+                                "hint": "The worst-case scenario is when we have to check every element in the array to find the target",
+                                "availableElements": [
+                                    "25"
+                                ],
+                                "userInputRequired": true,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Exactly! In the worst-case scenario, we would have to check every element in the array to find the target, the only worse case is if the target is not in the array at all",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true,
+                                        "label": "6"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
                     "title": "Understanding Dynamic Arrays",
                     "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
                     "hint": "",
@@ -1053,504 +1551,6 @@
                                     {
                                         "value": "",
                                         "label": "5"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "visualization",
-                    "title": "Understanding Array Access Patterns",
-                    "description": "Learn the difference between direct array access and sequential search operations",
-                    "review": "Key concepts: 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
-                    "hint": "None",
-                    "difficulty": 1,
-                    "visualization": {
-                        "code": [
-                            "def direct_access(arr, index):",
-                            "    return arr[index]",
-                            "",
-                            "def sequential_search(arr, target):",
-                            "    for i in range(len(arr)):",
-                            "        if arr[i] == target:",
-                            "            return i",
-                            "    return -1"
-                        ],
-                        "dataStructureType": "array",
-                        "steps": [
-                            {
-                                "lineNumber": 1,
-                                "comment": "When data is stored in an array, the computer actually does not know what is stored in each position. It just knows where the array is stored in memory and some basic information (length, slotsize, etc.) about the array.",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "However, we can use that information to instantly access any index in an array using a formula: \nbaseAddress + (index * elementSize). ",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "102"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "106"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "110"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "Let's say our array starts at memory address 100 and each element takes 2 bytes",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "102"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "106"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "110"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "To access index 3 we apply the formula: baseAddress + (index * elementSize). And the computer calculates: 100 + (3 * 2) = 106",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "102"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "106",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "110"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "If we want to access index 5, what value will we get using the formula: 100 + (5 * 2)?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "108",
-                                    "110",
-                                    "112",
-                                    "114"
-                                ],
-                                "multipleChoiceCorrectAnswer": "110",
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "102"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "106"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "110"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "This is why array access is instant - no matter the index, we can calculate its exact memory location instantly",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "100"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "102"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "104"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "106"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "108"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "110",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "112"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 4,
-                                "comment": "However, if we do not know the specific index of an item, we will have to search through the array one by one",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 5,
-                                "comment": "We start with the first index (index 0). It is not 25, so we move to the next index (index 1)",
-                                "userInputRequired": false,
-                                "multipleChoiceCorrectAnswer": "No",
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 5,
-                                "comment": "On to next element (index 1). It is still not 25",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 6,
-                                "comment": "Onto index 2 and we have found 25! Notice how we had to check elements one by one until we found it",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "isHighlighted": true,
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 6,
-                                "comment": "While arrays give us instant access when we know the index, the trade-off becomes clear when we need to find specific values - we must resort to checking elements one by one, making our search time depend on the array's size.",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "64",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "34",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "12",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "22",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "11",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "90",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 6,
-                                "comment": "In the worst-case scenario when we want to search for 25 (assuming it is in the array), where would it be?",
-                                "hint": "The worst-case scenario is when we have to check every element in the array to find the target",
-                                "availableElements": [
-                                    "25"
-                                ],
-                                "userInputRequired": true,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 6,
-                                "comment": "Exactly! In the worst-case scenario, we would have to check every element in the array to find the target, the only worse case is if the target is not in the array at all",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "25",
-                                        "isHighlighted": true,
-                                        "label": "6"
                                     }
                                 ]
                             }
