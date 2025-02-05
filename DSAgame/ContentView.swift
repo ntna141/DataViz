@@ -113,7 +113,7 @@ struct LevelMarker: View {
                 .font(.caption)
                 .foregroundColor(.black)
         }
-        .sheet(isPresented: $showingDetail) {
+        .fullScreenCover(isPresented: $showingDetail) {
             LevelDetailView(level: level)
         }
     }
