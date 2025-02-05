@@ -114,29 +114,18 @@ struct VisualizationQuestionView: View {
     @StateObject private var cellSizeManager = CellSizeManager()
     
     init(question: VisualizationQuestion, questionEntity: QuestionEntity, onComplete: @escaping () -> Void = {}) {
-        print("\n=== Initializing VisualizationQuestionView ===")
         self.question = question
         self.questionEntity = questionEntity
         self.onComplete = onComplete
         _steps = State(initialValue: question.steps)  // Initialize steps array
         _completionManager = StateObject(wrappedValue: VisualizationCompletionManager(questionEntity: questionEntity))
         
-        print("\nFirst step details:")
         let firstStep = question.steps[0]
-        print("Line highlighted: \(firstStep.codeHighlightedLine)")
-        print("Comment: \(firstStep.lineComment ?? "none")")
-        print("Is multiple choice: \(firstStep.isMultipleChoice)")
         if firstStep.isMultipleChoice {
             print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
             print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
         }
         
-        print("\nFirst step cells:")
-        for (i, cell) in question.steps[0].cells.enumerated() {
-            print("Cell \(i): value='\(cell.value)', label=\(cell.label ?? "none")")
-        }
-        
-        print("\nInitialization complete")
     }
     
     private var currentStep: VisualizationStep {
@@ -562,91 +551,3 @@ extension Collection {
         return indices.contains(index) ? self[index] : nil
     }
 }
-
-// Example usage
-struct VisualizationQuestionExample: View {
-    let sampleQuestion = VisualizationQuestion(
-        title: "Build a Linked List",
-        description: "Watch how a linked list is built step by step and complete the missing values",
-        hint: "Start by creating the head node, then connect each new node to the previous one.",
-        review: "Great job! You've learned how to build a linked list by connecting nodes in sequence. Each node points to the next one, forming a chain of data.",
-        code: [
-            CodeLine(
-                number: 1,
-                content: "func buildList() {",
-                syntaxTokens: SyntaxParser.parse("func buildList() {")
-            ),
-            CodeLine(
-                number: 2,
-                content: "    let head = Node(1)",
-                syntaxTokens: SyntaxParser.parse("    let head = Node(1)")
-            ),
-            CodeLine(
-                number: 3,
-                content: "    head.next = Node(2)",
-                syntaxTokens: SyntaxParser.parse("    head.next = Node(2)")
-            ),
-            CodeLine(
-                number: 4,
-                content: "    head.next.next = Node(3)",
-                syntaxTokens: SyntaxParser.parse("    head.next.next = Node(3)")
-            )
-        ],
-        steps: [
-            VisualizationStep(
-                codeHighlightedLine: 1,
-                lineComment: "Starting to build the list",
-                hint: "Start by creating the head node, then connect each new node to the previous one.",
-                cells: [],
-                connections: [],
-                isMultipleChoice: true,
-                multipleChoiceAnswers: ["1", "2", "3"],
-                multipleChoiceCorrectAnswer: "1"
-            ),
-            VisualizationStep(
-                codeHighlightedLine: 2,
-                lineComment: "Create the head node",
-                hint: "Start by creating the head node, then connect each new node to the previous one.",
-                cells: [
-                    BasicCell(value: "1")
-                ],
-                connections: [],
-                isMultipleChoice: true,
-                multipleChoiceAnswers: ["1", "2", "3"],
-                multipleChoiceCorrectAnswer: "1"
-            ),
-            VisualizationStep(
-                codeHighlightedLine: 3,
-                lineComment: "Add the second node",
-                hint: "Add the second node",
-                cells: [
-                    BasicCell(id: "node1", value: "1"),
-                    BasicCell(id: "node2", value: "")
-                ],
-                connections: [
-                    BasicConnection(
-                        fromCellId: "node1",
-                        toCellId: "node2",
-                        label: "next"
-                    )
-                ],
-                userInputRequired: true,
-                availableElements: ["2", "3", "4"],
-                isMultipleChoice: true,
-                multipleChoiceAnswers: ["2", "3", "4"],
-                multipleChoiceCorrectAnswer: "2"
-            )
-        ],
-        initialCells: [],
-        initialConnections: [],
-        layoutType: .linkedList
-    )
-    
-    var body: some View {
-        VisualizationQuestionView(question: sampleQuestion, questionEntity: QuestionEntity(context: PersistenceController.shared.container.viewContext))
-    }
-}
-
-#Preview {
-    VisualizationQuestionExample()
-} 

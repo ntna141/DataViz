@@ -75,6 +75,7 @@ class GameProgressionManager {
                         question.type = questionSpec.type
                         question.title = questionSpec.title
                         question.desc = questionSpec.description
+                        question.review = questionSpec.review
                         question.difficulty = Int16(questionSpec.difficulty)
                         question.isCompleted = false
                         question.orderIndex = Int32(index)  // Set the order index based on position in JSON
@@ -121,6 +122,7 @@ class GameProgressionManager {
         visualization.uuid = UUID()
         visualization.title = question.title
         visualization.desc = question.desc
+        visualization.review = question.review
         visualization.layoutType = spec.dataStructureType
         visualization.question = question
         question.visualization = visualization

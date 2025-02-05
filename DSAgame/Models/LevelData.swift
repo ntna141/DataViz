@@ -17,6 +17,8 @@ struct LevelData: Codable {
         let title: String
         let description: String
         let difficulty: Int
+        let hint: String?
+        let review: String?
         let visualization: Visualization?
     }
     

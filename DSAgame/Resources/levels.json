@@ -506,499 +506,6 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Dynamic Arrays",
-                    "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
-                    "hint": "",
-                    "review": "Key concepts: 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
-                    "difficulty": 2,
-                    "visualization": {
-                        "code": [
-                            "def append(arr, value):",
-                            "    # Check if array is at capacity",
-                            "    if len(arr) == arr.capacity:",
-                            "        # Double the capacity",
-                            "        new_capacity = arr.capacity * 2",
-                            "        new_arr = [None] * new_capacity",
-                            "        # Copy all elements to new array",
-                            "        for i in range(len(arr)):",
-                            "            new_arr[i] = arr[i]",
-                            "        arr = new_arr",
-                            "        arr.capacity = new_capacity",
-                            "",
-                            "    # Add new element",
-                            "    arr[len(arr)] = value",
-                            "",
-                            "def pop(arr):",
-                            "    # Remove and return last element",
-                            "    if len(arr) == 0:",
-                            "        return None",
-                            "    value = arr[len(arr) - 1]",
-                            "    arr[len(arr) - 1] = None",
-                            "    # Shrink array if using less than 25% of capacity",
-                            "    if len(arr) < arr.capacity // 4:",
-                            "        new_capacity = arr.capacity // 2",
-                            "        new_arr = [None] * new_capacity",
-                            "        for i in range(len(arr)):",
-                            "            new_arr[i] = arr[i]",
-                            "        arr = new_arr",
-                            "        arr.capacity = new_capacity",
-                            "    return value",
-                            "",
-                            "def test_dynamic_array():",
-                            "    # Create array with capacity 4",
-                            "    arr = DynamicArray(4)",
-                            "    append(arr, 10)",
-                            "    append(arr, 20)",
-                            "    append(arr, 30)",
-                            "    append(arr, 40)",
-                            "    append(arr, 50)",
-                            "    pop(arr)",
-                            "    pop(arr)",
-                            "    pop(arr)",
-                            "    append(arr, 15)",
-                            "    return arr"
-                        ],
-                        "dataStructureType": "array",
-                        "steps": [
-                            {
-                                "lineNumber": 1,
-                                "comment": "In the last level, we learned that array sizes are fixed, but we can use dynamic arrays to make them more flexible and practical. Let's start with a dynamic array of capacity 4, containing 3 elements:",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 2,
-                                "comment": "When we try to append 40, first we check if we're at capacity",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 13,
-                                "comment": "Since we still have space, we can directly append 40",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "isHighlighted": true,
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 3,
-                                "comment": "Now when we try to append 50, the array is full as we already have 4 elements. Time to resize!",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "isHighlighted": true,
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "isHighlighted": true,
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 5,
-                                "comment": "We create a new array with double the capacity (8 spaces)",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 8,
-                                "comment": "Copy all existing elements to the new array",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "isHighlighted": true,
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "isHighlighted": true,
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 13,
-                                "comment": "Finally, we can append 50 to the resized array",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "50",
-                                        "isHighlighted": true,
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 16,
-                                "comment": "Let's look at pop operations. Starting with this array:",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 21,
-                                "comment": "Pop removes the last element (30)",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 23,
-                                "comment": "Now we're using < 25% of capacity (2/8), so we'll shrink the array to save memory",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "20",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            
-                            {
-                                "lineNumber": 32,
-                                "comment": "Let's try to combine our knowledge and go through an example. Starting with an empty array of capacity 4",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 45,
-                                "comment": "After all these operations, what do you think will be the final capacity of the array?",
-                                "hint": "We doubled the capacity when we ran out of space, and we halved the capacity when we had less than 25% of the array used",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "2",
-                                    "4",
-                                    "8",
-                                    "16"
-                                ],
-                                "multipleChoiceCorrectAnswer": "4",
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 45,
-                                "comment": "Great, now let's see if you can place the final elements in their correct positions",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "10",
-                                    "15",
-                                    "20",
-                                    "30",
-                                    "40",
-                                    "50"
-                                ],
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 45,
-                                "comment": "Great! Now you know how dynamic arrays work!",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "10",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "15",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "visualization",
                     "title": "Understanding Contiguous Memory in Arrays",
                     "description": "Learn why arrays require continuous memory and the implications for insertions and deletions",
                     "hint": "",
@@ -1551,6 +1058,499 @@
                                     {
                                         "value": "",
                                         "label": "5"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Understanding Dynamic Arrays",
+                    "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
+                    "hint": "",
+                    "review": "Key concepts: 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "def append(arr, value):",
+                            "    # Check if array is at capacity",
+                            "    if len(arr) == arr.capacity:",
+                            "        # Double the capacity",
+                            "        new_capacity = arr.capacity * 2",
+                            "        new_arr = [None] * new_capacity",
+                            "        # Copy all elements to new array",
+                            "        for i in range(len(arr)):",
+                            "            new_arr[i] = arr[i]",
+                            "        arr = new_arr",
+                            "        arr.capacity = new_capacity",
+                            "",
+                            "    # Add new element",
+                            "    arr[len(arr)] = value",
+                            "",
+                            "def pop(arr):",
+                            "    # Remove and return last element",
+                            "    if len(arr) == 0:",
+                            "        return None",
+                            "    value = arr[len(arr) - 1]",
+                            "    arr[len(arr) - 1] = None",
+                            "    # Shrink array if using less than 25% of capacity",
+                            "    if len(arr) < arr.capacity // 4:",
+                            "        new_capacity = arr.capacity // 2",
+                            "        new_arr = [None] * new_capacity",
+                            "        for i in range(len(arr)):",
+                            "            new_arr[i] = arr[i]",
+                            "        arr = new_arr",
+                            "        arr.capacity = new_capacity",
+                            "    return value",
+                            "",
+                            "def test_dynamic_array():",
+                            "    # Create array with capacity 4",
+                            "    arr = DynamicArray(4)",
+                            "    append(arr, 10)",
+                            "    append(arr, 20)",
+                            "    append(arr, 30)",
+                            "    append(arr, 40)",
+                            "    append(arr, 50)",
+                            "    pop(arr)",
+                            "    pop(arr)",
+                            "    pop(arr)",
+                            "    append(arr, 15)",
+                            "    return arr"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "In the last level, we learned that array sizes are fixed, but we can use dynamic arrays to make them more flexible and practical. Let's start with a dynamic array of capacity 4, containing 3 elements:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "When we try to append 40, first we check if we're at capacity",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 13,
+                                "comment": "Since we still have space, we can directly append 40",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "Now when we try to append 50, the array is full as we already have 4 elements. Time to resize!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "We create a new array with double the capacity (8 spaces)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 8,
+                                "comment": "Copy all existing elements to the new array",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "isHighlighted": true,
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 13,
+                                "comment": "Finally, we can append 50 to the resized array",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "40",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "50",
+                                        "isHighlighted": true,
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 16,
+                                "comment": "Let's look at pop operations. Starting with this array:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 21,
+                                "comment": "Pop removes the last element (30)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true,
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "6"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "7"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 23,
+                                "comment": "Now we're using < 25% of capacity (2/8), so we'll shrink the array to save memory",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "isHighlighted": true,
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true,
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            
+                            {
+                                "lineNumber": 32,
+                                "comment": "Let's try to combine our knowledge and go through an example. Starting with an empty array of capacity 4",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 45,
+                                "comment": "After all these operations, what do you think will be the final capacity of the array?",
+                                "hint": "We doubled the capacity when we ran out of space, and we halved the capacity when we had less than 25% of the array used",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "2",
+                                    "4",
+                                    "8",
+                                    "16"
+                                ],
+                                "multipleChoiceCorrectAnswer": "4",
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 45,
+                                "comment": "Great, now let's see if you can place the final elements in their correct positions",
+                                "userInputRequired": true,
+                                "availableElements": [
+                                    "10",
+                                    "15",
+                                    "20",
+                                    "30",
+                                    "40",
+                                    "50"
+                                ],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 45,
+                                "comment": "Great! Now you know how dynamic arrays work!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "3"
                                     }
                                 ]
                             }

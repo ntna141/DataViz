@@ -162,6 +162,11 @@ class VisualizationManager {
               let dataStructureType = visualization["dataStructureType"] as? String,
               let steps = visualization["steps"] as? [[String: Any]] else {
             print("Invalid visualization JSON data")
+            print("Review field present: \(jsonData["review"] != nil)")
+            if let review = jsonData["review"] {
+                print("Review value: \(review)")
+                print("Review type: \(type(of: review))")
+            }
             return
         }
         
@@ -183,6 +188,7 @@ class VisualizationManager {
         visualizationEntity.desc = description
         visualizationEntity.hint = hint
         visualizationEntity.review = review
+        print("Set review on entity: \(visualizationEntity.review ?? "NO REVIEW")")
         visualizationEntity.question = question
         visualizationEntity.layoutType = dataStructureType
         question.visualization = visualizationEntity
@@ -361,6 +367,7 @@ class VisualizationManager {
         print("Title: \(visualizationEntity.title ?? "")")
         print("Description: \(visualizationEntity.desc ?? "")")
         print("Layout type: \(visualizationEntity.layoutType ?? "")")
+        print("Review from entity: \(visualizationEntity.review ?? "NO REVIEW")")
         
         // Load code lines
         let codeLines: [CodeLine] = {
@@ -458,7 +465,8 @@ class VisualizationManager {
             return loadedSteps
         }()
         
-        return VisualizationQuestion(
+        // Create and return the visualization question
+        let visualization = VisualizationQuestion(
             title: visualizationEntity.title ?? "",
             description: visualizationEntity.desc ?? "",
             hint: visualizationEntity.hint ?? "",
@@ -469,5 +477,8 @@ class VisualizationManager {
             initialConnections: [],
             layoutType: DataStructureLayoutType(rawValue: visualizationEntity.layoutType ?? "linkedList") ?? .linkedList
         )
+        
+        print("Created visualization with review: \(visualization.review)")
+        return visualization
     }
 } 

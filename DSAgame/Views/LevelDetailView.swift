@@ -5,38 +5,95 @@ struct ReviewScreen: View {
     let onNext: () -> Void
     let onBackToMap: () -> Void
     
+    init(review: String, onNext: @escaping () -> Void, onBackToMap: @escaping () -> Void) {
+        print("ReviewScreen initialized with review: \(review)")  // Added debug log
+        self.review = review
+        self.onNext = onNext
+        self.onBackToMap = onBackToMap
+    }
+    
     var body: some View {
         VStack(spacing: 30) {
             Text("Great Job!")
-                .font(.title)
+                .font(.system(.title, design: .monospaced))
                 .fontWeight(.bold)
             
-            Text(review)
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
+            // Review text with shadow box style
+            ZStack {
+                // Shadow layer
+                Rectangle()
+                    .fill(Color.black)
+                    .offset(x: 6, y: 6)
+                
+                // Main box
+                Rectangle()
+                    .fill(Color.white)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                    )
+                
+                Text(review)
+                    .font(.system(.body, design: .monospaced))
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 120)
+            .padding(.horizontal)
             
             VStack(spacing: 15) {
+                // Next button
                 Button(action: onNext) {
-                    Text("Start Next Question")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                    ZStack {
+                        // Shadow layer
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main button
+                        Rectangle()
+                            .fill(Color.blue)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        Text("Start Next Question")
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundColor(.white)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .buttonStyle(.plain)
                 
+                // Back to Map button
                 Button(action: onBackToMap) {
-                    Text("Back to Map")
-                        .font(.headline)
-                        .foregroundColor(.blue)
+                    ZStack {
+                        // Shadow layer
+                        Rectangle()
+                            .fill(Color.black)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main button
+                        Rectangle()
+                            .fill(Color.white)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        Text("Back to Map")
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundColor(.blue)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .buttonStyle(.plain)
             }
-            .padding(.top)
+            .padding(.horizontal)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -53,47 +110,97 @@ struct LevelDetailView: View {
     @State private var currentQuestionIndex = 0
     @State private var visualizationQuestions: [QuestionEntity] = []
     
+    
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .leading, spacing: 20) {
                 // Header
                 HStack {
                     Text("Level \(level.number)")
-                        .font(.title)
+                        .font(.system(.title, design: .monospaced))
                         .fontWeight(.bold)
                     Spacer()
                     
+                    // Close button
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.gray)
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main button
+                            Rectangle()
+                                .fill(Color.white)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
                     }
+                    .frame(width: 44, height: 44)
+                    .buttonStyle(.plain)
                 }
                 
                 // Topic
                 Text(level.topic ?? "")
-                    .font(.title2)
+                    .font(.system(.title2, design: .monospaced))
                 
-                // Description
-                Text(level.desc ?? "")
-                    .font(.body)
-                    .foregroundColor(.gray)
+                // Description box
+                ZStack {
+                    // Shadow layer
+                    Rectangle()
+                        .fill(Color.black)
+                        .offset(x: 6, y: 6)
+                    
+                    // Main box
+                    Rectangle()
+                        .fill(Color.white)
+                        .overlay(
+                            Rectangle()
+                                .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                        )
+                    
+                    Text(level.desc ?? "")
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.black)
+                        .padding()
+                }
+                .frame(height: 100)
                 
-                // Start button
+                // Continue button
                 if visualization != nil {
                     Button(action: {
                         showingVisualization = true
                     }) {
-                        Text("Continue Visualization")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                        ZStack {
+                            // Shadow layer
+                            Rectangle()
+                                .fill(Color.black)
+                                .offset(x: 6, y: 6)
+                            
+                            // Main button
+                            Rectangle()
+                                .fill(Color.blue)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                            
+                            Text("Continue Visualization")
+                                .font(.system(.headline, design: .monospaced))
+                                .foregroundColor(.white)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .buttonStyle(.plain)
                 }
             }
             .padding()
@@ -148,6 +255,7 @@ struct LevelDetailView: View {
         
         let question = visualizationQuestions[currentQuestionIndex]
         visualization = VisualizationManager.shared.loadVisualization(for: question)
+        print("Review content:", visualization?.review ?? "no review available")
     }
     
     private func moveToNextQuestion() {
