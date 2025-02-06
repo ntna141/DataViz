@@ -130,6 +130,8 @@ struct LevelDetailView: View {
     @State private var visualization: VisualizationQuestion?
     @State private var currentQuestionIndex = 0
     @State private var visualizationQuestions: [QuestionEntity] = []
+    @State private var isLoading = true
+    @State private var visualizations: [VisualizationQuestion?] = []
     
     var body: some View {
         ZStack {
@@ -217,35 +219,60 @@ struct LevelDetailView: View {
                             }
                             .frame(height: 120)
                             
-                            // Continue button
-                            if visualization != nil {
-                                HStack {
-                                    Spacer()
-                                    Button(action: {
-                                        showingVisualization = true
-                                    }) {
-                                        ZStack {
-                                            // Shadow layer
-                                            Rectangle()
-                                                .fill(Color.black)
-                                                .offset(x: 6, y: 6)
-                                            
-                                            // Main button
-                                            Rectangle()
-                                                .fill(Color.blue)
-                                                .overlay(
+                            // Question list
+                            if !visualizationQuestions.isEmpty {
+                                VStack(spacing: 15) {
+                                    Text("Questions")
+                                        .font(.system(.headline, design: .monospaced))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.bottom, 5)
+                                    
+                                    if isLoading {
+                                        ProgressView()
+                                            .frame(maxWidth: .infinity, alignment: .center)
+                                    } else {
+                                        ForEach(visualizationQuestions.indices, id: \.self) { index in
+                                            let question = visualizationQuestions[index]
+                                            Button(action: {
+                                                if let vis = VisualizationManager.shared.loadVisualization(for: question) {
+                                                    visualization = vis
+                                                    currentQuestionIndex = index
+                                                    showingVisualization = true
+                                                }
+                                            }) {
+                                                ZStack {
+                                                    // Shadow layer
                                                     Rectangle()
-                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                                )
-                                            
-                                            Text("Continue Visualization")
-                                                .font(.system(.headline, design: .monospaced))
-                                                .foregroundColor(.white)
+                                                        .fill(Color.black)
+                                                        .offset(x: 6, y: 6)
+                                                    
+                                                    // Main button
+                                                    Rectangle()
+                                                        .fill(question.isCompleted ? Color.green.opacity(0.2) : Color.white)
+                                                        .overlay(
+                                                            Rectangle()
+                                                                .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                                        )
+                                                    
+                                                    HStack {
+                                                        Text("\(index + 1). \(question.title ?? "")")
+                                                            .font(.system(.body, design: .monospaced))
+                                                            .foregroundColor(.primary)
+                                                        
+                                                        Spacer()
+                                                        
+                                                        if question.isCompleted {
+                                                            Image(systemName: "checkmark.circle.fill")
+                                                                .foregroundColor(.green)
+                                                        }
+                                                    }
+                                                    .padding(.horizontal, 20)
+                                                }
+                                            }
+                                            .frame(height: 50)
+                                            .buttonStyle(.plain)
                                         }
                                     }
-                                    .frame(width: 250, height: 50)
-                                    .buttonStyle(.plain)
-                                    Spacer()
                                 }
                             }
                         }
@@ -279,52 +306,60 @@ struct LevelDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.clear)
         .ignoresSafeArea()
-        .fullScreenCover(isPresented: $showingVisualization) {
-            if let visualization = visualization {
-                VisualizationQuestionView(
-                    question: visualization,
-                    questionEntity: visualizationQuestions[currentQuestionIndex],
-                    onComplete: {
-                        let questionId = visualizationQuestions[currentQuestionIndex].uuid!
-                        GameProgressionManager.shared.markQuestionCompleted(questionId)
-                        showingVisualization = false
-                        showingReview = true
-                    }
-                )
-            }
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { showingVisualization && visualization != nil },
+                set: { showingVisualization = $0 }
+            )
+        ) {
+            VisualizationQuestionView(
+                question: visualization!,
+                questionEntity: visualizationQuestions[currentQuestionIndex],
+                onComplete: {
+                    let questionId = visualizationQuestions[currentQuestionIndex].uuid!
+                    GameProgressionManager.shared.markQuestionCompleted(questionId)
+                    showingVisualization = false
+                    showingReview = true
+                }
+            )
         }
         .onAppear {
+            isLoading = true
             // Load all visualization questions
             if let questions = level.questions?.allObjects as? [QuestionEntity] {
                 visualizationQuestions = questions
                     .filter { $0.type == "visualization" }
                     .sorted { $0.orderIndex < $1.orderIndex }
-                loadCurrentQuestion()
+                
+                // Initialize visualizations array with the correct size
+                visualizations = Array(repeating: nil, count: visualizationQuestions.count)
+                
+                // Load all visualizations immediately
+                for (index, question) in visualizationQuestions.enumerated() {
+                    if let vis = VisualizationManager.shared.loadVisualization(for: question) {
+                        visualizations[index] = vis
+                    }
+                }
             }
+            isLoading = false
         }
     }
     
     private func loadCurrentQuestion() {
         guard currentQuestionIndex < visualizationQuestions.count else {
-            visualization = nil
             showingVisualization = false
             return
         }
         
-        let question = visualizationQuestions[currentQuestionIndex]
-        visualization = VisualizationManager.shared.loadVisualization(for: question)
-        print("Review content:", visualization?.review ?? "no review available")
+        // Use the preloaded visualization instead of loading on demand
+        visualization = visualizations[currentQuestionIndex]
+        showingVisualization = visualization != nil
     }
     
     private func moveToNextQuestion() {
-        // First reset current visualization
-        visualization = nil
-        
-        // Then load next question
         currentQuestionIndex += 1
         loadCurrentQuestion()
         
-        // Show new visualization if available
         if visualization != nil {
             showingVisualization = true
         } else {
