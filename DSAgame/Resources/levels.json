@@ -10,7 +10,7 @@
                     "type": "visualization",
                     "title": "Understanding Array Access Patterns",
                     "description": "Learn the difference between direct array access and sequential search operations",
-                    "review": "Key concepts: 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
+                    "review": "Key concepts: \n 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
                     "hint": "None",
                     "difficulty": 1,
                     "visualization": {
@@ -509,7 +509,7 @@
                     "title": "Understanding Contiguous Memory in Arrays",
                     "description": "Learn why arrays require continuous memory and the implications for insertions and deletions",
                     "hint": "",
-                    "review": "Key concepts: 1) Array elements must stay together in memory \n2) Inserting/deleting requires shifting elements \n3) Array size must be declared in advance",
+                    "review": "Key concepts: \n 1) Array elements must stay together in memory \n2) Inserting/deleting requires shifting elements \n3) Array size must be declared in advance",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -1069,7 +1069,7 @@
                     "title": "Understanding Dynamic Arrays",
                     "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
                     "hint": "",
-                    "review": "Key concepts: 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
+                    "review": "Key concepts:\n 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -1569,7 +1569,7 @@
                     "type": "visualization",
                     "title": "Understanding Circular Arrays",
                     "description": "Learn how circular arrays work by watching the code execute and then building your own operations",
-                    "hint": "Key formulas: 1) For enqueue: rear = (rear + 1) % size moves rear forward, wrapping to 0 when needed. 2) For dequeue: front = (front + 1) % size moves front forward similarly. 3) Array is full when (rear + 1) % size equals front!",
+                    "hint": "Key concepts: \n 1) For enqueue: rear = (rear + 1) % size moves rear forward, wrapping to 0 when needed. 2) For dequeue: front = (front + 1) % size moves front forward similarly. 3) Array is full when (rear + 1) % size equals front!",
                     "review": "Excellent! You've mastered both enqueue and dequeue operations on a circular array, including handling empty and full conditions.",
                     "difficulty": 2,
                     "visualization": {
@@ -2331,7 +2331,7 @@
                     "type": "visualization",
                     "title": "Understanding Queue Implementation",
                     "description": "Learn how queues work by watching the code execute and then building your own operations",
-                    "hint": "Key concepts: 1) Front removes elements, Rear adds elements 2) Count tracks number of elements 3) Use modulo (%) for wraparound!",
+                    "hint": "Key concepts: \n 1) Front removes elements, Rear adds elements 2) Count tracks number of elements 3) Use modulo (%) for wraparound!",
                     "review": "Great job! You've mastered how queue operations work with fixed arrays, including empty and full conditions.",
                     "difficulty": 2,
                     "visualization": {

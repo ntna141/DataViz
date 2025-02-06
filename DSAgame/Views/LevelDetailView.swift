@@ -7,13 +7,11 @@ struct ReviewScreen: View {
     
     var body: some View {
         ZStack {
-            // Full screen white background
             Color.white
                 .ignoresSafeArea()
             
-            // Center content with device-specific width
             GeometryReader { geometry in
-                ScrollView {
+                VStack {
                     // Main Card
                     ZStack {
                         // Shadow layer
@@ -30,34 +28,42 @@ struct ReviewScreen: View {
                             )
                         
                         // Content
-                        VStack(spacing: 30) {
+                        VStack {
                             Text("Great Job!")
                                 .font(.system(.title, design: .monospaced))
                                 .fontWeight(.bold)
+                                .padding(.top, 30)
                             
-                            // Review text box
-                            ZStack {
-                                // Shadow layer
-                                Rectangle()
-                                    .fill(Color.black)
-                                    .offset(x: 6, y: 6)
-                                
-                                // Main box
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .overlay(
-                                        Rectangle()
-                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                    )
-                                
-                                Text(review)
-                                    .font(.system(.body, design: .monospaced))
-                                    .multilineTextAlignment(.center)
-                                    .padding()
+                            Spacer() // This will push content down from the top
+                            
+                            // Review text box - centered vertically
+                            ScrollView {
+                                ZStack {
+                                    // Shadow layer
+                                    Rectangle()
+                                        .fill(Color.black)
+                                        .offset(x: 6, y: 6)
+                                    
+                                    // Main box
+                                    Rectangle()
+                                        .fill(Color.white)
+                                        .overlay(
+                                            Rectangle()
+                                                .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                        )
+                                    
+                                    Text(review)
+                                        .font(.system(.body, design: .monospaced))
+                                        .multilineTextAlignment(.center)
+                                        .padding()
+                                }
                             }
-                            .frame(height: 120)
+                            .frame(height: 200) // Fixed height for review box
                             
-                            VStack(spacing: 15) {
+                            Spacer() // This will push content up from the bottom
+                            
+                            // Buttons at the bottom with increased spacing
+                            VStack(spacing: 20) {
                                 // Next button
                                 Button(action: onNext) {
                                     ZStack {
@@ -106,15 +112,15 @@ struct ReviewScreen: View {
                                 .frame(width: 250, height: 50)
                                 .buttonStyle(.plain)
                             }
+                            .padding(.bottom, 15)
                         }
                         .padding(40)
                     }
-                    .padding(10) // Padding around the entire card to show shadow
+                    .padding(10)
                     .padding(.top, 90)
                     .frame(width: geometry.size.width > 768 ? geometry.size.width / 2 : geometry.size.width * 0.9)
                     .frame(height: geometry.size.width > 768 ? geometry.size.height * 0.85 : nil)
                     .frame(minHeight: geometry.size.height * 0.6)
-                    .padding(.vertical, 40)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -248,7 +254,7 @@ struct LevelDetailView: View {
                                                     
                                                     // Main button
                                                     Rectangle()
-                                                        .fill(question.isCompleted ? Color.green.opacity(0.2) : Color.white)
+                                                        .fill(question.isCompleted ? Color(red: 0.9, green: 1.0, blue: 0.9) : Color.white)
                                                         .overlay(
                                                             Rectangle()
                                                                 .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
@@ -257,7 +263,7 @@ struct LevelDetailView: View {
                                                     HStack {
                                                         Text("\(index + 1). \(question.title ?? "")")
                                                             .font(.system(.body, design: .monospaced))
-                                                            .foregroundColor(.primary)
+                                                            .foregroundColor(question.isCompleted ? Color(white: 0.1) : .primary)
                                                         
                                                         Spacer()
                                                         
