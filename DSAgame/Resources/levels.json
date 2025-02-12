@@ -1867,24 +1867,18 @@
                             },
                             {
                                 "lineNumber": 2,
-                                "comment": "This is why linked lists are great for inserting and deleting elements (just update the references), but slower for accessing elements (must traverse from the start).",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "We can jump directly to any node",
-                                    "We must follow the references from head",
-                                    "We can start from any node",
-                                    "We can calculate node positions"
-                                ],
-                                "multipleChoiceCorrectAnswer": "We must follow the references from head",
+                                "comment": "Each linked list node contains a value and a reference to the next node (looks sort of like [value, next] or [5, [10, 15]]). This is how we traverse the list. We go from the head, and then we get the next node from the head, then the next node from the next node, and so on. At the start here, the current node is the head.",
+                                "userInputRequired": false,
                                 "nodes": [
                                     {
                                         "value": "64",
-                                        "label": "head"
+                                        "label": "head",
+                                        "isHighlighted": true
                                     },
                                     {
                                         "value": "34",
-                                        "label": "node1"
+                                        "label": "node1",
+                                        "isHighlighted": true
                                     },
                                     {
                                         "value": "25",
@@ -1935,8 +1929,8 @@
                                 ]
                             },
                             {
-                                "lineNumber": 3,
-                                "comment": "We use the next reference to move from one node to another. This is how we traverse the list.",
+                                "lineNumber": 5,
+                                "comment": "We set the current node to the next node. Now, the current node is the next node. We see here, current is not head but now it is node1.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1997,8 +1991,70 @@
                                 ]
                             },
                             {
-                                "lineNumber": 8,
-                                "comment": "When searching for a value, we must check each node one by one until we find it",
+                                "lineNumber": 3,
+                                "comment": "We notice that once we reach the tail, we can't go any further. The tail node doesn't have a next node. So we exit the loop.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail",
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "Finding a node is very similar to array, we just need to traverse the list until we find the value.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -2059,7 +2115,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 9,
+                                "lineNumber": 7,
                                 "comment": "Let's say we're looking for value 25. We first check the head node (64).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -2247,7 +2303,7 @@
                             {
                                 "lineNumber": 11,
                                 "comment": "In the worst-case scenario when searching for a value, where would it be in the linked list?",
-                                "hint": "Consider which position would require checking the most nodes",
+                                "hint": "This is like in an array, we need to traverse the entire array to find the value.",
                                 "availableElements": [
                                     "25"
                                 ],
@@ -2315,6 +2371,75 @@
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
+                                        "value": "",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "tail",
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Can you see the difference between linked list and array though? Which data structure would be more efficient if we need to access the 1000th element multiple times? L for linked list, A for array",
+                                "hint": "When we found an element in an array, we know where it is",
+                                "userInputRequired": false,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "L",  
+                                    "A"
+                                ],
+                                "multipleChoiceCorrectAnswer": "A",
+                                "nodes": [
+                                    {
                                         "value": "64",
                                         "label": "head"
                                     },
@@ -2339,9 +2464,70 @@
                                         "label": "node5"
                                     },
                                     {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "That is correct! Arrays are more efficient for accessing elements at a specific index, for linked list, we need to traverse the entire list every time we need a value.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1"
+                                    },
+                                    {
                                         "value": "25",
-                                        "label": "tail",
+                                        "label": "node2",
                                         "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
                                     }
                                 ],
                                 "connections": [
