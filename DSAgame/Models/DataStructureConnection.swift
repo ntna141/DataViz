@@ -5,6 +5,8 @@ protocol DataStructureConnection: Identifiable {
     var id: String { get }
     var fromCellId: String { get }
     var toCellId: String { get }
+    var fromLabel: String? { get set }
+    var toLabel: String? { get set }
     var label: String? { get set }
     var isHighlighted: Bool { get set }
     var style: ConnectionStyle { get set }
@@ -20,10 +22,36 @@ protocol DataStructureConnection: Identifiable {
 }
 
 // Style options for connections
-enum ConnectionStyle: String {
+enum ConnectionStyle: String, Codable {
     case straight = "straight"
     case curved = "curved"
     case selfPointing = "selfPointing"
+}
+
+// Helper struct for decoding connections from JSON
+struct ConnectionData: Codable {
+    let from: Int?
+    let to: Int?
+    let fromLabel: String?
+    let toLabel: String?
+    let label: String?
+    let isHighlighted: Bool?
+    let style: ConnectionStyle?
+    
+    enum CodingKeys: String, CodingKey {
+        case from, to, fromLabel, toLabel, label, isHighlighted, style
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        from = try container.decodeIfPresent(Int.self, forKey: .from)
+        to = try container.decodeIfPresent(Int.self, forKey: .to)
+        fromLabel = try container.decodeIfPresent(String.self, forKey: .fromLabel)
+        toLabel = try container.decodeIfPresent(String.self, forKey: .toLabel)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        isHighlighted = try container.decodeIfPresent(Bool.self, forKey: .isHighlighted)
+        style = try container.decodeIfPresent(ConnectionStyle.self, forKey: .style)
+    }
 }
 
 // Represents the visual state of a connection
@@ -60,18 +88,52 @@ struct ConnectionDisplayState {
 }
 
 // Base implementation of a connection
-struct BasicConnection: DataStructureConnection {
+struct BasicConnection: DataStructureConnection, Codable {
     let id: String
     let fromCellId: String
     let toCellId: String
+    var fromLabel: String?
+    var toLabel: String?
     var label: String?
     var isHighlighted: Bool
     var style: ConnectionStyle
+    private var _displayState: ConnectionDisplayState?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, fromCellId, toCellId, fromLabel, toLabel, label, isHighlighted, style
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        
+        // Try to decode connection data
+        let connectionData = try ConnectionData(from: decoder)
+        
+        // Handle both index-based and label-based connections
+        if let fromIndex = connectionData.from, let toIndex = connectionData.to {
+            // For index-based connections, we'll use placeholder IDs that will be updated later
+            fromCellId = "node_\(fromIndex)"
+            toCellId = "node_\(toIndex)"
+        } else {
+            // For label-based connections, use the labels as IDs
+            fromCellId = connectionData.fromLabel ?? ""
+            toCellId = connectionData.toLabel ?? ""
+        }
+        
+        fromLabel = connectionData.fromLabel
+        toLabel = connectionData.toLabel
+        label = connectionData.label
+        isHighlighted = connectionData.isHighlighted ?? false
+        style = connectionData.style ?? .straight
+    }
     
     init(
         id: String = UUID().uuidString,
         fromCellId: String,
         toCellId: String,
+        fromLabel: String? = nil,
+        toLabel: String? = nil,
         label: String? = nil,
         isHighlighted: Bool = false,
         style: ConnectionStyle = .straight
@@ -79,6 +141,8 @@ struct BasicConnection: DataStructureConnection {
         self.id = id
         self.fromCellId = fromCellId
         self.toCellId = toCellId
+        self.fromLabel = fromLabel
+        self.toLabel = toLabel
         self.label = label
         self.isHighlighted = isHighlighted
         self.style = style
@@ -105,8 +169,7 @@ struct BasicConnection: DataStructureConnection {
     // MARK: - Display State
     
     var displayState: ConnectionDisplayState {
-        // Note: Actual points will be provided by the layout manager
-        ConnectionDisplayState(
+        _displayState ?? ConnectionDisplayState(
             fromPoint: .zero,
             toPoint: .zero,
             label: label,
@@ -183,17 +246,17 @@ struct ConnectionView: View {
     
     private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
         let cellSize = 40.0 * state.scale // Base cell size * scale
-        let angle = atan2(state.fromPoint.y - state.toPoint.y, state.fromPoint.x - state.toPoint.x)  // Reverse angle calculation
+        let angle = atan2(state.fromPoint.y - state.toPoint.y, state.fromPoint.x - state.toPoint.x)
         
-        // Calculate the points where the line intersects with the cell edges
+        // Calculate the base points where the line intersects with the cell edges
         let fromPoint = CGPoint(
-            x: state.fromPoint.x - cos(angle) * (cellSize / 2),  // Change to minus
-            y: state.fromPoint.y - sin(angle) * (cellSize / 2)   // Change to minus
+            x: state.fromPoint.x - cos(angle) * (cellSize / 2 * 1.2),  // Added 20% with * 1.2
+            y: state.fromPoint.y - sin(angle) * (cellSize / 2 * 1.2)   // Added 20% with * 1.2
         )
         
         let toPoint = CGPoint(
-            x: state.toPoint.x + cos(angle) * (cellSize / 2),    // Change to plus
-            y: state.toPoint.y + sin(angle) * (cellSize / 2)     // Change to plus
+            x: state.toPoint.x + cos(angle) * (cellSize / 2 * 1.2),    // Added 20% with * 1.2
+            y: state.toPoint.y + sin(angle) * (cellSize / 2 * 1.2)     // Added 20% with * 1.2
         )
         
         return (from: fromPoint, to: toPoint)

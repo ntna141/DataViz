@@ -833,7 +833,12 @@ struct DataStructureView: View {
         // Calculate scale factor based on current cell size
         let scaleFactor = cellSizeManager.size / 40 // 40 is the base size
         
-        // Adjust frame for arrow positioning in linked list
+        print("\nUpdating layout:")
+        print("  - Frame: \(frame)")
+        print("  - Scale factor: \(scaleFactor)")
+        print("  - Layout type: \(layoutType)")
+        
+        // Don't adjust frame for arrays, only for linked lists
         var adjustedFrame = frame
         if layoutType == .linkedList {
             // Move connection points to cell edges instead of center
@@ -845,12 +850,26 @@ struct DataStructureView: View {
             )
         }
         
+        print("  - Adjusted frame: \(adjustedFrame)")
+        
         let (newCells, newStates) = layoutManager.updateLayout(
             cells: currentCells,
             connections: connections,
             in: adjustedFrame,
             scale: scaleFactor
         )
+        
+        // Log cell positions for debugging
+        print("\nCell positions after layout:")
+        for (index, cell) in newCells.enumerated() {
+            print("  Cell \(index): position (\(cell.position.x), \(cell.position.y))")
+        }
+        
+        // Log connection states for debugging
+        print("\nConnection states after layout:")
+        for state in newStates {
+            print("  Connection: from (\(state.fromPoint.x), \(state.fromPoint.y)) to (\(state.toPoint.x), \(state.toPoint.y))")
+        }
         
         layoutCells = newCells
         connectionStates = newStates.enumerated().map { (index, state) in
@@ -861,6 +880,7 @@ struct DataStructureView: View {
     
     private func updateLayoutWithCurrentCells() {
         var adjustedFrame = frame
+        // For arrays, we don't need to adjust the frame
         if layoutType == .linkedList {
             adjustedFrame = CGRect(
                 x: frame.origin.x + cellSizeManager.size / 2,
@@ -870,11 +890,12 @@ struct DataStructureView: View {
             )
         }
         
+        let scaleFactor = cellSizeManager.size / 40
         let (newCells, newStates) = layoutManager.updateLayout(
             cells: currentCells,
             connections: connections,
             in: adjustedFrame,
-            scale: cellSizeManager.size / 40
+            scale: scaleFactor
         )
         layoutCells = newCells
         connectionStates = newStates.enumerated().map { (index, state) in

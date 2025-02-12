@@ -45,11 +45,14 @@ struct LevelData: Codable {
         let value: String
         var isHighlighted: Bool?
         var label: String?
+        var row: Int?
     }
     
     struct Connection: Codable {
-        let from: Int
-        let to: Int
+        let from: Int?
+        let to: Int?
+        let fromLabel: String?
+        let toLabel: String?
         let label: String?
         var isHighlighted: Bool?
         var style: String?

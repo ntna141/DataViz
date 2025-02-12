@@ -173,6 +173,7 @@ class GameProgressionManager {
                 nodeEntity.isHighlighted = nodeSpec.isHighlighted ?? false
                 nodeEntity.label = nodeSpec.label
                 nodeEntity.orderIndex = Int32(index)  // Set the order index based on the enumerated index
+                nodeEntity.row = Int32(nodeSpec.row ?? 0)  // Add row support
                 nodeEntity.positionX = 0 // Position will be calculated by the layout engine
                 nodeEntity.positionY = 0
                 nodeEntity.step = stepEntity
@@ -191,9 +192,30 @@ class GameProgressionManager {
                     connectionEntity.style = connectionSpec.style ?? "straight"
                     connectionEntity.step = stepEntity
                     
-                    // Link to nodes using indices
-                    connectionEntity.fromNode = nodeEntities[connectionSpec.from]
-                    connectionEntity.toNode = nodeEntities[connectionSpec.to]
+                    // Handle both index-based and label-based connections
+                    if let fromIndex = connectionSpec.from,
+                       let toIndex = connectionSpec.to,
+                       fromIndex < nodeEntities.count,
+                       toIndex < nodeEntities.count {
+                        // Index-based connection
+                        connectionEntity.fromNode = nodeEntities[fromIndex]
+                        connectionEntity.toNode = nodeEntities[toIndex]
+                    } else if let fromLabel = connectionSpec.fromLabel,
+                              let toLabel = connectionSpec.toLabel,
+                              let fromNode = nodeEntities.first(where: { ($0.label ?? "") == fromLabel }),
+                              let toNode = nodeEntities.first(where: { ($0.label ?? "") == toLabel }) {
+                        // Label-based connection
+                        connectionEntity.fromNode = fromNode
+                        connectionEntity.toNode = toNode
+                    } else {
+                        print("⚠️ Warning: Could not create connection - invalid indices or labels")
+                        print("  - From Index: \(connectionSpec.from ?? -1)")
+                        print("  - To Index: \(connectionSpec.to ?? -1)")
+                        print("  - From Label: \(connectionSpec.fromLabel ?? "nil")")
+                        print("  - To Label: \(connectionSpec.toLabel ?? "nil")")
+                        context.delete(connectionEntity)
+                        continue
+                    }
                 }
             }
         }

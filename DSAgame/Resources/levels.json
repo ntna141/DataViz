@@ -3,7 +3,7 @@
         {
             "number": 1,
             "topic": "Arrays",
-            "description": "Learn the difference between direct array access and sequential search operations",
+            "description": "Learn the basics of arrays",
             "requiredStars": 0,
             "questions": [
                 {
@@ -1567,762 +1567,806 @@
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Understanding Circular Arrays",
-                    "description": "Learn how circular arrays work by watching the code execute and then building your own operations",
-                    "hint": "Key concepts: \n 1) For enqueue: rear = (rear + 1) % size moves rear forward, wrapping to 0 when needed. 2) For dequeue: front = (front + 1) % size moves front forward similarly. 3) Array is full when (rear + 1) % size equals front!",
-                    "review": "Excellent! You've mastered both enqueue and dequeue operations on a circular array, including handling empty and full conditions.",
-                    "difficulty": 2,
+                    "title": "Understanding Linked List Traversal",
+                    "description": "Learn how linked lists store and access data through node connections",
+                    "review": "Key concepts: \n 1) Linked lists connect nodes through references/pointers \n 2) We must traverse from the head to access any node \n 3) Direct access is not possible like in arrays",
+                    "hint": "None",
+                    "difficulty": 1,
                     "visualization": {
                         "code": [
-                            "class CircularArray:",
-                            "    def __init__(self, size=6):",
-                            "        self.size = size",
-                            "        self.array = [None] * size",
-                            "        self.front = -1",
-                            "        self.rear = -1",
+                            "def traverse_list(head):",
+                            "    current = head",
+                            "    while current is not None:",
+                            "        print(current.value)",
+                            "        current = current.next",
                             "",
-                            "    def is_empty(self):",
-                            "        return self.front == -1",
-                            "",
-                            "    def is_full(self):",
-                            "        return (self.rear + 1) % self.size == self.front",
-                            "",
-                            "    def enqueue(self, value):",
-                            "        if self.is_full():",
-                            "            return False",
-                            "        if self.is_empty():",
-                            "            self.front = 0",
-                            "        self.rear = (self.rear + 1) % self.size",
-                            "        self.array[self.rear] = value",
-                            "        return True",
-                            "",
-                            "    def dequeue(self):",
-                            "        if self.is_empty():",
-                            "            return None",
-                            "        value = self.array[self.front]",
-                            "        self.array[self.front] = None",
-                            "        if self.front == self.rear:",
-                            "            self.front = self.rear = -1",
-                            "        else:",
-                            "            self.front = (self.front + 1) % self.size",
-                            "        return value"
+                            "def find_value(head, target):",
+                            "    current = head",
+                            "    while current is not None:",
+                            "        if current.value == target:",
+                            "            return current",
+                            "        current = current.next",
+                            "    return None"
                         ],
                         "dataStructureType": "array",
                         "steps": [
                             {
-                                "lineNumber": 2,
-                                "comment": "Let's understand how CircularArray works. We start with an empty array of size 6, and two pointers: front and rear, both initialized to -1",
+                                "lineNumber": 1,
+                                "comment": "A linked list consists of nodes, where each node contains a value and a reference to the next node. Unlike arrays, the nodes can be stored anywhere in memory.",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
-                                        "value": "",
-                                        "label": "0"
+                                        "value": "64",
+                                        "label": "head"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "1"
+                                        "value": "34",
+                                        "label": "node1"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "2"
+                                        "value": "25",
+                                        "label": "node2"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "3"
+                                        "value": "12",
+                                        "label": "node3"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "4"
+                                        "value": "22",
+                                        "label": "node4"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "5"
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "To access any node in a linked list, we must start at the head node. We cannot jump directly to a specific position.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"    
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                                
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "In memory, linked list nodes can be scattered across different locations. Each node stores both its value and a reference to the next node.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "200",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "290",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "400",
+                                        "row": 1
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "80",
+                                        "row": 1
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "102",
+                                        "row": 2
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "30",
+                                        "row": 2
                                     }
                                 ],
-                                "pointers": {
-                                    "front": -1,
-                                    "rear": -1
-                                }
+                                "connections": [
+                                    {
+                                        "fromLabel": "100",
+                                        "toLabel": "200",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "200",
+                                        "toLabel": "290",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "290",
+                                        "toLabel": "400",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "400",
+                                        "toLabel": "80",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "80",
+                                        "toLabel": "102",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "102",
+                                        "toLabel": "30",
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "To find a node, we must follow the references (arrows) that jump between scattered memory locations. We can't calculate positions like in an array.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "100",
+                                        "row": 0,
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "104",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "108",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "2048",
+                                        "row": 1,
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "2052",
+                                        "row": 1
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "5000",
+                                        "row": 2,
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "5004",
+                                        "row": 2
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "fromLabel": "100",
+                                        "toLabel": "200",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "200",
+                                        "toLabel": "290",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "290",
+                                        "toLabel": "400",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "400",
+                                        "toLabel": "80",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "80",
+                                        "toLabel": "102",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "102",
+                                        "toLabel": "30",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "This is why linked lists are great for inserting and deleting elements (just update the references), but slower for accessing elements (must traverse from the start).",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "We can jump directly to any node",
+                                    "We must follow the references from head",
+                                    "We can start from any node",
+                                    "We can calculate node positions"
+                                ],
+                                "multipleChoiceCorrectAnswer": "We must follow the references from head",
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 3,
+                                "comment": "We use the next reference to move from one node to another. This is how we traverse the list.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
                             },
                             {
                                 "lineNumber": 8,
-                                "comment": "The is_empty() method checks if the array is empty. An array is empty when front is -1",
+                                "comment": "When searching for a value, we must check each node one by one until we find it",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
-                                        "value": "",
-                                        "label": "0"
+                                        "value": "64",
+                                        "label": "head",
+                                        "isHighlighted": true
                                     },
                                     {
-                                        "value": "",
-                                        "label": "1"
+                                        "value": "34",
+                                        "label": "node1"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "2"
+                                        "value": "25",
+                                        "label": "node2"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "3"
+                                        "value": "12",
+                                        "label": "node3"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "4"
+                                        "value": "22",
+                                        "label": "node4"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "5"
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
                                     }
-                                ],
-                                "pointers": {
-                                    "front": -1,
-                                    "rear": -1
-                                }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 9,
+                                "comment": "Let's say we're looking for value 25. We first check the head node (64).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 10,
+                                "comment": "Not found at head, move to next node (34)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "64",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "34",
+                                        "label": "node1",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "12",
+                                        "label": "node3"
+                                    },
+                                    {
+                                        "value": "22",
+                                        "label": "node4"
+                                    },
+                                    {
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
+                                    }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
                             },
                             {
                                 "lineNumber": 11,
-                                "comment": "The is_full() method is more complex. Let's see how it works with some examples",
+                                "comment": "Found 25! Notice how we had to traverse through previous nodes to reach it",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
-                                        "value": "A",
-                                        "label": "0"
+                                        "value": "64",
+                                        "label": "head"
                                     },
                                     {
-                                        "value": "B",
-                                        "label": "1"
+                                        "value": "34",
+                                        "label": "node1"
                                     },
                                     {
-                                        "value": "C",
-                                        "label": "2"
+                                        "value": "25",
+                                        "label": "node2",
+                                        "isHighlighted": true
                                     },
                                     {
-                                        "value": "D",
-                                        "label": "3"
+                                        "value": "12",
+                                        "label": "node3"
                                     },
                                     {
-                                        "value": "E",
-                                        "label": "4"
+                                        "value": "22",
+                                        "label": "node4"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "5"
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "90",
+                                        "label": "tail"
                                     }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4
-                                }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
                             },
                             {
-                                "lineNumber": 12,
-                                "comment": "What will be the result of (rear + 1) % size in this case?",
-                                "userInputRequired": false,
-                                
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1",
-                                    "4",
-                                    "5"
-                                ],
-                                "multipleChoiceCorrectAnswer": "5",
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4
-                                }
-                            },
-                            {
-                                "lineNumber": 12,
-                                "comment": "Since (rear + 1) % size (5) equals front (0), this means the array is full. If they were different, it would mean we have space to add another element.",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4
-                                }
-                            },
-                            {
-                                "lineNumber": 14,
-                                "comment": "Let's try enqueuing elements. First, let's add 'A' to the empty array, where should we put A?",
-                                "hint": "The rear pointer should be incremented to 0, since the array is empty and we're adding the first element",
-                                "userInputRequired": true,
+                                "lineNumber": 11,
+                                "comment": "In the worst-case scenario when searching for a value, where would it be in the linked list?",
+                                "hint": "Consider which position would require checking the most nodes",
                                 "availableElements": [
-                                    "A"
+                                    "25"
                                 ],
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": -1,
-                                    "rear": -1
-                                }
-                            },
-                            {
-                                "lineNumber": 19,
-                                "comment": "Since array was empty, front is set to 0. Rear is also set to 0 for the first element",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 0
-                                }
-                            },
-                            {
-                                "lineNumber": 20,
-                                "comment": "For the next element 'B', where should we put B?",
                                 "userInputRequired": true,
-                                "availableElements": [
-                                    "B"
-                                ],
                                 "nodes": [
                                     {
-                                        "value": "A",
-                                        "label": "0"
+                                        "value": "",
+                                        "label": "head"
                                     },
                                     {
                                         "value": "",
-                                        "isHighlighted": true,
-                                        "label": "1"
+                                        "label": "node1"
                                     },
                                     {
                                         "value": "",
-                                        "label": "2"
+                                        "label": "node2"
                                     },
                                     {
                                         "value": "",
-                                        "label": "3"
+                                        "label": "node3"
                                     },
                                     {
                                         "value": "",
-                                        "label": "4"
+                                        "label": "node4"
                                     },
                                     {
                                         "value": "",
-                                        "label": "5"
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "tail"
                                     }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 1
-                                }
+                                ],"connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4
+                                    },
+                                    {
+                                        "from": 4,
+                                        "to": 5
+                                    },
+                                    {
+                                        "from": 5,
+                                        "to": 6
+                                    }
+                                ]
                             },
                             {
-                                "lineNumber": 19,
-                                "comment": "Notice how the rear pointer moved from 0 to 1 using the formula (rear + 1) % size. This is how we maintain the circular nature of the array - when we reach the end, the modulo operation wraps us back to the beginning.",
+                                "lineNumber": 11,
+                                "comment": "Correct! The worst case would be searching for a value at the tail of the list, or a value that doesn't exist in the list at all.",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
-                                        "value": "A",
-                                        "label": "0"
+                                        "value": "64",
+                                        "label": "head"
                                     },
                                     {
-                                        "value": "B",
-                                        "label": "1"
+                                        "value": "34",
+                                        "label": "node1"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "2"
+                                        "value": "25",
+                                        "label": "node2"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "3"
+                                        "value": "12",
+                                        "label": "node3"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "4"
+                                        "value": "22",
+                                        "label": "node4"
                                     },
                                     {
-                                        "value": "",
-                                        "label": "5"
+                                        "value": "11",
+                                        "label": "node5"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "label": "tail",
+                                        "isHighlighted": true
                                     }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 1
-                                }
-                            },
-                            {
-                                "lineNumber": 19,
-                                "comment": "Perfect! Now let's add 'C'. Rear will move to (1 + 1) % 6 = 2",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "C"
-                                ],
-                                "nodes": [
+                                ],"connections": [
                                     {
-                                        "value": "A",
-                                        "label": "0"
+                                        "from": 0,
+                                        "to": 1
                                     },
                                     {
-                                        "value": "B",
-                                        "label": "1"
+                                        "from": 1,
+                                        "to": 2
                                     },
                                     {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "2"
+                                        "from": 2,
+                                        "to": 3
                                     },
                                     {
-                                        "value": "",
-                                        "label": "3"
+                                        "from": 3,
+                                        "to": 4
                                     },
                                     {
-                                        "value": "",
-                                        "label": "4"
+                                        "from": 4,
+                                        "to": 5
                                     },
                                     {
-                                        "value": "",
-                                        "label": "5"
+                                        "from": 5,
+                                        "to": 6
                                     }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 2
-                                }
-                            },
-                            {
-                                "lineNumber": 19,
-                                "comment": "Great! Let's see what happens when we reach the end. Add 'D', 'E', and 'F'",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "D",
-                                    "E",
-                                    "F"
-                                ],
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 2
-                                }
-                            },
-                            {
-                                "lineNumber": 19,
-                                "comment": "The array is now full! Notice how rear points to the last element and (rear + 1) % size equals front",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 23,
-                                "comment": "Let's start the dequeue operation",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 24,
-                                "comment": "First we check if the queue is empty (it's not since front is 0)",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "value"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 26,
-                                "comment": "Get the value at front (A) and set that position to None",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 27,
-                                "comment": "Since front (0) doesn't equal rear (5), we go to the else block",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 29,
-                                "comment": "Move front forward using (front + 1) % size = (0 + 1) % 6 = 1",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 1,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 23,
-                                "comment": "Now let's call dequeue() again. What happens to B?",
-                                "userInputRequired": true,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 1,
-                                    "rear": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 29,
-                                "comment": "Perfect! We dequeued B, set position 1 to None, and moved front to 2. The queue now contains [C, D, E, F]",
-                                "userInputRequired": false,
-                                
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "isHighlighted": true,
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "F",
-                                        "label": "5"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 2,
-                                    "rear": 5
-                                }
+                                ]
                             }
                         ]
                     }

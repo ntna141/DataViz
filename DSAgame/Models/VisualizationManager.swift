@@ -311,25 +311,52 @@ class VisualizationManager {
                 nodeEntity.uuid = UUID()
                 nodeEntity.value = nodeData["value"] as? String
                 nodeEntity.label = nodeData["label"] as? String
-                nodeEntity.orderIndex = Int32(index)  // Store the array index
+                nodeEntity.orderIndex = Int32(index)
+                nodeEntity.row = Int32(nodeData["row"] as? Int ?? 0)  // Add row support
                 nodeEntity.step = stepEntity
                 
-                // Print node details for debugging
                 print("Creating node at index \(index):")
                 print("  - Value: '\(nodeEntity.value ?? "")'")
                 print("  - Label: \(nodeEntity.label ?? "none")")
+                print("  - Row: \(nodeEntity.row)")
                 print("  - Order Index: \(nodeEntity.orderIndex)")
                 
                 return nodeEntity
             }
             
-            // Create connections using node indices
-            for connectionData in connections {
-                guard let fromIndex = connectionData["from"] as? Int,
-                      let toIndex = connectionData["to"] as? Int,
-                      fromIndex < nodeEntities.count,
-                      toIndex < nodeEntities.count else {
-                    continue
+            // Convert to BasicCells
+            let cells = nodeEntities.map { nodeEntity -> BasicCell in
+                print("Creating cell from node:")
+                print("  - Node UUID: \(nodeEntity.uuid?.uuidString ?? "nil")")
+                print("  - Node Value: \(nodeEntity.value ?? "")")
+                print("  - Node Label: \(nodeEntity.label ?? "none")")
+                print("  - Node Row: \(nodeEntity.row)")
+                
+                return BasicCell(
+                    id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,
+                    value: nodeEntity.value ?? "",
+                    isHighlighted: nodeEntity.isHighlighted,
+                    label: nodeEntity.label,
+                    row: Int(nodeEntity.row)
+                )
+            }
+            
+            // Convert connections from JSON data
+            let connectionDataArray = stepData["connections"] as? [[String: Any]] ?? []
+            let loadedConnections = connectionDataArray.map { connectionData -> BasicConnection in
+                let fromIndex = connectionData["from"] as? Int
+                let toIndex = connectionData["to"] as? Int
+                let fromLabel = connectionData["fromLabel"] as? String
+                let toLabel = connectionData["toLabel"] as? String
+                
+                var fromId = UUID().uuidString
+                var toId = UUID().uuidString
+                
+                if let fromIndex = fromIndex, fromIndex < nodeEntities.count {
+                    fromId = nodeEntities[fromIndex].uuid?.uuidString ?? UUID().uuidString
+                }
+                if let toIndex = toIndex, toIndex < nodeEntities.count {
+                    toId = nodeEntities[toIndex].uuid?.uuidString ?? UUID().uuidString
                 }
                 
                 let connectionEntity = NodeConnectionEntity(context: context)
@@ -339,10 +366,37 @@ class VisualizationManager {
                 connectionEntity.isSelfPointing = false
                 connectionEntity.style = connectionData["style"] as? String ?? "straight"
                 connectionEntity.step = stepEntity
-                connectionEntity.fromNode = nodeEntities[fromIndex]
-                connectionEntity.toNode = nodeEntities[toIndex]
                 
-                print("Created connection: \(fromIndex) -> \(toIndex)")
+                // Set the from/to nodes based on either index or label
+                if let fromIndex = fromIndex, fromIndex < nodeEntities.count {
+                    connectionEntity.fromNode = nodeEntities[fromIndex]
+                } else if let fromLabel = fromLabel,
+                          let fromNode = nodeEntities.first(where: { $0.label == fromLabel }) {
+                    connectionEntity.fromNode = fromNode
+                }
+                
+                if let toIndex = toIndex, toIndex < nodeEntities.count {
+                    connectionEntity.toNode = nodeEntities[toIndex]
+                } else if let toLabel = toLabel,
+                          let toNode = nodeEntities.first(where: { $0.label == toLabel }) {
+                    connectionEntity.toNode = toNode
+                }
+                
+                print("\nCreating connection:")
+                print("  - From Node: \(connectionEntity.fromNode?.value ?? "") (UUID: \(connectionEntity.fromNode?.uuid?.uuidString ?? "nil"))")
+                print("  - To Node: \(connectionEntity.toNode?.value ?? "") (UUID: \(connectionEntity.toNode?.uuid?.uuidString ?? "nil"))")
+                print("  - Style: \(connectionEntity.style ?? "straight")")
+                
+                return BasicConnection(
+                    id: connectionEntity.uuid?.uuidString ?? UUID().uuidString,
+                    fromCellId: fromId,
+                    toCellId: toId,
+                    fromLabel: fromLabel,
+                    toLabel: toLabel,
+                    label: connectionEntity.label,
+                    isHighlighted: connectionEntity.isHighlighted,
+                    style: ConnectionStyle(rawValue: connectionEntity.style ?? "straight") ?? .straight
+                )
             }
         }
         
@@ -418,10 +472,18 @@ class VisualizationManager {
                     
                     // Convert to BasicCells
                     let cells = orderedNodes.map { nodeEntity -> BasicCell in
+                        print("Creating cell from node:")
+                        print("  - Node UUID: \(nodeEntity.uuid?.uuidString ?? "nil")")
+                        print("  - Node Value: \(nodeEntity.value ?? "")")
+                        print("  - Node Label: \(nodeEntity.label ?? "none")")
+                        print("  - Node Row: \(nodeEntity.row)")
+                        
                         return BasicCell(
+                            id: nodeEntity.uuid?.uuidString ?? UUID().uuidString,  // Use node's UUID
                             value: nodeEntity.value ?? "",
                             isHighlighted: nodeEntity.isHighlighted,
-                            label: nodeEntity.label
+                            label: nodeEntity.label,
+                            row: Int(nodeEntity.row)
                         )
                     }
                     
@@ -432,20 +494,27 @@ class VisualizationManager {
                               let toNode = connectionEntity.toNode,
                               let fromId = fromNode.uuid?.uuidString,
                               let toId = toNode.uuid?.uuidString else {
+                            print("⚠️ Failed to get node UUIDs for connection")
                             return BasicConnection(
                                 fromCellId: UUID().uuidString,
                                 toCellId: UUID().uuidString
                             )
                         }
                         
+                        print("\nCreating connection:")
+                        print("  - From Node: \(fromNode.value ?? "") (UUID: \(fromId))")
+                        print("  - To Node: \(toNode.value ?? "") (UUID: \(toId))")
+                        print("  - Style: \(connectionEntity.style ?? "straight")")
+                        
                         let connection = BasicConnection(
+                            id: connectionEntity.uuid?.uuidString ?? UUID().uuidString,  // Use connection's UUID
                             fromCellId: fromId,
                             toCellId: toId,
                             label: connectionEntity.label,
                             isHighlighted: connectionEntity.isHighlighted,
                             style: ConnectionStyle(rawValue: connectionEntity.style ?? "straight") ?? .straight
                         )
-                        print("Connection: \(connection.fromCellId) -> \(connection.toCellId)")
+                        print("Connection created: \(connection.fromCellId) -> \(connection.toCellId)")
                         return connection
                     }
                     

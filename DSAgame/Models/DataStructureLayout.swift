@@ -177,37 +177,72 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        // Calculate total width needed
-        let totalWidth = CGFloat(cells.count) * LayoutConfig.cellDiameter + 
-                        CGFloat(cells.count - 1) * LayoutConfig.horizontalSpacing
+        // Group cells by their row
+        let rowGroups = Dictionary(grouping: cells) { $0.row }
+        let rowCount = rowGroups.count
         
-        // Center horizontally and vertically, accounting for element list
-        let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
-        let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
+        // Calculate vertical spacing between rows
+        let availableHeight = frame.height - LayoutConfig.elementListHeight
+        let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 40 // Increase vertical spacing between rows by additional 20 points
+        let startY = (availableHeight - (CGFloat(rowCount - 1) * verticalSpacing)) / 2
         
-        return cells.enumerated().map { index, cell in
+        return cells.map { cell in
             var mutableCell = cell
+            let rowIndex = cell.row
+            let cellsInRow = rowGroups[rowIndex]?.count ?? 1
+            
+            // Calculate horizontal position within row
+            let totalWidth = CGFloat(cellsInRow) * LayoutConfig.cellDiameter + 
+                           CGFloat(cellsInRow - 1) * LayoutConfig.horizontalSpacing
+            let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
+            let cellIndex = rowGroups[rowIndex]?.firstIndex(where: { $0.id == cell.id }) ?? 0
+            
             mutableCell.position = CGPoint(
-                x: startX + CGFloat(index) * (LayoutConfig.cellDiameter + LayoutConfig.horizontalSpacing),
-                y: centerY
+                x: startX + CGFloat(cellIndex) * (LayoutConfig.cellDiameter + LayoutConfig.horizontalSpacing),
+                y: startY + CGFloat(rowIndex) * verticalSpacing
             )
             return mutableCell
         }
     }
     
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
-        // Arrays typically don't have connections, but implement for completeness
-        connections.compactMap { connection in
-            guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
-                  let toCell = cells.first(where: { $0.id == connection.toCellId }) else {
+        print("\nUpdating connection points for array layout:")
+        return connections.compactMap { connection in
+            // Support both index-based and label-based connections
+            let fromCell: (any DataStructureCell)?
+            let toCell: (any DataStructureCell)?
+            
+            if let fromLabel = connection.fromLabel {
+                fromCell = cells.first(where: { $0.label == fromLabel })
+                print("Looking for fromLabel: \(fromLabel), found: \(fromCell?.label ?? "none")")
+            } else {
+                fromCell = cells.first(where: { $0.id == connection.fromCellId })
+                print("Looking for fromId: \(connection.fromCellId), found: \(fromCell?.id ?? "none")")
+            }
+            
+            if let toLabel = connection.toLabel {
+                toCell = cells.first(where: { $0.label == toLabel })
+                print("Looking for toLabel: \(toLabel), found: \(toCell?.label ?? "none")")
+            } else {
+                toCell = cells.first(where: { $0.id == connection.toCellId })
+                print("Looking for toId: \(connection.toCellId), found: \(toCell?.id ?? "none")")
+            }
+            
+            guard let fromCell = fromCell, let toCell = toCell else {
+                print("⚠️ Failed to find cells for connection")
+                print("  - From Cell ID: \(connection.fromCellId)")
+                print("  - To Cell ID: \(connection.toCellId)")
+                print("  - From Label: \(connection.fromLabel ?? "none")")
+                print("  - To Label: \(connection.toLabel ?? "none")")
+                print("  - Available Cell IDs: \(cells.map { $0.id }.joined(separator: ", "))")
+                print("  - Available Labels: \(cells.compactMap { $0.label }.joined(separator: ", "))")
                 return nil
             }
             
-            // Calculate edge points
+            // Calculate connection points from the edges of cells
             let angle = atan2(toCell.position.y - fromCell.position.y,
                             toCell.position.x - fromCell.position.x)
             
-            // Calculate points on the edge of the circles
             let fromPoint = CGPoint(
                 x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
                 y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
@@ -218,28 +253,20 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
             )
             
-            var displayState = (connection as? BasicConnection)?.displayState ?? 
-                             ConnectionDisplayState(
-                                fromPoint: fromPoint,
-                                toPoint: toPoint,
-                                label: connection.label,
-                                isHighlighted: connection.isHighlighted,
-                                style: connection.style,
-                                visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
-                                scale: scale
-                             )
+            print("\nCalculated connection points:")
+            print("  - From Cell: position (\(fromCell.position.x), \(fromCell.position.y))")
+            print("  - To Cell: position (\(toCell.position.x), \(toCell.position.y))")
+            print("  - Connection Points: from (\(fromPoint.x), \(fromPoint.y)) to (\(toPoint.x), \(toPoint.y))")
             
-            displayState = ConnectionDisplayState(
+            return ConnectionDisplayState(
                 fromPoint: fromPoint,
                 toPoint: toPoint,
-                label: displayState.label,
-                isHighlighted: displayState.isHighlighted,
-                style: displayState.style,
-                visualStyle: displayState.visualStyle,
+                label: connection.label,
+                isHighlighted: connection.isHighlighted,
+                style: connection.style,
+                visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
                 scale: scale
             )
-            
-            return displayState
         }
     }
 }

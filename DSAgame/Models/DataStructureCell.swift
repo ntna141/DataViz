@@ -3,10 +3,11 @@ import SwiftUI
 // Protocol defining the core behavior of a data structure cell
 protocol DataStructureCell: Identifiable {
     var id: String { get }
-    var value: String { get set }
+    var value: String { get }
+    var isHighlighted: Bool { get }
+    var label: String? { get }
     var position: CGPoint { get set }
-    var isHighlighted: Bool { get set }
-    var label: String? { get set }
+    var row: Int { get }
     
     // Core cell behaviors
     mutating func setValue(_ value: String)
@@ -90,31 +91,28 @@ struct CellDisplayState {
 }
 
 // Base implementation of a data structure cell
-struct BasicCell: DataStructureCell {
+struct BasicCell: DataStructureCell, Identifiable {
     let id: String
-    var value: String
-    var position: CGPoint
+    private var _value: String
     var isHighlighted: Bool
     var label: String?
+    var position: CGPoint = .zero
+    var row: Int = 0  // Default to first row
     
-    init(
-        id: String = UUID().uuidString,
-        value: String = "",
-        position: CGPoint = .zero,
-        isHighlighted: Bool = false,
-        label: String? = nil
-    ) {
+    init(id: String = UUID().uuidString, value: String = "", isHighlighted: Bool = false, label: String? = nil, row: Int = 0) {
         self.id = id
-        self.value = value
-        self.position = position
+        self._value = value
         self.isHighlighted = isHighlighted
         self.label = label
+        self.row = row
     }
     
-    // MARK: - Cell Behaviors
+    var value: String {
+        _value
+    }
     
     mutating func setValue(_ value: String) {
-        self.value = value
+        _value = value
     }
     
     mutating func highlight() {
@@ -133,8 +131,6 @@ struct BasicCell: DataStructureCell {
         self.label = label
     }
     
-    // MARK: - Display State
-    
     var displayState: CellDisplayState {
         CellDisplayState(
             value: value,
@@ -142,19 +138,7 @@ struct BasicCell: DataStructureCell {
             isHovered: false,
             label: label,
             position: position,
-            style: determineStyle()
+            style: isHighlighted ? .highlighted : .standard
         )
-    }
-    
-    private func determineStyle() -> CellDisplayState.CellStyle {
-        if isHighlighted && value.isEmpty {
-            return .readyToDrop
-        } else if isHighlighted {
-            return .highlighted
-        } else if value.isEmpty {
-            return .empty
-        } else {
-            return .standard
-        }
     }
 } 
