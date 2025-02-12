@@ -1755,6 +1755,11 @@
                                 "connections": [
                                     {
                                         "fromLabel": "100",
+                                        "toLabel": "400",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "400",
                                         "toLabel": "200",
                                         "style": "straight"
                                     },
@@ -1765,11 +1770,6 @@
                                     },
                                     {
                                         "fromLabel": "290",
-                                        "toLabel": "400",
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "fromLabel": "400",
                                         "toLabel": "80",
                                         "style": "straight"
                                     },
@@ -1829,6 +1829,12 @@
                                 "connections": [
                                     {
                                         "fromLabel": "100",
+                                        "toLabel": "400",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "fromLabel": "400",
                                         "toLabel": "200",
                                         "style": "straight",
                                         "isHighlighted": true
@@ -1841,12 +1847,6 @@
                                     },
                                     {
                                         "fromLabel": "290",
-                                        "toLabel": "400",
-                                        "style": "straight",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "fromLabel": "400",
                                         "toLabel": "80",
                                         "style": "straight",
                                         "isHighlighted": true

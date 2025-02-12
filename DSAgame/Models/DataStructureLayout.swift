@@ -183,7 +183,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
         
         // Calculate vertical spacing between rows
         let availableHeight = frame.height - LayoutConfig.elementListHeight
-        let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 40 // Increase vertical spacing between rows by additional 20 points
+        let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 50 // Increase vertical spacing between rows by additional 20 points
         let startY = (availableHeight - (CGFloat(rowCount - 1) * verticalSpacing)) / 2
         
         return cells.map { cell in
@@ -241,16 +241,24 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             
             // Calculate connection points from the edges of cells
             let angle = atan2(fromCell.position.y - toCell.position.y,
-                            fromCell.position.x - toCell.position.x)
+                             fromCell.position.x - toCell.position.x)
             
+            // Add a fixed offset for vertical connections
+            let verticalThreshold = CGFloat.pi / 4  // 45 degrees
+            let isMoreVertical = abs(angle) > verticalThreshold
+
+            let offset = isMoreVertical ? 
+                LayoutConfig.cellRadius * 0.2 :  // Use larger fixed offset for vertical connections
+                LayoutConfig.cellRadius * 0.2        // Use normal offset for other connections
+
             let fromPoint = CGPoint(
-                x: toCell.position.x + LayoutConfig.cellRadius * cos(angle),
-                y: toCell.position.y + LayoutConfig.cellRadius * sin(angle)
+                x: fromCell.position.x + offset * cos(angle),
+                y: fromCell.position.y + offset * sin(angle)
             )
-            
+
             let toPoint = CGPoint(
-                x: fromCell.position.x - LayoutConfig.cellRadius * cos(angle),
-                y: fromCell.position.y - LayoutConfig.cellRadius * sin(angle)
+                x: toCell.position.x - offset * cos(angle),
+                y: toCell.position.y - offset * sin(angle)
             )
             
             print("\nCalculated connection points:")
@@ -261,8 +269,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             // If cells are in different rows, swap the points
             let isDifferentRows = fromCell.row != toCell.row
             return ConnectionDisplayState(
-                fromPoint: isDifferentRows ? toPoint : fromPoint,
-                toPoint: isDifferentRows ? fromPoint : toPoint,
+                fromPoint: fromPoint,
+                toPoint: toPoint,
                 label: connection.label,
                 isHighlighted: connection.isHighlighted,
                 style: connection.style,
