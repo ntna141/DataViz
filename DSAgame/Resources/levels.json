@@ -726,7 +726,6 @@
                                         "style": "straight"
                                     }
                                 ]
-
                             },
                             {
                                 "lineNumber": 7,
@@ -1444,7 +1443,6 @@
                                     }
                                 ]
                             },
-                            
                             {
                                 "lineNumber": 32,
                                 "comment": "Let's try to combine our knowledge and go through an example. Starting with an empty array of capacity 4",
@@ -1623,7 +1621,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -1678,13 +1677,14 @@
                                     },
                                     {
                                         "value": "11",
-                                        "label": "node5"    
+                                        "label": "node5"
                                     },
                                     {
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -1710,7 +1710,6 @@
                                         "to": 6
                                     }
                                 ]
-                                
                             },
                             {
                                 "lineNumber": 2,
@@ -1794,39 +1793,36 @@
                                     {
                                         "value": "64",
                                         "label": "100",
-                                        "row": 0,
-                                        "isHighlighted": true
+                                        "row": 0
                                     },
                                     {
                                         "value": "22",
-                                        "label": "104",
+                                        "label": "200",
                                         "row": 0
                                     },
                                     {
                                         "value": "90",
-                                        "label": "108",
+                                        "label": "290",
                                         "row": 0
                                     },
                                     {
                                         "value": "34",
-                                        "label": "2048",
-                                        "row": 1,
-                                        "isHighlighted": true
+                                        "label": "400",
+                                        "row": 1
                                     },
                                     {
                                         "value": "25",
-                                        "label": "2052",
+                                        "label": "80",
                                         "row": 1
                                     },
                                     {
                                         "value": "12",
-                                        "label": "5000",
-                                        "row": 2,
-                                        "isHighlighted": true
+                                        "label": "102",
+                                        "row": 2
                                     },
                                     {
                                         "value": "11",
-                                        "label": "5004",
+                                        "label": "30",
                                         "row": 2
                                     }
                                 ],
@@ -1910,7 +1906,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2033,7 +2030,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2094,7 +2092,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2155,7 +2154,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2216,7 +2216,8 @@
                                         "value": "90",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2280,7 +2281,8 @@
                                         "value": "",
                                         "label": "tail"
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2341,7 +2343,8 @@
                                         "label": "tail",
                                         "isHighlighted": true
                                     }
-                                ],"connections": [
+                                ],
+                                "connections": [
                                     {
                                         "from": 0,
                                         "to": 1
@@ -2417,7 +2420,6 @@
                                 "lineNumber": 2,
                                 "comment": "Let's understand how FixedQueue works. We start with an empty array of size 5, front at 0, rear at -1, and count at 0",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2450,7 +2452,6 @@
                                 "lineNumber": 9,
                                 "comment": "The is_empty() method checks if count is 0. This tells us if there are any elements in the queue",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2489,7 +2490,6 @@
                                     "1"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2523,7 +2523,6 @@
                                 "lineNumber": 15,
                                 "comment": "Let's try to enqueue value 'F' when queue is full. First step: check if queue is full",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2562,7 +2561,6 @@
                                     "1"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2603,7 +2601,6 @@
                                     "5"
                                 ],
                                 "multipleChoiceCorrectAnswer": "0",
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2637,7 +2634,6 @@
                                 "lineNumber": 18,
                                 "comment": "We never reach this line when full. The queue remains unchanged with count=5",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2670,7 +2666,6 @@
                                 "lineNumber": 22,
                                 "comment": "Let's see what happens when we dequeue. First we check if queue is empty",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "A",
@@ -2704,7 +2699,6 @@
                                 "lineNumber": 25,
                                 "comment": "We remove 'A' from front position and set that slot to None",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2739,7 +2733,6 @@
                                 "comment": "Front moves to next position. What will (front + 1) % size equal?",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
-                                
                                 "multipleChoiceAnswers": [
                                     "0",
                                     "1",
@@ -2780,7 +2773,6 @@
                                 "lineNumber": 22,
                                 "comment": "After several dequeues, we're at the end. What happens when we dequeue 'E'?",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -2815,7 +2807,6 @@
                                 "comment": "After removing 'E', front will wrap around. What will (front + 1) % size equal?",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
-                                
                                 "multipleChoiceAnswers": [
                                     "0",
                                     "1",
@@ -2875,7 +2866,6 @@
                                 "lineNumber": 1,
                                 "comment": "We start with an existing linked list",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -2913,7 +2903,6 @@
                                 "lineNumber": 3,
                                 "comment": "Update the pointer to skip node with value 6",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -2953,7 +2942,6 @@
                                 "lineNumber": 3,
                                 "comment": "Node is now removed from the list",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "2",
@@ -3017,7 +3005,6 @@
                                 "lineNumber": 1,
                                 "comment": "First, we define our TreeNode class",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "",
@@ -3030,7 +3017,6 @@
                                 "lineNumber": 8,
                                 "comment": "Create the root node with value 10",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -3127,7 +3113,6 @@
                                 "lineNumber": 1,
                                 "comment": "Start with an existing binary search tree",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -3159,7 +3144,6 @@
                                 "lineNumber": 2,
                                 "comment": "Inserting 7: Compare with root (10). Since 7 < 10, go left",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -3265,7 +3249,6 @@
                                 "lineNumber": 1,
                                 "comment": "Start with a binary tree",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "8",
@@ -3315,7 +3298,6 @@
                                 "lineNumber": 3,
                                 "comment": "Visit the leftmost path first",
                                 "userInputRequired": false,
-                                
                                 "nodes": [
                                     {
                                         "value": "8",

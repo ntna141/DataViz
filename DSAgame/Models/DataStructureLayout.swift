@@ -132,18 +132,18 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
             }
             
             // Calculate edge points
-            let angle = atan2(toCell.position.y - fromCell.position.y,
-                            toCell.position.x - fromCell.position.x)
+            let angle = atan2(fromCell.position.y - toCell.position.y,
+                            fromCell.position.x - toCell.position.x)
             
             // Calculate points on the edge of the circles
             let fromPoint = CGPoint(
-                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
-                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+                x: toCell.position.x + LayoutConfig.cellRadius * cos(angle),
+                y: toCell.position.y + LayoutConfig.cellRadius * sin(angle)
             )
             
             let toPoint = CGPoint(
-                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
-                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
+                x: fromCell.position.x - LayoutConfig.cellRadius * cos(angle),
+                y: fromCell.position.y - LayoutConfig.cellRadius * sin(angle)
             )
             
             var displayState = (connection as? BasicConnection)?.displayState ?? 
@@ -240,17 +240,17 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             }
             
             // Calculate connection points from the edges of cells
-            let angle = atan2(toCell.position.y - fromCell.position.y,
-                            toCell.position.x - fromCell.position.x)
+            let angle = atan2(fromCell.position.y - toCell.position.y,
+                            fromCell.position.x - toCell.position.x)
             
             let fromPoint = CGPoint(
-                x: fromCell.position.x + LayoutConfig.cellRadius * cos(angle),
-                y: fromCell.position.y + LayoutConfig.cellRadius * sin(angle)
+                x: toCell.position.x + LayoutConfig.cellRadius * cos(angle),
+                y: toCell.position.y + LayoutConfig.cellRadius * sin(angle)
             )
             
             let toPoint = CGPoint(
-                x: toCell.position.x - LayoutConfig.cellRadius * cos(angle),
-                y: toCell.position.y - LayoutConfig.cellRadius * sin(angle)
+                x: fromCell.position.x - LayoutConfig.cellRadius * cos(angle),
+                y: fromCell.position.y - LayoutConfig.cellRadius * sin(angle)
             )
             
             print("\nCalculated connection points:")
@@ -258,9 +258,11 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             print("  - To Cell: position (\(toCell.position.x), \(toCell.position.y))")
             print("  - Connection Points: from (\(fromPoint.x), \(fromPoint.y)) to (\(toPoint.x), \(toPoint.y))")
             
+            // If cells are in different rows, swap the points
+            let isDifferentRows = fromCell.row != toCell.row
             return ConnectionDisplayState(
-                fromPoint: fromPoint,
-                toPoint: toPoint,
+                fromPoint: isDifferentRows ? toPoint : fromPoint,
+                toPoint: isDifferentRows ? fromPoint : toPoint,
                 label: connection.label,
                 isHighlighted: connection.isHighlighted,
                 style: connection.style,

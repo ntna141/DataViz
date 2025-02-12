@@ -246,17 +246,21 @@ struct ConnectionView: View {
     
     private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
         let cellSize = 40.0 * state.scale // Base cell size * scale
-        let angle = atan2(state.fromPoint.y - state.toPoint.y, state.fromPoint.x - state.toPoint.x)
         
-        // Calculate the base points where the line intersects with the cell edges
+        // Calculate angle from source to target (not reversed)
+        let angle = atan2(state.toPoint.y - state.fromPoint.y, state.toPoint.x - state.fromPoint.x)
+        
+        // Calculate the points where the line intersects with the cell edges
+        // Start from the edge of the source cell
         let fromPoint = CGPoint(
-            x: state.fromPoint.x - cos(angle) * (cellSize / 2 * 1.2),  // Added 20% with * 1.2
-            y: state.fromPoint.y - sin(angle) * (cellSize / 2 * 1.2)   // Added 20% with * 1.2
+            x: state.fromPoint.x + cos(angle) * (cellSize / 2 * 1.2),
+            y: state.fromPoint.y + sin(angle) * (cellSize / 2 * 1.2)
         )
         
+        // End at the edge of the target cell
         let toPoint = CGPoint(
-            x: state.toPoint.x + cos(angle) * (cellSize / 2 * 1.2),    // Added 20% with * 1.2
-            y: state.toPoint.y + sin(angle) * (cellSize / 2 * 1.2)     // Added 20% with * 1.2
+            x: state.toPoint.x - cos(angle) * (cellSize / 2 * 1.2),
+            y: state.toPoint.y - sin(angle) * (cellSize / 2 * 1.2)
         )
         
         return (from: fromPoint, to: toPoint)
@@ -328,21 +332,24 @@ struct ArrowHead: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        let angle = atan2(from.y - to.y, from.x - to.x)
+        // Calculate angle from source to target (not reversed)
+        let angle = atan2(to.y - from.y, to.x - from.x)
         let arrowLength: CGFloat = 10 * scale
         let arrowAngle: CGFloat = .pi / 6
         
+        // Calculate arrow head points relative to the target point
         let point1 = CGPoint(
-            x: from.x - arrowLength * cos(angle - arrowAngle),
-            y: from.y - arrowLength * sin(angle - arrowAngle)
+            x: to.x - arrowLength * cos(angle - arrowAngle),
+            y: to.y - arrowLength * sin(angle - arrowAngle)
         )
         
         let point2 = CGPoint(
-            x: from.x - arrowLength * cos(angle + arrowAngle),
-            y: from.y - arrowLength * sin(angle + arrowAngle)
+            x: to.x - arrowLength * cos(angle + arrowAngle),
+            y: to.y - arrowLength * sin(angle + arrowAngle)
         )
         
-        path.move(to: from)
+        // Draw arrow head starting from the tip
+        path.move(to: to)
         path.addLine(to: point1)
         path.addLine(to: point2)
         path.closeSubpath()
