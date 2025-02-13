@@ -65,26 +65,56 @@ struct ReviewScreen: View {
                             Spacer()
                                 .frame(height: 40)
                             
-                            // Buttons
+                            // Buttons with restored retro styling
                             VStack(spacing: 25) {
-                                Button(action: onNext) {
+                                ZStack {
+                                    // Shadow
                                     Text("Start Next Question")
                                         .font(.system(.title3, design: .monospaced))
                                         .foregroundColor(.white)
                                         .frame(maxWidth: .infinity)
                                         .padding()
                                         .background(Color.blue)
-                                        .cornerRadius(10)
+                                        .offset(x: 6, y: 6)
+                                    
+                                    // Main button
+                                    Button(action: onNext) {
+                                        Text("Start Next Question")
+                                            .font(.system(.title3, design: .monospaced))
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.blue)
+                                            .overlay(
+                                                Rectangle()
+                                                    .stroke(Color.black, lineWidth: 2)
+                                            )
+                                    }
                                 }
                                 
-                                Button(action: onBackToMap) {
+                                ZStack {
+                                    // Shadow
                                     Text("Back to Map")
                                         .font(.system(.title3, design: .monospaced))
                                         .foregroundColor(.blue)
                                         .frame(maxWidth: .infinity)
                                         .padding()
                                         .background(Color.white)
-                                        .cornerRadius(10)
+                                        .offset(x: 6, y: 6)
+                                    
+                                    // Main button
+                                    Button(action: onBackToMap) {
+                                        Text("Back to Map")
+                                            .font(.system(.title3, design: .monospaced))
+                                            .foregroundColor(.blue)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.white)
+                                            .overlay(
+                                                Rectangle()
+                                                    .stroke(Color.black, lineWidth: 2)
+                                            )
+                                    }
                                 }
                             }
                             .padding(.horizontal)
@@ -179,28 +209,6 @@ struct LevelDetailView: View {
                             // Topic
                             Text(level.topic ?? "")
                                 .font(.system(.title2, design: .monospaced))
-                            
-                            // Description box
-                            ZStack {
-                                // Shadow layer
-                                Rectangle()
-                                    .fill(Color.black)
-                                    .offset(x: 6, y: 6)
-                                
-                                // Main box
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .overlay(
-                                        Rectangle()
-                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                    )
-                                
-                                Text(level.desc ?? "")
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.black)
-                                    .padding()
-                            }
-                            .frame(height: 120)
                             
                             // Question list
                             if !visualizationQuestions.isEmpty {

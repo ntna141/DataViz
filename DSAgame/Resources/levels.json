@@ -1568,7 +1568,7 @@
                     "title": "Understanding Node Structure",
                     "description": "Learn how nodes are connected and labeled in data structures",
                     "hint": "Look at how nodes can be connected to each other with arrows",
-                    "review": "Key concepts:\n1) Nodes contain values\n2) Nodes can be connected to other nodes\n3) Labels help us identify different parts of the structure",
+                    "review": "Key concepts:\n1) Nodes are like boxes with 2 compartments, one for the value and one for the address of the next node\n 2) We can access the next node by accessing the address stored in the pointer compartment",
                     "difficulty": 1,
                     "visualization": {
                         "code": [
@@ -1599,8 +1599,8 @@
                                         "label": "value"
                                     },
                                     {
-                                        "value": "0x00",
-                                        "label": "address"
+                                        "value": "0x0",
+                                        "label": "next node"
                                     }
                                 ]
                             },
@@ -1611,23 +1611,23 @@
                                 "nodes": [
                                     {
                                         "value": "1",
-                                        "label": "Value of node 1",
+                                        "label": "Address of next node",
                                         "row": 0
                                     },
                                     {
-                                        "value": "0x00",
-                                        "label": "Address of next node",
+                                        "value": "0x0",
                                         "row": 0
+
                                     },
                                     {
                                         "value": "3",
-                                        "label": "Value of node 2",
-                                        "row": 1
+                                        "label": "Node at address 0x0",
+                                        "row": 2
+
                                     },
                                     {
-                                        "value": "0x02",
-                                        "label": "Address of next node",
-                                        "row": 1
+                                        "value": "0x2",
+                                        "row": 2
                                     }
                                 ],
                                 "connections": [
@@ -1655,8 +1655,8 @@
                                 ],
                                 "connections": [
                                     {
-                                        "from": 1,
-                                        "to": 2,
+                                        "from": 0,
+                                        "to": 1,
                                         "style": "straight",
                                         "isHighlighted": true
                                     }
@@ -1688,6 +1688,11 @@
                                     }
                                 ],
                                 "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
                                     {
                                         "from": 1,
                                         "to": 2,
@@ -1725,6 +1730,11 @@
                                     }
                                 ],
                                 "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
                                     {
                                         "from": 1,
                                         "to": 2,
