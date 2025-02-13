@@ -387,11 +387,11 @@ struct VisualizationQuestionView: View {
                             
                             // Button content
                             Text(isLastStep ? "Complete" : "Next")
-                                .foregroundColor(!isLastStep && (currentStep.userInputRequired && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)) ? Color.gray : Color.blue)
+                                .foregroundColor(((currentStep.userInputRequired || currentStep.isMultipleChoice) && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)) ? Color.gray : Color.blue)
                                 .font(.system(.body, design: .monospaced).weight(.bold))
                         }
                     }
-                    .disabled(!isLastStep && (currentStep.userInputRequired && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)))
+                    .disabled(((currentStep.userInputRequired || currentStep.isMultipleChoice) && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)))
                     .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.trailing, 40)

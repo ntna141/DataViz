@@ -1565,6 +1565,188 @@
             "questions": [
                 {
                     "type": "visualization",
+                    "title": "Understanding Node Structure",
+                    "description": "Learn how nodes are connected and labeled in data structures",
+                    "hint": "Look at how nodes can be connected to each other with arrows",
+                    "review": "Key concepts:\n1) Nodes contain values\n2) Nodes can be connected to other nodes\n3) Labels help us identify different parts of the structure",
+                    "difficulty": 1,
+                    "visualization": {
+                        "code": [
+                            "class Node:",
+                            "    def __init__(self, value):",
+                            "        self.value = value",
+                            "        self.next = None",
+                            "",
+                            "def create_linked_list():",
+                            "   head = Node(3)",
+                            "   node2 = Node(1)",
+                            "   node3 = Node(5)",
+                            "   node4 = Node(6)",
+                            "",
+                            "   head.next = node2",
+                            "   node2.next = node3",
+                            "   node3.next = node4"
+                        ],
+                        "dataStructureType": "array",
+                        "steps": [
+                            {
+                                "lineNumber": 1,
+                                "comment": "Let's look at a simple node structure. You can imagin each node has 2 compartments, one for the value and one for the address of the next node. In this case, the first node has the value 1 and the next node has the value 2.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "1",
+                                        "label": "value"
+                                    },
+                                    {
+                                        "value": "0x00",
+                                        "label": "address"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "So if we access one node, we can find the one its connected to or (next node) by accessing the address stored in the second compartment and going to there.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "1",
+                                        "label": "Value of node 1",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "0x00",
+                                        "label": "Address of next node",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "3",
+                                        "label": "Value of node 2",
+                                        "row": 1
+                                    },
+                                    {
+                                        "value": "0x02",
+                                        "label": "Address of next node",
+                                        "row": 1
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 1,
+                                "comment": "Normally, we will only represent the value of the node, not the address of the next node. The next node is the one that is connected to the current node. So the diagram from the last step will look like this:",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "1",
+                                        "label": "node 1"
+                                    },
+                                    {
+                                        "value": "3",
+                                        "label": "node 2"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "See if you can decide what this Linked List will look like after we run create_linked_list():",
+                                "userInputRequired": true,
+                                "availableElements": [
+                                    "1",
+                                    "3",
+                                    "5",
+                                    "6"
+                                ],
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 12,
+                                "comment": "That's it! You've just created a linked list!",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "3",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "1"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "6"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 3,
+                                        "to": 4,
+                                        "style": "straight"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
                     "title": "Understanding Linked List Traversal",
                     "description": "Learn how linked lists store and access data through node connections",
                     "review": "Key concepts: \n 1) Linked lists connect nodes through references/pointers \n 2) We must traverse from the head to access any node \n 3) Direct access is not possible like in arrays",
@@ -2562,509 +2744,276 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Queue Implementation",
-                    "description": "Learn how queues work by watching the code execute and then building your own operations",
-                    "hint": "Key concepts: \n 1) Front removes elements, Rear adds elements 2) Count tracks number of elements 3) Use modulo (%) for wraparound!",
-                    "review": "Great job! You've mastered how queue operations work with fixed arrays, including empty and full conditions.",
+                    "title": "Understanding Linked List Operations",
+                    "description": "Learn how to insert and delete nodes from a linked list",
+                    "hint": "Remember: When modifying a linked list, you need to carefully update the next pointers to maintain the chain of nodes",
+                    "review": "Key concepts:\n1) Inserting into and deleting from a linked list is efficient, traverse to the right position and just update two pointers\n 2) Compared to arrays:\n   - Arrays require shifting all elements after insertion/deletion point\n   - Linked lists only require updating nearby pointers but you still have to traverse it every time O(n)\n   - Linked list operations are O(1) once you find the position",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
-                            "class FixedQueue:",
-                            "    def __init__(self, size=5):",
-                            "        self.size = size",
-                            "        self.array = [None] * size",
-                            "        self.front = 0",
-                            "        self.rear = -1",
-                            "        self.count = 0",
+                            "class Node:",
+                            "    def __init__(self, value):",
+                            "        self.value = value",
+                            "        self.next = None",
                             "",
-                            "    def is_empty(self):",
-                            "        return self.count == 0",
+                            "def insert_after(node, value):",
+                            "    new_node = Node(value)",
+                            "    new_node.next = node.next",
+                            "    node.next = new_node",
                             "",
-                            "    def is_full(self):",
-                            "        return self.count == self.size",
-                            "",
-                            "    def enqueue(self, value):",
-                            "        if self.is_full():",
-                            "            return False",
-                            "        self.rear = (self.rear + 1) % self.size",
-                            "        self.array[self.rear] = value",
-                            "        self.count += 1",
-                            "        return True",
-                            "",
-                            "    def dequeue(self):",
-                            "        if self.is_empty():",
-                            "            return None",
-                            "        value = self.array[self.front]",
-                            "        self.array[self.front] = None",
-                            "        self.front = (self.front + 1) % self.size",
-                            "        self.count -= 1",
-                            "        return value"
+                            "def delete_after(node):",
+                            "    if node.next is None:",
+                            "        return",
+                            "    node.next = node.next.next"
                         ],
                         "dataStructureType": "array",
                         "steps": [
                             {
-                                "lineNumber": 2,
-                                "comment": "Let's understand how FixedQueue works. We start with an empty array of size 5, front at 0, rear at -1, and count at 0",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": -1,
-                                    "count": 0
-                                }
-                            },
-                            {
-                                "lineNumber": 9,
-                                "comment": "The is_empty() method checks if count is 0. This tells us if there are any elements in the queue",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": -1,
-                                    "count": 0
-                                }
-                            },
-                            {
-                                "lineNumber": 10,
-                                "comment": "If we add element 'A', what will is_empty() return: True(0) or False(1)?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1"
-                                ],
-                                "multipleChoiceCorrectAnswer": "0",
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 0,
-                                    "count": 1
-                                }
-                            },
-                            {
-                                "lineNumber": 15,
-                                "comment": "Let's try to enqueue value 'F' when queue is full. First step: check if queue is full",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 16,
-                                "comment": "Since count equals size, is_full() returns True. Will enqueue return True(1) or False(0)?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1"
-                                ],
-                                "multipleChoiceCorrectAnswer": "0",
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 17,
-                                "comment": "When enqueue fails, we calculate (rear + 1) % size but never assign it. What would this value be?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1",
-                                    "4",
-                                    "5"
-                                ],
-                                "multipleChoiceCorrectAnswer": "0",
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 18,
-                                "comment": "We never reach this line when full. The queue remains unchanged with count=5",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 22,
-                                "comment": "Let's see what happens when we dequeue. First we check if queue is empty",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "A",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 5
-                                }
-                            },
-                            {
-                                "lineNumber": 25,
-                                "comment": "We remove 'A' from front position and set that slot to None",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 4
-                                }
-                            },
-                            {
-                                "lineNumber": 27,
-                                "comment": "Front moves to next position. What will (front + 1) % size equal?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1",
-                                    "2",
-                                    "5"
-                                ],
-                                "multipleChoiceCorrectAnswer": "1",
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "B",
-                                        "isHighlighted": true,
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "C",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "D",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 1,
-                                    "rear": 4,
-                                    "count": 4
-                                }
-                            },
-                            {
-                                "lineNumber": 22,
-                                "comment": "After several dequeues, we're at the end. What happens when we dequeue 'E'?",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "E",
-                                        "isHighlighted": true,
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 4,
-                                    "rear": 4,
-                                    "count": 1
-                                }
-                            },
-                            {
-                                "lineNumber": 27,
-                                "comment": "After removing 'E', front will wrap around. What will (front + 1) % size equal?",
-                                "userInputRequired": true,
-                                "isMultipleChoice": true,
-                                "multipleChoiceAnswers": [
-                                    "0",
-                                    "1",
-                                    "4",
-                                    "5"
-                                ],
-                                "multipleChoiceCorrectAnswer": "0",
-                                "nodes": [
-                                    {
-                                        "value": "",
-                                        "isHighlighted": true,
-                                        "label": "0"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "1"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    }
-                                ],
-                                "pointers": {
-                                    "front": 0,
-                                    "rear": 4,
-                                    "count": 0
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "visualization",
-                    "title": "Deleting from a Linked List",
-                    "description": "Learn how to remove a node from a linked list",
-                    "hint": "To delete a node, we need to update the previous node's pointer to skip over the node we want to delete. The skipped node will no longer be part of the list.",
-                    "review": "Well done! You've learned how to delete nodes from a linked list. By updating the pointers to skip a node, we effectively remove it from the list without breaking the chain.",
-                    "difficulty": 2,
-                    "visualization": {
-                        "code": [
-                            "func deleteNode(after: Node) {",
-                            "    // Skip the next node by updating the pointer",
-                            "    after.next = after.next?.next",
-                            "}"
-                        ],
-                        "dataStructureType": "linkedList",
-                        "steps": [
-                            {
                                 "lineNumber": 1,
-                                "comment": "We start with an existing linked list",
+                                "comment": "Let's start with a simple linked list",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "2",
+                                        "value": "10",
                                         "label": "head"
                                     },
                                     {
-                                        "value": "4"
+                                        "value": "20"
                                     },
                                     {
-                                        "value": "6"
+                                        "value": "30"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
-                                        "value": "8"
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "Let's insert 25 after the node containing 20",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "30"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "First, create the new node with value 25",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "30",
+                                        "row": 0
+                                    },
+                                    {
+                                        "value": "25",
+                                        "row": 1,
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 8,
+                                "comment": "We will have to update the pointer of (20) to point to (25), (30) is sort of floating now without a connection",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "row": 0,
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "row": 0,
+                                        "isHighlighted": true,
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "row": 0,
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "row": 1,
+                                        "isHighlighted": true,
+                                        "label": "newNode"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "newNode",
+                                        "toLabel": "node1",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 9,
+                                "comment": "Point the new node's next to the current node's next (30)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "row": 0,
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "row": 0,
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "row": 0,
+                                        "isHighlighted": true,
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "row": 1,
+                                        "isHighlighted": true,
+                                        "label": "newNode"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "newNode",
+                                        "toLabel": "node1",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "node2",
+                                        "toLabel": "newNode",
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 8,
+                                "comment": "Now we have a completed list with 25 inserted after 20",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "row": 0,
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "row": 0,
+                                        "label": "node1"
+                                    },
+                                    {
+                                        "value": "30",
+                                        "row": 0,
+                                        "label": "node2"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "row": 1,
+                                        "label": "newNode"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "newNode",
+                                        "toLabel": "node1",
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "fromLabel": "node2",
+                                        "toLabel": "newNode",
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 11,
+                                "comment": "Now let's try deletion. We'll delete the node after 20 (which is 25)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "25"
+                                    },
+                                    {
+                                        "value": "30"
                                     }
                                 ],
                                 "connections": [
@@ -3086,23 +3035,24 @@
                                 ]
                             },
                             {
-                                "lineNumber": 3,
-                                "comment": "Update the pointer to skip node with value 6",
+                                "lineNumber": 14,
+                                "comment": "To delete 25, we update node 20's next pointer to skip over (25) and point to (30) by updating its next pointer to (25).next, (25) is now floating without a connection, effectively removing it from the list",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "2",
+                                        "value": "10",
                                         "label": "head"
                                     },
                                     {
-                                        "value": "4"
-                                    },
-                                    {
-                                        "value": "6",
+                                        "value": "20",
                                         "isHighlighted": true
                                     },
                                     {
-                                        "value": "8"
+                                        "value": "25",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "30"
                                     }
                                 ],
                                 "connections": [
@@ -3113,11 +3063,6 @@
                                     },
                                     {
                                         "from": 1,
-                                        "to": 3,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 2,
                                         "to": 3,
                                         "style": "straight",
                                         "isHighlighted": true
@@ -3125,19 +3070,23 @@
                                 ]
                             },
                             {
-                                "lineNumber": 3,
-                                "comment": "Node is now removed from the list",
+                                "lineNumber": 14,
+                                "comment": "Node 25 is now removed from the list. The final list looks like this, where we can no longer access (25) as it is floating without a connection",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "2",
+                                        "value": "10",
                                         "label": "head"
                                     },
                                     {
-                                        "value": "4"
+                                        "value": "20"
                                     },
                                     {
-                                        "value": "8"
+                                        "value": "25",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "30"
                                     }
                                 ],
                                 "connections": [
@@ -3147,8 +3096,58 @@
                                         "style": "straight"
                                     },
                                     {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
                                         "from": 1,
-                                        "to": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 14,
+                                "comment": "Even though we need to traverse the list to make any operation, if we need to constantly update the data, which is the better data structure? (L for linked list, A for array)",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "L",
+                                    "A"
+                                ],
+                                "multipleChoiceCorrectAnswer": "L",
+
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "head"
+                                    },
+                                    {
+                                        "value": "20"
+                                    },
+                                    {
+                                        "value": "25",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "30"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
                                         "style": "straight"
                                     }
                                 ]

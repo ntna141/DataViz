@@ -28,15 +28,16 @@ struct ReviewScreen: View {
                             )
                         
                         // Content
-                        VStack {
+                        VStack(spacing: 30) {
                             Text("Great Job!")
                                 .font(.system(.title, design: .monospaced))
                                 .fontWeight(.bold)
-                                .padding(.top, 30)
+                                .padding(.top, 50)
                             
-                            Spacer() // This will push content down from the top
+                            Spacer()
+                                .frame(height: 20)
                             
-                            // Review text box - centered vertically
+                            // Review text box
                             ScrollView {
                                 ZStack {
                                     // Shadow layer
@@ -55,72 +56,48 @@ struct ReviewScreen: View {
                                     Text(review)
                                         .font(.system(.body, design: .monospaced))
                                         .multilineTextAlignment(.center)
-                                        .padding()
+                                        .padding(30)
                                 }
                             }
-                            .frame(height: 200) // Fixed height for review box
+                            .frame(minHeight: 300, maxHeight: geometry.size.height * 0.6)
+                            .frame(maxWidth: .infinity)
                             
-                            Spacer() // This will push content up from the bottom
+                            Spacer()
+                                .frame(height: 40)
                             
-                            // Buttons at the bottom with increased spacing
-                            VStack(spacing: 20) {
-                                // Next button
+                            // Buttons
+                            VStack(spacing: 25) {
                                 Button(action: onNext) {
-                                    ZStack {
-                                        // Shadow layer
-                                        Rectangle()
-                                            .fill(Color.black)
-                                            .offset(x: 6, y: 6)
-                                        
-                                        // Main button
-                                        Rectangle()
-                                            .fill(Color.blue)
-                                            .overlay(
-                                                Rectangle()
-                                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                            )
-                                        
-                                        Text("Start Next Question")
-                                            .font(.system(.headline, design: .monospaced))
-                                            .foregroundColor(.white)
-                                    }
+                                    Text("Start Next Question")
+                                        .font(.system(.title3, design: .monospaced))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.blue)
+                                        .cornerRadius(10)
                                 }
-                                .frame(width: 250, height: 50)
-                                .buttonStyle(.plain)
                                 
-                                // Back to Map button
                                 Button(action: onBackToMap) {
-                                    ZStack {
-                                        // Shadow layer
-                                        Rectangle()
-                                            .fill(Color.black)
-                                            .offset(x: 6, y: 6)
-                                        
-                                        // Main button
-                                        Rectangle()
-                                            .fill(Color.white)
-                                            .overlay(
-                                                Rectangle()
-                                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                            )
-                                        
-                                        Text("Back to Map")
-                                            .font(.system(.headline, design: .monospaced))
-                                            .foregroundColor(.blue)
-                                    }
+                                    Text("Back to Map")
+                                        .font(.system(.title3, design: .monospaced))
+                                        .foregroundColor(.blue)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(10)
                                 }
-                                .frame(width: 250, height: 50)
-                                .buttonStyle(.plain)
                             }
-                            .padding(.bottom, 15)
+                            .padding(.horizontal)
+                            .padding(.bottom, 50)
                         }
                         .padding(40)
                     }
                     .padding(10)
-                    .padding(.top, 90)
+                    .padding(.top, 20)
                     .frame(width: geometry.size.width > 768 ? geometry.size.width / 2 : geometry.size.width * 0.9)
-                    .frame(height: geometry.size.width > 768 ? geometry.size.height * 0.85 : nil)
-                    .frame(minHeight: geometry.size.height * 0.6)
+                    .frame(height: geometry.size.width > 768 ? geometry.size.height * 0.95 : nil)
+                    .frame(minHeight: geometry.size.height * 0.85)
+                    .padding(.vertical, 20)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -285,10 +262,10 @@ struct LevelDetailView: View {
                         .padding(40)
                     }
                     .padding(10) // Padding around the entire card to show shadow
-                    .padding(.top, 90)
+                    .padding(.top, 60)
                     .frame(width: geometry.size.width > 768 ? geometry.size.width / 2 : geometry.size.width * 0.9)
                     .frame(height: geometry.size.width > 768 ? geometry.size.height * 0.85 : nil)
-                    .frame(minHeight: geometry.size.height * 0.6)
+                    .frame(minHeight: geometry.size.height * 0.7)
                     .padding(.vertical, 40)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
