@@ -79,45 +79,129 @@ struct ContentView: View {
 }
 
 struct MapView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
         entity: LevelEntity.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \LevelEntity.number, ascending: true)]
     ) private var levels: FetchedResults<LevelEntity>
     
+    // Define grid layout with increased spacing
+    private let columns = [
+        GridItem(.flexible(), spacing: 40), // Increased spacing between columns
+        GridItem(.flexible(), spacing: 40),
+        GridItem(.flexible())
+    ]
+    
     var body: some View {
         ScrollView {
-            ZStack {
-                // Darker beige background
-                Color(red: 0.90, green: 0.87, blue: 0.82).ignoresSafeArea()
-                
-                // Main vertical line
-                Path { path in
-                    path.move(to: CGPoint(x: 75, y: 0))  // Moved line more left
-                    path.addLine(to: CGPoint(x: 75, y: 1600))
-                }
-                .stroke(Color.black, lineWidth: 8)
-                
-                // Horizontal markers at each level
-                VStack(spacing: 150) {
-                    ForEach(Array(levels.prefix(10)), id: \.uuid) { level in
-                        HStack(spacing: -20) { // Negative spacing to connect marker to line
-                            Rectangle()
-                                .fill(Color.brown)
-                                .frame(width: 50, height: 8)
-                            
-                            LevelMarker(level: level)
+            Color.white.ignoresSafeArea()
+            
+            VStack(alignment: .leading) {
+                // Back button
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    ZStack {
+                        // Shadow layer
+                        Rectangle()
+                            .fill(Color.black)
+                            .frame(width: 150, height: 50)
+                            .offset(x: 6, y: 6)
+                        
+                        // Main background
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(width: 150, height: 50)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                            )
+                        
+                        // Content
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
                         }
+                        .font(.system(.title2, design: .monospaced))
+                        .foregroundColor(.black)
                     }
                 }
-                .offset(x: 75, y: 100) // Moved markers left and added top offset
+                .padding(.top, 30)
+                .padding(.bottom, 20)
+                .padding(.horizontal, 50)
+                
+                // Existing LazyVGrid
+                LazyVGrid(columns: columns, spacing: 30) {
+                    ForEach(Array(levels.prefix(10)), id: \.uuid) { level in
+                        Button(action: {
+                            let detailView = LevelDetailView(level: level)
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let window = windowScene.windows.first,
+                               let rootViewController = window.rootViewController {
+                                let hostingController = UIHostingController(rootView: detailView)
+                                hostingController.modalPresentationStyle = .fullScreen
+                                rootViewController.present(hostingController, animated: true)
+                            }
+                        }) {
+                            ZStack {
+                                // Shadow layer
+                                Rectangle()
+                                    .fill(Color.black)
+                                    .offset(x: 6, y: 6)
+                                
+                                // Main background
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .overlay(
+                                        Rectangle()
+                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                    )
+                                
+                                // Content
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Level \(level.number)")
+                                        .font(.system(.title, design: .monospaced))
+                                        .fontWeight(.bold)
+                                    
+                                    Text(level.topic ?? "")
+                                        .font(.system(.title2, design: .monospaced))
+                                        .lineLimit(1)
+                                    
+                                    Text(level.desc ?? "")
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                        .padding(.top, 5)
+                                        .lineLimit(3)
+                                }
+                                .padding(20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                // Add checkmark for completed level
+                                if GameProgressionManager.shared.isLevelCompleted(Int(level.number)) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.title)
+                                        .foregroundColor(.green)
+                                        .padding([.top, .trailing], 20)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                                }
+                            }
+                            .frame(height: 180)
+                            .background(
+                                GameProgressionManager.shared.isLevelCompleted(Int(level.number)) ?
+                                    Color(red: 0.9, green: 1.0, blue: 0.9) :
+                                    Color.white
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 50)
+                .padding(.vertical, 30)
             }
         }
-        .ignoresSafeArea(.all, edges: .top)
-        .background(Color(red: 0.90, green: 0.87, blue: 0.82))
-        .onAppear {
-    GameProgressionManager.shared.updateLevelLocks()
-}
+        .background(Color.white)
+        .navigationBarHidden(true)
     }
 }
 
