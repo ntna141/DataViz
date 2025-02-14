@@ -179,6 +179,11 @@ struct CodeViewer: View {
         return CGFloat(maxDigits) * 10
     }
     
+    // Find the first highlighted line's number
+    private var highlightedLineNumber: Int? {
+        lines.first(where: { $0.isHighlighted })?.number
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
@@ -194,16 +199,26 @@ struct CodeViewer: View {
             Divider()
             
             // Code content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(lines) { line in
-                        CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(lines) { line in
+                            CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
+                                .id(line.number) // Add id for scrolling
+                        }
+                        // Add empty space at the bottom
+                        Spacer(minLength: 100)
                     }
-                    // Add empty space at the bottom
-                    Spacer(minLength: 100)
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 12)
                 }
-                .padding(.horizontal, 15)
-                .padding(.vertical, 12)
+                .onChange(of: highlightedLineNumber) { newLineNumber in
+                    if let lineNumber = newLineNumber {
+                        withAnimation {
+                            proxy.scrollTo(lineNumber, anchor: .center)
+                        }
+                    }
+                }
             }
         }
         .background(Color(.systemBackground))
