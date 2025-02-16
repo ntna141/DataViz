@@ -278,6 +278,8 @@ struct DataStructureView: View {
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
     @State private var currentCells: [any DataStructureCell] = []
+    @State private var originalCells: [any DataStructureCell] = []  // Store original state
+    @State private var hasChanges: Bool = false  // Track if user made changes
     @State private var connectionStates: [(id: String, state: ConnectionDisplayState)] = []
     @State private var dragState: (element: String, location: CGPoint)?
     @State private var hoveredCellIndex: Int?
@@ -335,6 +337,7 @@ struct DataStructureView: View {
         self.isCompleted = isCompleted
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
+        self._originalCells = State(initialValue: cells)  // Store original state
         
         print("Initialization complete")
     }
@@ -425,19 +428,6 @@ struct DataStructureView: View {
             VStack {
                 // Top controls
                 HStack {
-                    // Exit button
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        buttonBackground {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .frame(width: 44, height: 44)
-                    .padding(.leading, 30)
-                    
                     // Guide button
                     Button(action: {
                         showingGuide = true
@@ -450,7 +440,25 @@ struct DataStructureView: View {
                         }
                     }
                     .frame(width: 44, height: 44)
+                    .padding(.leading, 30)
+                    
+                    // Reset button
+                    Button(action: resetToOriginalState) {
+                        buttonBackground {
+                            Image(systemName: "arrow.counterclockwise.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.gray.opacity(hasChanges ? 0 : 1))
+                                .overlay(
+                                    Image(systemName: "arrow.counterclockwise.circle.fill")
+                                        .font(.title)
+                                        .foregroundColor(.orange.opacity(hasChanges ? 1 : 0))
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 44, height: 44)
                     .padding(.leading, 10)
+                    .allowsHitTesting(hasChanges)
                     
                     // Show Answer button - only show if step is completed and is interactive (user input or multiple choice)
                     if isCompleted && (isMultipleChoice || availableElements != nil) {
@@ -814,6 +822,7 @@ struct DataStructureView: View {
                 cell.setValue("")
                 updatedCells[fromIndex] = cell
                 currentCells = updatedCells
+                hasChanges = true  // Mark that changes were made
                 
                 // Only add to droppedElements if it wasn't in availableElements originally
                 if !(availableElements?.contains(element) ?? false) {
@@ -849,6 +858,7 @@ struct DataStructureView: View {
                 targetCell.setValue(element)
                 updatedCells[cellIndex] = targetCell
                 currentCells = updatedCells
+                hasChanges = true  // Mark that changes were made
                 
                 // Remove the element from droppedElements if it was there
                 if let index = droppedElements.firstIndex(of: element) {
@@ -858,11 +868,6 @@ struct DataStructureView: View {
                 
                 // Force layout update with current cells
                 updateLayoutWithCurrentCells()
-            } else {
-                // Add this else block to handle failed drops
-                // If we're dragging from the elements list and the drop failed,
-                // we don't need to do anything as the element should stay in the list
-                print("Drop failed - element will remain in its original location")
             }
         }
     }
@@ -1189,6 +1194,14 @@ struct DataStructureView: View {
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
             }
         }
+    }
+
+    private func resetToOriginalState() {
+        currentCells = originalCells
+        droppedElements = []
+        hasChanges = false
+        updateLayoutWithCurrentCells()
+        renderCycle = UUID()
     }
 }
 

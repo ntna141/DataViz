@@ -182,19 +182,32 @@ struct VisualizationQuestionView: View {
             HStack(spacing: 0) {
                 // Left half - Code viewer
                 VStack(spacing: 8) {
-                    // Title and description
+                    // Title
                     Text(question.title)
                         .font(.system(.title, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 20)
                         .padding(.top, 30)
+                        .frame(maxWidth: .infinity * 0.95, alignment: .leading)
+                        .padding(.leading, 16)
                     
-                    Text(question.description)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 5)
-                        .padding(.bottom, 20)
-                        .padding(.leading, 20)
+                    // Back button
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        buttonBackground {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.left")
+                                Text("Back")
+                                    .fontWeight(.bold)
+                            }
+                            .foregroundColor(.blue)
+                            .font(.body)
+                        }
+                    }
+                    .frame(width: 80, height: 32)
+                    .padding(.leading, 16)
+                    .padding(.vertical, 12)
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     
                     // Code viewer
                     CodeViewer(lines: question.code.map { line in
@@ -205,6 +218,7 @@ struct VisualizationQuestionView: View {
                     })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 20)
+                    .padding(.top, 12)
                 }
                 .frame(maxWidth: .infinity)
                 .overlay(
