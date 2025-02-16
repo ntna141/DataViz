@@ -273,6 +273,7 @@ struct DataStructureView: View {
     let selectedMultipleChoiceAnswer: String
     let onShowAnswer: () -> Void
     let isCompleted: Bool
+    let questionEntity: QuestionEntity
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -313,7 +314,8 @@ struct DataStructureView: View {
         onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
         selectedMultipleChoiceAnswer: String = "",
         onShowAnswer: @escaping () -> Void = {},
-        isCompleted: Bool = false
+        isCompleted: Bool = false,
+        questionEntity: QuestionEntity
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
@@ -338,6 +340,20 @@ struct DataStructureView: View {
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
         self._originalCells = State(initialValue: cells)  // Store original state
+        self.questionEntity = questionEntity  // Initialize questionEntity
+        
+        // Check if any step in any question has been completed
+        let hasCompletedAnyStep = questionEntity.level?.questions?.contains { question in
+            guard let questionEntity = question as? QuestionEntity,
+                  let visualization = questionEntity.visualization,
+                  let steps = visualization.steps as? Set<VisualizationStepEntity> else {
+                return false
+            }
+            return steps.contains { ($0 as? VisualizationStepEntity)?.isCompleted ?? false }
+        } ?? false
+        
+        self._showingGuide = State(initialValue: !hasCompletedAnyStep)  // Show guide only if no steps completed
+        self._currentGuideStep = State(initialValue: 0)
         
         print("Initialization complete")
     }
@@ -1014,6 +1030,21 @@ struct DataStructureView: View {
                                     .padding(.bottom, 20)
                                 
                                 HStack {
+                                    Image(systemName: "arrow.counterclockwise.circle.fill")
+                                        .font(.title)
+                                        .foregroundColor(.orange)
+                                    Text("Reset")
+                                        .font(.system(.body, design: .monospaced))
+                                }
+                                .padding(.bottom, 5)
+                                
+                                Text("Reset the current step to its original state if you've moved elements around")
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.gray)
+                                    .padding(.leading)
+                                    .padding(.bottom, 20)
+                                
+                                HStack {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.title)
                                         .foregroundColor(.green)
@@ -1246,7 +1277,8 @@ struct DataStructureView_Previews: PreviewProvider {
             onMultipleChoiceAnswerSelected: { _ in },
             selectedMultipleChoiceAnswer: "",
             onShowAnswer: {},
-            isCompleted: false
+            isCompleted: false,
+            questionEntity: QuestionEntity()
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

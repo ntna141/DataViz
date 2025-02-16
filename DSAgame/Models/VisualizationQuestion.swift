@@ -263,7 +263,8 @@ struct VisualizationQuestionView: View {
                     },
                     selectedMultipleChoiceAnswer: selectedAnswer,
                     onShowAnswer: showAnswer,
-                    isCompleted: isCurrentStepCompleted
+                    isCompleted: isCurrentStepCompleted,
+                    questionEntity: questionEntity
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
