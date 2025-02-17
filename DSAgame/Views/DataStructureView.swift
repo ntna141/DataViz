@@ -344,7 +344,10 @@ struct DataStructureView: View {
         
         // Check if this is the first time viewing any level
         let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
+        print("\n=== Guide Initialization ===")
+        print("Has seen guide: \(hasSeenGuide)")
         self._showingGuide = State(initialValue: !hasSeenGuide)
+        print("Setting initial showingGuide to: \(!hasSeenGuide)")
         self._currentGuideStep = State(initialValue: 0)
         
         print("Initialization complete")
@@ -378,11 +381,15 @@ struct DataStructureView: View {
             print("Is multiple choice: \(isMultipleChoice)")
             print("Multiple choice answers: \(multipleChoiceAnswers)")
             print("Selected answer: \(selectedMultipleChoiceAnswer)")
+            print("ShowingGuide state: \(showingGuide)")
             updateLayout()
         }
         .onChange(of: showingGuide) { newValue in
             // When the guide is closed, mark it as seen
+            print("\n=== Guide State Changed ===")
+            print("ShowingGuide changed to: \(newValue)")
             if !newValue {
+                print("Guide closed, marking as seen in UserDefaults")
                 UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
             }
         }

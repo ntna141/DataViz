@@ -1560,7 +1560,7 @@
         {
             "number": 2,
             "topic": "Linked Lists",
-            "description": "Learn about linked lists and how to build them step by step.",
+            "description": "Everything you need to know about linked lists, from single nodes to entire list traversal.",
             "requiredStars": 0,
             "questions": [
                 {
@@ -1702,11 +1702,6 @@
                                         "from": 2,
                                         "to": 3,
                                         "style": "straight"
-                                    },
-                                    {
-                                        "from": 3,
-                                        "to": 4,
-                                        "style": "straight"
                                     }
                                 ]
                             },
@@ -1743,11 +1738,6 @@
                                     {
                                         "from": 2,
                                         "to": 3,
-                                        "style": "straight"
-                                    },
-                                    {
-                                        "from": 3,
-                                        "to": 4,
                                         "style": "straight"
                                     }
                                 ]
