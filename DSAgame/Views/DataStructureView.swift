@@ -273,14 +273,14 @@ struct DataStructureView: View {
     let selectedMultipleChoiceAnswer: String
     let onShowAnswer: () -> Void
     let isCompleted: Bool
-    let questionEntity: QuestionEntity
+    let questionId: String
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
     @State private var currentCells: [any DataStructureCell] = []
-    @State private var originalCells: [any DataStructureCell] = []  // Store original state
-    @State private var hasChanges: Bool = false  // Track if user made changes
+    @State private var originalCells: [any DataStructureCell] = []
+    @State private var hasChanges: Bool = false
     @State private var connectionStates: [(id: String, state: ConnectionDisplayState)] = []
     @State private var dragState: (element: String, location: CGPoint)?
     @State private var hoveredCellIndex: Int?
@@ -315,7 +315,7 @@ struct DataStructureView: View {
         selectedMultipleChoiceAnswer: String = "",
         onShowAnswer: @escaping () -> Void = {},
         isCompleted: Bool = false,
-        questionEntity: QuestionEntity
+        questionId: String
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
@@ -339,20 +339,12 @@ struct DataStructureView: View {
         self.isCompleted = isCompleted
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
-        self._originalCells = State(initialValue: cells)  // Store original state
-        self.questionEntity = questionEntity  // Initialize questionEntity
+        self._originalCells = State(initialValue: cells)
+        self.questionId = questionId
         
-        // Check if any step in any question has been completed
-        let hasCompletedAnyStep = questionEntity.level?.questions?.contains { question in
-            guard let questionEntity = question as? QuestionEntity,
-                  let visualization = questionEntity.visualization,
-                  let steps = visualization.steps as? Set<VisualizationStepEntity> else {
-                return false
-            }
-            return steps.contains { ($0 as? VisualizationStepEntity)?.isCompleted ?? false }
-        } ?? false
-        
-        self._showingGuide = State(initialValue: !hasCompletedAnyStep)  // Show guide only if no steps completed
+        // Check if this is the first time viewing any level
+        let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
+        self._showingGuide = State(initialValue: !hasSeenGuide)
         self._currentGuideStep = State(initialValue: 0)
         
         print("Initialization complete")
@@ -387,6 +379,12 @@ struct DataStructureView: View {
             print("Multiple choice answers: \(multipleChoiceAnswers)")
             print("Selected answer: \(selectedMultipleChoiceAnswer)")
             updateLayout()
+        }
+        .onChange(of: showingGuide) { newValue in
+            // When the guide is closed, mark it as seen
+            if !newValue {
+                UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
+            }
         }
         .environmentObject(cellSizeManager)
     }
@@ -476,8 +474,8 @@ struct DataStructureView: View {
                     .padding(.leading, 10)
                     .allowsHitTesting(hasChanges)
                     
-                    // Show Answer button - only show if step is completed and is interactive (user input or multiple choice)
-                    if isCompleted && (isMultipleChoice || availableElements != nil) {
+                    // Show Answer button - only show if the question is completed
+                    if isCompleted {
                         Button(action: onShowAnswer) {
                             buttonBackground {
                                 Image(systemName: "checkmark.circle.fill")
@@ -1234,6 +1232,36 @@ struct DataStructureView: View {
         updateLayoutWithCurrentCells()
         renderCycle = UUID()
     }
+
+    private var shouldDisableNextButton: Bool {
+        // If the question is already completed, allow moving forward
+        if isCompleted {
+            return false
+        }
+        // Otherwise, disable the button
+        return true
+    }
+
+    private func moveToNextStep() {
+        // If the question is completed, move to next step
+        if isCompleted {
+            currentGuideStep += 1
+            renderCycle = UUID()
+        }
+    }
+
+    private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
+        guard let comment = comment else { return 3.0 }  // Default interval if no comment
+        
+        // Base interval of 2 seconds
+        let baseInterval: TimeInterval = 2.0
+        
+        // Add 0.05 seconds per character (about 20 chars per second reading speed)
+        let additionalTime = TimeInterval(comment.count) * 0.05
+        
+        // Clamp the total interval between 2 and 7 seconds
+        return min(max(baseInterval + additionalTime, 2.0), 7.0)
+    }
 }
 
 // Helper for getting frame size
@@ -1278,7 +1306,7 @@ struct DataStructureView_Previews: PreviewProvider {
             selectedMultipleChoiceAnswer: "",
             onShowAnswer: {},
             isCompleted: false,
-            questionEntity: QuestionEntity()
+            questionId: "1"
         )
         .frame(width: 500, height: 300)
         .previewLayout(.sizeThatFits)

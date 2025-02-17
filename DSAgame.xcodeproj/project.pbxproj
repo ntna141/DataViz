@@ -17,11 +17,8 @@
 		86B1D36C655882E2A7508E28 /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = 205823DB7D12711143EBA2AE /* levels.json */; };
 		8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 257A165A598AFFA2D57D3FDB /* ContentView.swift */; };
 		9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4705BC152C2EE6DBB054CFF /* LevelData.swift */; };
-		A2C1C8E442CAA381B831B86A /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610D09BE7F8D048B1991A1B8 /* Persistence.swift */; };
 		A44380C3ED5D12332288D555 /* DataStructureConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04A1B432733E5A6F722AEC38 /* DataStructureConnection.swift */; };
 		A7594A144A5C6BF2B8C0142C /* VisualizationQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5634AD12888DDEA478554E /* VisualizationQuestion.swift */; };
-		B15E0F6AE1D9FCFC406A254D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */; };
-		B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CDD917C12E442A0B0A48BD6D /* DSAGame.xcdatamodeld */; };
 		CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE96D5797E5855965CDE5D /* LevelDetailView.swift */; };
 		CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F393FC6C2408C0A109BBFFC1 /* CodeVisualization.swift */; };
 		EC55AF8413D5D24A7D525421 /* CellSizeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC26B7A69052108C43D6970 /* CellSizeEnvironment.swift */; };
@@ -31,18 +28,15 @@
 /* Begin PBXFileReference section */
 		04A1B432733E5A6F722AEC38 /* DataStructureConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureConnection.swift; sourceTree = "<group>"; };
 		162172D225C460AB56945B27 /* ElementsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementsListView.swift; sourceTree = "<group>"; };
-		1CE62A769532B6EBE9D8FFA4 /* DSAGame.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DSAGame.xcdatamodel; sourceTree = "<group>"; };
 		205823DB7D12711143EBA2AE /* levels.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = levels.json; sourceTree = "<group>"; };
 		20D3529BFA77BB99EAEFF27D /* DataStructureLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureLayout.swift; sourceTree = "<group>"; };
 		257A165A598AFFA2D57D3FDB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		49CB2842E3F8DFDFE09C29AE /* DSAgameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSAgameApp.swift; sourceTree = "<group>"; };
 		54DE96D5797E5855965CDE5D /* LevelDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelDetailView.swift; sourceTree = "<group>"; };
-		610D09BE7F8D048B1991A1B8 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureCell.swift; sourceTree = "<group>"; };
 		777EBBAD80A3D3B0EFFF97DF /* DataStructureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStructureView.swift; sourceTree = "<group>"; };
 		784243AA1B71FCA929412DF5 /* DSAgame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSAgame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DC26B7A69052108C43D6970 /* CellSizeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellSizeEnvironment.swift; sourceTree = "<group>"; };
-		9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B4705BC152C2EE6DBB054CFF /* LevelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelData.swift; sourceTree = "<group>"; };
 		C2146F0980C7057C3F6A9D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DC5634AD12888DDEA478554E /* VisualizationQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizationQuestion.swift; sourceTree = "<group>"; };
@@ -71,14 +65,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		74BD838151C2C575457ACDE2 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				9745136C129AD6FD27A1CCB6 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
 		D36E7EA87B0F704263060914 = {
 			isa = PBXGroup;
 			children = (
@@ -95,7 +81,6 @@
 				49CB2842E3F8DFDFE09C29AE /* DSAgameApp.swift */,
 				F35EB888349D77B86712E33A /* Info.plist */,
 				EEABAD2EDCEAAB47D9B6FA33 /* Models */,
-				74BD838151C2C575457ACDE2 /* Preview Content */,
 				E8E2B47C30F1D4727B247280 /* Resources */,
 				4B6E90C529C3F0E6CA7CACDB /* Views */,
 			);
@@ -118,10 +103,8 @@
 				6588C6A2FA85C57E182CC931 /* DataStructureCell.swift */,
 				04A1B432733E5A6F722AEC38 /* DataStructureConnection.swift */,
 				20D3529BFA77BB99EAEFF27D /* DataStructureLayout.swift */,
-				CDD917C12E442A0B0A48BD6D /* DSAGame.xcdatamodeld */,
 				FF8C0B43B5FEA91A92A79830 /* GameProgressionManager.swift */,
 				B4705BC152C2EE6DBB054CFF /* LevelData.swift */,
-				610D09BE7F8D048B1991A1B8 /* Persistence.swift */,
 				E94C9F12C9A730D177B5071D /* VisualizationManager.swift */,
 				DC5634AD12888DDEA478554E /* VisualizationQuestion.swift */,
 			);
@@ -181,7 +164,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				376567F9E0BE9864566D692A /* Assets.xcassets in Resources */,
-				B15E0F6AE1D9FCFC406A254D /* Preview Assets.xcassets in Resources */,
 				86B1D36C655882E2A7508E28 /* levels.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -196,7 +178,6 @@
 				EC55AF8413D5D24A7D525421 /* CellSizeEnvironment.swift in Sources */,
 				CEC1F6CE656F39CDD46847ED /* CodeVisualization.swift in Sources */,
 				8A90F04D9D642B3C8606FAEE /* ContentView.swift in Sources */,
-				B540F3C6E94F631FB6B2C606 /* DSAGame.xcdatamodeld in Sources */,
 				FEC6D4C7E70E7023F889FB25 /* DSAgameApp.swift in Sources */,
 				286D6A96645E4DF4C17666DF /* DataStructureCell.swift in Sources */,
 				A44380C3ED5D12332288D555 /* DataStructureConnection.swift in Sources */,
@@ -206,7 +187,6 @@
 				489B066DC88B0A4F8CD85C97 /* GameProgressionManager.swift in Sources */,
 				9E87676D08A9CBD7A0E0F2EE /* LevelData.swift in Sources */,
 				CBEFE0EB51BBEEBA37DF3ADC /* LevelDetailView.swift in Sources */,
-				A2C1C8E442CAA381B831B86A /* Persistence.swift in Sources */,
 				415107C221BB120844AE1EC1 /* VisualizationManager.swift in Sources */,
 				A7594A144A5C6BF2B8C0142C /* VisualizationQuestion.swift in Sources */,
 			);
@@ -388,19 +368,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		CDD917C12E442A0B0A48BD6D /* DSAGame.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				1CE62A769532B6EBE9D8FFA4 /* DSAGame.xcdatamodel */,
-			);
-			currentVersion = 1CE62A769532B6EBE9D8FFA4 /* DSAGame.xcdatamodel */;
-			path = DSAGame.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 5B9C3824DC198150BB326AD1 /* Project object */;
 }

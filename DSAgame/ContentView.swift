@@ -1,8 +1,6 @@
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
     @State private var isShowingMap = false
     
     var body: some View {
@@ -77,15 +75,11 @@ struct ContentView: View {
 
 struct MapView: View {
     @Environment(\.presentationMode) var presentationMode
-    @Environment(\.managedObjectContext) private var viewContext
-    @FetchRequest(
-        entity: LevelEntity.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \LevelEntity.number, ascending: true)]
-    ) private var levels: FetchedResults<LevelEntity>
+    @State private var levels: [LevelData.Level] = []
     
     // Define grid layout with increased spacing
     private let columns = [
-        GridItem(.flexible(), spacing: 40), // Increased spacing between columns
+        GridItem(.flexible(), spacing: 40),
         GridItem(.flexible(), spacing: 40),
         GridItem(.flexible())
     ]
@@ -128,69 +122,10 @@ struct MapView: View {
                 .padding(.bottom, 20)
                 .padding(.horizontal, 50)
                 
-                // Existing LazyVGrid
+                // Level Grid
                 LazyVGrid(columns: columns, spacing: 30) {
-                    ForEach(Array(levels.prefix(10)), id: \.uuid) { level in
-                        Button(action: {
-                            let detailView = LevelDetailView(level: level)
-                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                               let window = windowScene.windows.first,
-                               let rootViewController = window.rootViewController {
-                                let hostingController = UIHostingController(rootView: detailView)
-                                hostingController.modalPresentationStyle = .fullScreen
-                                rootViewController.present(hostingController, animated: true)
-                            }
-                        }) {
-                            ZStack {
-                                // Shadow layer
-                                Rectangle()
-                                    .fill(Color.black)
-                                    .offset(x: 6, y: 6)
-                                
-                                // Main background
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .overlay(
-                                        Rectangle()
-                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                    )
-                                
-                                // Content
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("Level \(level.number)")
-                                        .font(.system(.title, design: .monospaced))
-                                        .fontWeight(.bold)
-                                    
-                                    Text(level.topic ?? "")
-                                        .font(.system(.title2, design: .monospaced))
-                                        .lineLimit(1)
-                                    
-                                    Text(level.desc ?? "")
-                                        .font(.system(.body, design: .monospaced))
-                                        .foregroundColor(.gray)
-                                        .padding(.top, 5)
-                                        .lineLimit(3)
-                                }
-                                .padding(20)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                // Add checkmark for completed level
-                                if GameProgressionManager.shared.isLevelCompleted(Int(level.number)) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.title)
-                                        .foregroundColor(.green)
-                                        .padding([.top, .trailing], 20)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                                }
-                            }
-                            .frame(height: 180)
-                            .background(
-                                GameProgressionManager.shared.isLevelCompleted(Int(level.number)) ?
-                                    Color(red: 0.9, green: 1.0, blue: 0.9) :
-                                    Color.white
-                            )
-                        }
-                        .buttonStyle(PlainButtonStyle())
+                    ForEach(levels.prefix(10), id: \.number) { level in
+                        LevelCard(level: level)
                     }
                 }
                 .padding(.horizontal, 50)
@@ -199,37 +134,76 @@ struct MapView: View {
         }
         .background(Color.white)
         .navigationBarHidden(true)
+        .onAppear {
+            levels = GameProgressionManager.shared.getLevels()
+        }
     }
 }
 
-struct LevelMarker: View {
-    let level: LevelEntity
-    @State private var showingDetail = false
+struct LevelCard: View {
+    let level: LevelData.Level
     
     var body: some View {
-        VStack {
-            Button(action: {
-                showingDetail = true
-            }) {
-                ZStack {
-                    Rectangle()
-                        .fill(level.isUnlocked ? Color(red: 0.2, green: 0.6, blue: 0.6) : Color.gray)
-                        .frame(width: 60, height: 60)
-                        .shadow(radius: 3)
+        Button(action: {
+            let detailView = LevelDetailView(level: level)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootViewController = window.rootViewController {
+                let hostingController = UIHostingController(rootView: detailView)
+                hostingController.modalPresentationStyle = .fullScreen
+                rootViewController.present(hostingController, animated: true)
+            }
+        }) {
+            ZStack {
+                // Shadow layer
+                Rectangle()
+                    .fill(Color.black)
+                    .offset(x: 6, y: 6)
+                
+                // Main background
+                Rectangle()
+                    .fill(Color.white)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                    )
+                
+                // Content
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Level \(level.number)")
+                        .font(.system(.title, design: .monospaced))
+                        .fontWeight(.bold)
                     
-                    Text("\(level.number)")
-                        .foregroundColor(.white)
-                        .font(.title2.bold())
+                    Text(level.topic)
+                        .font(.system(.title2, design: .monospaced))
+                        .lineLimit(1)
+                    
+                    Text(level.description)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.gray)
+                        .padding(.top, 5)
+                        .lineLimit(3)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Add checkmark for completed level
+                if GameProgressionManager.shared.isQuestionCompleted("\(level.number)") {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.green)
+                        .padding([.top, .trailing], 20)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 }
             }
-            
-            Text(level.topic ?? "Topic")
-                .font(.caption)
-                .foregroundColor(.black)
+            .frame(height: 180)
+            .background(
+                GameProgressionManager.shared.isQuestionCompleted("\(level.number)") ?
+                    Color(red: 0.9, green: 1.0, blue: 0.9) :
+                    Color.white
+            )
         }
-        .fullScreenCover(isPresented: $showingDetail) {
-            LevelDetailView(level: level)
-        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -374,9 +348,8 @@ struct HexagonalGraphView: View {
     }
 }
 
-// Preview provider
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
+        ContentView()
     }
 }

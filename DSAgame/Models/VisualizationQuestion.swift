@@ -1,5 +1,4 @@
 import Foundation
-import CoreData
 import SwiftUI
 
 // Represents a single step in the visualization
@@ -39,49 +38,30 @@ class VisualizationZoomPanState: ObservableObject {
 
 // Add this before VisualizationQuestionView
 class VisualizationCompletionManager: ObservableObject {
-    private let context: NSManagedObjectContext
-    private var stepEntities: [Int: VisualizationStepEntity] = [:]
-    
-    init(questionEntity: QuestionEntity) {
-        self.context = PersistenceController.shared.container.viewContext
-        if let visualization = questionEntity.visualization,
-           let steps = visualization.steps as? Set<VisualizationStepEntity> {
-            // Create a mapping of step indices to their entities
-            for step in steps {
-                stepEntities[Int(step.orderIndex)] = step
-            }
-        }
-    }
+    private var completedSteps: Set<UUID> = []
+    private var stepAnswers: [UUID: String] = [:]
+    private var stepCells: [UUID: [any DataStructureCell]] = [:]
     
     func markStepCompleted(_ step: VisualizationStep, answer: String? = nil, cells: [any DataStructureCell]? = nil) {
-        guard let stepEntity = stepEntities[currentStepIndex] else { return }
-        
-        stepEntity.isCompleted = true
+        completedSteps.insert(step.id)
         if let answer = answer {
-            stepEntity.multipleChoiceCorrectAnswer = answer
+            stepAnswers[step.id] = answer
         }
-        
-        // Save the context
-        do {
-            try context.save()
-            print("Marked step \(currentStepIndex) as completed")
-        } catch {
-            print("Error saving completion state: \(error)")
+        if let cells = cells {
+            stepCells[step.id] = cells
         }
     }
     
     func isStepCompleted(_ step: VisualizationStep) -> Bool {
-        guard let stepEntity = stepEntities[currentStepIndex] else { return false }
-        return stepEntity.isCompleted
+        return completedSteps.contains(step.id)
     }
     
     func getStoredAnswer(_ step: VisualizationStep) -> String? {
-        guard let stepEntity = stepEntities[currentStepIndex] else { return nil }
-        return stepEntity.multipleChoiceCorrectAnswer
+        return stepAnswers[step.id]
     }
     
     func getStoredCells(_ step: VisualizationStep) -> [any DataStructureCell]? {
-        return nil
+        return stepCells[step.id]
     }
     
     private var currentStepIndex: Int = 0
@@ -95,8 +75,9 @@ class VisualizationCompletionManager: ObservableObject {
 // Main visualization question view
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
-    let questionEntity: QuestionEntity
+    let questionId: String
     let onComplete: () -> Void
+    let isCompleted: Bool
     @Environment(\.presentationMode) var presentationMode
     @State private var currentStepIndex = 0 {
         didSet {
@@ -108,24 +89,23 @@ struct VisualizationQuestionView: View {
     @State private var showingHint = false
     @State private var selectedAnswer: String = ""
     @StateObject private var zoomPanState = VisualizationZoomPanState()
-    @StateObject private var completionManager: VisualizationCompletionManager
+    @StateObject private var completionManager = VisualizationCompletionManager()
     @State private var isAutoPlaying = false
     @State private var autoPlayTimer: Timer?
     @StateObject private var cellSizeManager = CellSizeManager()
     
-    init(question: VisualizationQuestion, questionEntity: QuestionEntity, onComplete: @escaping () -> Void = {}) {
+    init(question: VisualizationQuestion, questionId: String, onComplete: @escaping () -> Void = {}, isCompleted: Bool = false) {
         self.question = question
-        self.questionEntity = questionEntity
+        self.questionId = questionId
         self.onComplete = onComplete
+        self.isCompleted = isCompleted
         _steps = State(initialValue: question.steps)  // Initialize steps array
-        _completionManager = StateObject(wrappedValue: VisualizationCompletionManager(questionEntity: questionEntity))
         
         let firstStep = question.steps[0]
         if firstStep.isMultipleChoice {
             print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
             print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
         }
-        
     }
     
     private var currentStep: VisualizationStep {
@@ -146,35 +126,40 @@ struct VisualizationQuestionView: View {
     
     private var isCurrentStepCompleted: Bool {
         let step = currentStep
-        if completionManager.isStepCompleted(step) {
-            return true
-        }
         
+        // For multiple choice questions
         if step.isMultipleChoice {
-            let isCorrect = selectedAnswer == step.multipleChoiceCorrectAnswer
-            if isCorrect {
-                completionManager.markStepCompleted(step, answer: selectedAnswer)
+            // If already completed, return true
+            if completionManager.isStepCompleted(step) {
+                return true
             }
-            return isCorrect
+            
+            // Check if current answer is correct
+            return selectedAnswer == step.multipleChoiceCorrectAnswer
         }
         
+        // For user input questions
         if step.userInputRequired {
-            guard let nextStep = steps[safe: currentStepIndex + 1] else { return false }
+            // If already completed, return true
+            if completionManager.isStepCompleted(step) {
+                return true
+            }
             
-            let isCorrect = zip(step.cells, nextStep.cells).allSatisfy { current, next in
+            // Check if current state matches next step
+            guard let nextStep = steps[safe: currentStepIndex + 1] else { return false }
+            return zip(step.cells, nextStep.cells).allSatisfy { current, next in
                 if next.value.isEmpty {
                     return current.value.isEmpty
                 }
                 return current.value == next.value
             }
-            
-            if isCorrect {
-                completionManager.markStepCompleted(step, cells: step.cells)
-            }
-            return isCorrect
         }
         
-        return false
+        // For non-interactive steps, mark as completed when visited
+        if !completionManager.isStepCompleted(step) {
+            completionManager.markStepCompleted(step)
+        }
+        return true
     }
     
     var body: some View {
@@ -263,8 +248,8 @@ struct VisualizationQuestionView: View {
                     },
                     selectedMultipleChoiceAnswer: selectedAnswer,
                     onShowAnswer: showAnswer,
-                    isCompleted: isCurrentStepCompleted,
-                    questionEntity: questionEntity
+                    isCompleted: completionManager.isStepCompleted(currentStep) && (currentStep.isMultipleChoice || currentStep.userInputRequired),
+                    questionId: questionId
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -275,6 +260,20 @@ struct VisualizationQuestionView: View {
                     print("Current step multiple choice answers: \(currentStep.multipleChoiceAnswers)")
                     print("Current step correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
                     print("Selected answer: \(selectedAnswer)")
+                    
+                    // If the question is completed, mark all steps as completed
+                    if isCompleted {
+                        let step = currentStep
+                        if step.isMultipleChoice {
+                            completionManager.markStepCompleted(step, answer: step.multipleChoiceCorrectAnswer)
+                        } else if step.userInputRequired {
+                            if let nextStep = steps[safe: currentStepIndex + 1] {
+                                completionManager.markStepCompleted(step, cells: nextStep.cells)
+                            }
+                        } else {
+                            completionManager.markStepCompleted(step)
+                        }
+                    }
                 }
             }
             
@@ -380,7 +379,7 @@ struct VisualizationQuestionView: View {
                     
                     // Next/Complete button
                     Button(action: {
-                        if isLastStep {
+                        if shouldDisableNextButton {
                             onComplete()
                         } else {
                             moveToNextStep()
@@ -401,12 +400,12 @@ struct VisualizationQuestionView: View {
                                 )
                             
                             // Button content
-                            Text(isLastStep ? "Complete" : "Next")
-                                .foregroundColor(((currentStep.userInputRequired || currentStep.isMultipleChoice) && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)) ? Color.gray : Color.blue)
+                            Text(shouldShowComplete ? "Complete" : "Next")
+                                .foregroundColor(shouldDisableNextButton ? Color.gray : Color.blue)
                                 .font(.system(.body, design: .monospaced).weight(.bold))
                         }
                     }
-                    .disabled(((currentStep.userInputRequired || currentStep.isMultipleChoice) && !isCurrentStepCompleted && !completionManager.isStepCompleted(currentStep)))
+                    .disabled(shouldDisableNextButton)
                     .buttonStyle(.plain)
                     .frame(width: 120, height: 40)
                     .padding(.trailing, 40)
@@ -429,15 +428,66 @@ struct VisualizationQuestionView: View {
         currentStepIndex == question.steps.count - 1
     }
     
+    private var shouldDisableNextButton: Bool {
+        // If the question is already completed, allow moving forward
+        if isCompleted {
+            return false
+        }
+        
+        // If the current step requires input or is multiple choice, check completion
+        if currentStep.userInputRequired || currentStep.isMultipleChoice {
+            return !isCurrentStepCompleted
+        }
+        
+        // For non-interactive steps, always allow moving forward
+        return false
+    }
+    
+    private var shouldShowComplete: Bool {
+        // Show Complete if we're on the last step and either:
+        // 1. The question is already completed, or
+        // 2. The current step is completed (for interactive steps)
+        // 3. The current step doesn't require interaction
+        isLastStep && (
+            isCompleted ||
+            isCurrentStepCompleted ||
+            (!currentStep.userInputRequired && !currentStep.isMultipleChoice)
+        )
+    }
+    
+    private var shouldShowAnswerButton: Bool {
+        // Only show answer button if:
+        // 1. The question is completed AND
+        // 2. The current step is interactive (multiple choice or user input)
+        isCompleted && (currentStep.isMultipleChoice || currentStep.userInputRequired)
+    }
+    
     private func moveToNextStep() {
         print("\n=== Moving to Next Step ===")
+        print("Current step index: \(currentStepIndex)")
+        print("Is completed: \(isCompleted)")
+        print("Is current step completed: \(isCurrentStepCompleted)")
         
-        // Mark current step as completed if it's not already
-        if !completionManager.isStepCompleted(currentStep) {
-            if currentStep.isMultipleChoice {
-                completionManager.markStepCompleted(currentStep, answer: selectedAnswer)
+        // If we're at the last step and it's completed, call onComplete
+        if isLastStep && (isCompleted || isCurrentStepCompleted) {
+            onComplete()
+            return
+        }
+        
+        // Only move to next step if current step is completed or question is completed
+        if !isCompleted && !isCurrentStepCompleted {
+            return
+        }
+        
+        // Mark current step as completed and store the answer/cells
+        let step = currentStep
+        if !completionManager.isStepCompleted(step) {
+            if step.isMultipleChoice {
+                completionManager.markStepCompleted(step, answer: selectedAnswer)
+            } else if step.userInputRequired {
+                completionManager.markStepCompleted(step, cells: step.cells)
             } else {
-                completionManager.markStepCompleted(currentStep, cells: currentStep.cells)
+                completionManager.markStepCompleted(step)
             }
         }
         
@@ -445,7 +495,21 @@ struct VisualizationQuestionView: View {
         guard nextIndex < steps.count else { return }
         
         currentStepIndex = nextIndex
-        selectedAnswer = ""  // Always reset selected answer when navigating
+        selectedAnswer = ""  // Reset selected answer when navigating
+        
+        // If the question is completed, mark the next step as completed too
+        if isCompleted {
+            let nextStep = steps[nextIndex]
+            if nextStep.isMultipleChoice {
+                completionManager.markStepCompleted(nextStep, answer: nextStep.multipleChoiceCorrectAnswer)
+            } else if nextStep.userInputRequired {
+                if let followingStep = steps[safe: nextIndex + 1] {
+                    completionManager.markStepCompleted(nextStep, cells: followingStep.cells)
+                }
+            } else {
+                completionManager.markStepCompleted(nextStep)
+            }
+        }
         
         visualizationKey = UUID()
     }
