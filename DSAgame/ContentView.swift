@@ -76,19 +76,23 @@ struct ContentView: View {
 struct MapView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var levels: [LevelData.Level] = []
+    @State private var showingVisualization = false
+    @State private var visualization: VisualizationQuestion?
+    @State private var currentQuestionIndex = 0
+    @State private var visualizationQuestions: [LevelData.Question] = []
+    @State private var showingReview = false
+    @State private var selectedLevelNumber: Int?
     
-    // Define grid layout with increased spacing
+    // Define grid layout with 3 columns
     private let columns = [
-        GridItem(.flexible(), spacing: 40),
-        GridItem(.flexible(), spacing: 40),
+        GridItem(.flexible(), spacing: 30),
+        GridItem(.flexible(), spacing: 30),
         GridItem(.flexible())
     ]
     
     var body: some View {
         ScrollView {
-            Color.white.ignoresSafeArea()
-            
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 0) {
                 // Back button
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
@@ -122,88 +126,180 @@ struct MapView: View {
                 .padding(.bottom, 20)
                 .padding(.horizontal, 50)
                 
-                // Level Grid
+                // Levels Grid
                 LazyVGrid(columns: columns, spacing: 30) {
                     ForEach(levels.prefix(10), id: \.number) { level in
-                        LevelCard(level: level)
+                        // Level Card
+                        VStack(spacing: 20) {
+                            // Level Header
+                            ZStack {
+                                // Shadow layer
+                                Rectangle()
+                                    .fill(Color.black)
+                                    .offset(x: 6, y: 6)
+                                
+                                // Main background
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .overlay(
+                                        Rectangle()
+                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                    )
+                                
+                                // Content
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack(alignment: .top) {
+                                        Text("Level \(level.number)")
+                                            .font(.system(.title, design: .monospaced))
+                                            .fontWeight(.bold)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        
+                                        if GameProgressionManager.shared.isLevelCompleted(level.number) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.title)
+                                                .foregroundColor(.green)
+                                        }
+                                    }
+                                    
+                                    Text(level.topic)
+                                        .font(.system(.title3, design: .monospaced))
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(20)
+                            }
+                            .frame(height: 140)
+                            
+                            // Questions list
+                            VStack(spacing: 15) {
+                                ForEach(level.questions.indices, id: \.self) { index in
+                                    let question = level.questions[index]
+                                    if question.type == "visualization" {
+                                        Button(action: {
+                                            if let vis = VisualizationManager.shared.createVisualization(from: question) {
+                                                visualization = vis
+                                                currentQuestionIndex = index
+                                                selectedLevelNumber = level.number
+                                                showingVisualization = true
+                                            }
+                                        }) {
+                                            QuestionRow(
+                                                index: index,
+                                                question: question,
+                                                isCompleted: GameProgressionManager.shared.isQuestionCompleted("\(level.number)-\(index)")
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 50)
-                .padding(.vertical, 30)
+                .padding(.bottom, 50)
             }
         }
         .background(Color.white)
         .navigationBarHidden(true)
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { showingVisualization && visualization != nil },
+                set: { showingVisualization = $0 }
+            )
+        ) {
+            if let vis = visualization {
+                let questionId = "\(selectedLevelNumber ?? 0)-\(currentQuestionIndex)"
+                VisualizationQuestionView(
+                    question: vis,
+                    questionId: questionId,
+                    onComplete: {
+                        GameProgressionManager.shared.markQuestionCompleted(questionId)
+                        showingVisualization = false
+                        showingReview = true
+                    },
+                    isCompleted: GameProgressionManager.shared.isQuestionCompleted(questionId)
+                )
+            }
+        }
+        .overlay(
+            // Review overlay
+            Group {
+                if showingReview, let visualization = visualization {
+                    ReviewScreen(
+                        review: visualization.review,
+                        onNext: {
+                            showingReview = false
+                            moveToNextQuestion()
+                        },
+                        onBackToMap: {
+                            showingReview = false
+                            selectedLevelNumber = nil
+                        }
+                    )
+                }
+            }
+        )
         .onAppear {
             levels = GameProgressionManager.shared.getLevels()
         }
     }
+    
+    private func moveToNextQuestion() {
+        currentQuestionIndex += 1
+        if let levelNumber = selectedLevelNumber,
+           let level = levels.first(where: { $0.number == levelNumber }),
+           currentQuestionIndex < level.questions.count,
+           let vis = VisualizationManager.shared.createVisualization(from: level.questions[currentQuestionIndex]) {
+            visualization = vis
+            showingVisualization = true
+        } else {
+            selectedLevelNumber = nil
+        }
+    }
 }
 
-struct LevelCard: View {
-    let level: LevelData.Level
+struct QuestionRow: View {
+    let index: Int
+    let question: LevelData.Question
+    let isCompleted: Bool
     
     var body: some View {
-        Button(action: {
-            let detailView = LevelDetailView(level: level)
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first,
-               let rootViewController = window.rootViewController {
-                let hostingController = UIHostingController(rootView: detailView)
-                hostingController.modalPresentationStyle = .fullScreen
-                rootViewController.present(hostingController, animated: true)
-            }
-        }) {
-            ZStack {
-                // Shadow layer
-                Rectangle()
-                    .fill(Color.black)
-                    .offset(x: 6, y: 6)
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .offset(x: 6, y: 6)
+            
+            // Main background
+            Rectangle()
+                .fill(isCompleted ? Color(red: 0.9, green: 1.0, blue: 0.9) : Color.white)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                )
+            
+            HStack(alignment: .center, spacing: 10) {
+                Text("\(index + 1). \(question.title)")
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(isCompleted ? Color(white: 0.1) : .primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 
-                // Main background
-                Rectangle()
-                    .fill(Color.white)
-                    .overlay(
-                        Rectangle()
-                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                    )
-                
-                // Content
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Level \(level.number)")
-                        .font(.system(.title, design: .monospaced))
-                        .fontWeight(.bold)
-                    
-                    Text(level.topic)
-                        .font(.system(.title2, design: .monospaced))
-                        .lineLimit(1)
-                    
-                    Text(level.description)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.gray)
-                        .padding(.top, 5)
-                        .lineLimit(3)
-                }
-                .padding(20)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Add checkmark for completed level
-                if GameProgressionManager.shared.isQuestionCompleted("\(level.number)") {
+                if isCompleted {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.title)
                         .foregroundColor(.green)
-                        .padding([.top, .trailing], 20)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                        .frame(width: 24)
                 }
             }
-            .frame(height: 180)
-            .background(
-                GameProgressionManager.shared.isQuestionCompleted("\(level.number)") ?
-                    Color(red: 0.9, green: 1.0, blue: 0.9) :
-                    Color.white
-            )
+            .padding(.horizontal, 15)
+            .padding(.vertical, 10)
         }
-        .buttonStyle(PlainButtonStyle())
+        .frame(height: 70)
     }
 }
 
