@@ -31,12 +31,18 @@ struct DraggableElementView: View {
             .gesture(
                 DragGesture(coordinateSpace: .global)
                     .onChanged { value in
+                        print("DraggableElementView - Drag changed for element: \(element)")
+                        print("  isDragging: \(isDragging)")
                         if !isDragging {
+                            print("  Starting drag at: \(value.location)")
                             onDragStarted(value.location)
                         }
                         onDragChanged(value)
                     }
-                    .onEnded(onDragEnded)
+                    .onEnded { value in
+                        print("DraggableElementView - Drag ended for element: \(element)")
+                        onDragEnded(value)
+                    }
             )
             .animation(.spring(response: 0.3), value: isDragging)
     }
@@ -81,11 +87,13 @@ struct LayoutCellView: View {
             .position(cell.position)
             .contentShape(Rectangle())  // Make entire area draggable
             .gesture(
-                DragGesture(coordinateSpace: .global)  // Changed to global coordinate space
+                DragGesture(coordinateSpace: .global)
                     .onChanged { value in
                         onDragChanged(value, geometryFrame)
                     }
-                    .onEnded(onDragEnded)
+                    .onEnded { value in
+                        onDragEnded(value)
+                    }
             )
     }
 }
@@ -147,12 +155,6 @@ struct CellsLayer: View {
         // Update drag position
         onDragChanged(value, frame)
     }
-}
-
-// Add zoom and pan state manager
-class ZoomPanState: ObservableObject {
-    @Published var steadyZoom: CGFloat = 1.0
-    @Published var steadyPan: CGSize = .zero
 }
 
 // Add grid background view
@@ -255,6 +257,67 @@ extension View {
     }
 }
 
+// Add this before DataStructureView
+class DroppedElementsState: ObservableObject {
+    @Published var elements: [String] = []
+}
+
+private struct DroppedElementsKey: EnvironmentKey {
+    static let defaultValue = DroppedElementsState()
+}
+
+extension EnvironmentValues {
+    var droppedElementsState: DroppedElementsState {
+        get { self[DroppedElementsKey.self] }
+        set { self[DroppedElementsKey.self] = newValue }
+    }
+}
+
+// Add this before DataStructureView
+struct DataStructureViewContainer: View {
+    @StateObject private var droppedElementsState = DroppedElementsState()
+    let layoutType: DataStructureLayoutType
+    let cells: [any DataStructureCell]
+    let connections: [any DataStructureConnection]
+    let availableElements: [String]?
+    let onElementDropped: (String, Int) -> Void
+    let isAutoPlaying: Bool
+    let onPlayPausePressed: () -> Void
+    let autoPlayInterval: TimeInterval
+    let hint: String?
+    let lineComment: String?
+    let isMultipleChoice: Bool
+    let multipleChoiceAnswers: [String]
+    let onMultipleChoiceAnswerSelected: (String) -> Void
+    let selectedMultipleChoiceAnswer: String
+    let onShowAnswer: () -> Void
+    let isCompleted: Bool
+    let questionId: String
+    
+    var body: some View {
+        DataStructureView(
+            layoutType: layoutType,
+            cells: cells,
+            connections: connections,
+            availableElements: availableElements,
+            onElementDropped: onElementDropped,
+            isAutoPlaying: isAutoPlaying,
+            onPlayPausePressed: onPlayPausePressed,
+            autoPlayInterval: autoPlayInterval,
+            hint: hint,
+            lineComment: lineComment,
+            isMultipleChoice: isMultipleChoice,
+            multipleChoiceAnswers: multipleChoiceAnswers,
+            onMultipleChoiceAnswerSelected: onMultipleChoiceAnswerSelected,
+            selectedMultipleChoiceAnswer: selectedMultipleChoiceAnswer,
+            onShowAnswer: onShowAnswer,
+            isCompleted: isCompleted,
+            questionId: questionId
+        )
+        .environment(\.droppedElementsState, droppedElementsState)
+    }
+}
+
 struct DataStructureView: View {
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
@@ -264,7 +327,6 @@ struct DataStructureView: View {
     let isAutoPlaying: Bool
     let onPlayPausePressed: () -> Void
     let autoPlayInterval: TimeInterval
-    let zoomPanState: VisualizationZoomPanState
     let hint: String?
     let lineComment: String?
     let isMultipleChoice: Bool
@@ -287,15 +349,17 @@ struct DataStructureView: View {
     @State private var renderCycle = UUID()
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
-    @State private var droppedElements: [String] = []
+    @Environment(\.droppedElementsState) private var droppedElementsState
+    @State private var originalAvailableElements: [String] = []  // Track original available elements
     @State private var showingHint = false
     @State private var showingGuide = false
     @State private var currentGuideStep = 0
     @StateObject private var cellSizeManager = CellSizeManager()
     
-    // Keep gesture states separate as they are temporary
-    @GestureState private var gestureZoom: CGFloat = 1.0
-    @GestureState private var gesturePan: CGSize = .zero
+    private var droppedElements: [String] {
+        get { droppedElementsState.elements }
+        set { droppedElementsState.elements = newValue }
+    }
     
     init(
         layoutType: DataStructureLayoutType,
@@ -306,7 +370,6 @@ struct DataStructureView: View {
         isAutoPlaying: Bool = false,
         onPlayPausePressed: @escaping () -> Void = {},
         autoPlayInterval: TimeInterval = 4.0,
-        zoomPanState: VisualizationZoomPanState,
         hint: String? = nil,
         lineComment: String? = nil,
         isMultipleChoice: Bool = false,
@@ -319,6 +382,7 @@ struct DataStructureView: View {
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
+        print("Initial droppedElements: []")
         
         self.layoutType = layoutType
         self.cells = cells
@@ -328,7 +392,6 @@ struct DataStructureView: View {
         self.isAutoPlaying = isAutoPlaying
         self.onPlayPausePressed = onPlayPausePressed
         self.autoPlayInterval = autoPlayInterval
-        self.zoomPanState = zoomPanState
         self.hint = hint
         self.lineComment = lineComment
         self.isMultipleChoice = isMultipleChoice
@@ -340,6 +403,7 @@ struct DataStructureView: View {
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
         self._originalCells = State(initialValue: cells)
+        self._originalAvailableElements = State(initialValue: availableElements ?? [])
         self.questionId = questionId
         
         // Check if this is the first time viewing any level
@@ -406,39 +470,9 @@ struct DataStructureView: View {
                 // Background and gesture handler
                 GridBackground()
                     .contentShape(Rectangle())
-                    .gesture(
-                        MagnificationGesture()
-                            .updating($gestureZoom) { value, gestureZoom, _ in
-                                gestureZoom = value
-                            }
-                            .onEnded { value in
-                                zoomPanState.steadyZoom = min(max(1.0, zoomPanState.steadyZoom * value), 3.0)
-                            }
-                    )
-                    .simultaneousGesture(
-                        DragGesture()
-                            .updating($gesturePan) { value, gesturePan, _ in
-                                if dragState == nil {  // Only pan when not dragging elements
-                                    gesturePan = value.translation
-                                }
-                            }
-                            .onEnded { value in
-                                if dragState == nil {  // Only update pan when not dragging elements
-                                    zoomPanState.steadyPan = CGSize(
-                                        width: zoomPanState.steadyPan.width + value.translation.width,
-                                        height: zoomPanState.steadyPan.height + value.translation.height
-                                    )
-                                }
-                            }
-                    )
                 
                 // Data structure content
                 dataStructureArea(geometry: geometry, cellSize: cellSize)
-                    .scaleEffect(zoomPanState.steadyZoom * gestureZoom)
-                    .offset(CGSize(
-                        width: zoomPanState.steadyPan.width + gesturePan.width,
-                        height: zoomPanState.steadyPan.height + gesturePan.height
-                    ))
             }
             
             // Overlay elements that should not be transformed
@@ -544,17 +578,19 @@ struct DataStructureView: View {
                     } else if availableElements != nil {
                         // Only show elements list if availableElements was explicitly included in the JSON
                         ElementsListView(
-                            availableElements: availableElements!,
-                            droppedElements: droppedElements,
+                            availableElements: availableElements ?? [],
+                            droppedElementsState: droppedElementsState,
                             dragState: dragState,
                             isOverElementList: isOverElementList,
                             onDragStarted: { element, location in
-                                dragState = (element, location)
+                                dragState = (element: element, location: location)
                             },
-                            onDragChanged: handleDragChanged,
+                            onDragChanged: { value, frame in
+                                handleDragChanged(value, in: frame)
+                            },
                             onDragEnded: handleDragEnded,
                             geometryFrame: geometry.frame(in: .global),
-                            cellSize: cellSize
+                            cellSize: cellSizeManager.size
                         )
                         .onHover { isHovered in
                             isOverElementList = isHovered
@@ -722,35 +758,21 @@ struct DataStructureView: View {
     
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
         let localLocation = globalFrame.convert(from: value.location)
-        let currentScale = zoomPanState.steadyZoom * gestureZoom
-        
-        // Calculate the center of the frame
-        let centerX = globalFrame.width / 2
-        let centerY = globalFrame.height / 2
-        
-        // Calculate total pan offset
-        let totalPanX = zoomPanState.steadyPan.width + gesturePan.width
-        let totalPanY = zoomPanState.steadyPan.height + gesturePan.height
-        
-        // Adjust for zoom and pan, taking into account that zoom happens from center
-        let adjustedLocation = CGPoint(
-            x: ((localLocation.x - centerX - totalPanX) / currentScale) + centerX,
-            y: ((localLocation.y - centerY - totalPanY) / currentScale) + centerY
-        )
         
         if dragState != nil {
             dragState?.location = localLocation
         } else {
-            // When starting a drag, use adjusted coordinates for hit testing
+            // When starting a drag, use coordinates for hit testing
             let index = layoutCells.firstIndex { cell in
                 let distance = sqrt(
-                    pow(cell.position.x - adjustedLocation.x, 2) +
-                    pow(cell.position.y - adjustedLocation.y, 2)
+                    pow(cell.position.x - localLocation.x, 2) +
+                    pow(cell.position.y - localLocation.y, 2)
                 )
                 return distance < cellSizeManager.size / 2
             }
             
             if let index = index, !layoutCells[index].value.isEmpty {
+                print("  Starting drag from cell \(index) with value \(layoutCells[index].value)")
                 draggingFromCellIndex = index
                 // Start the drag at the actual cursor position
                 dragState = (element: layoutCells[index].value, location: localLocation)
@@ -781,20 +803,24 @@ struct DataStructureView: View {
             height: draggedElementSize
         )
         
+        let wasOverList = isOverElementList
         isOverElementList = dropZone.intersects(draggedElementFrame)
+        if isOverElementList != wasOverList {
+            print("  isOverElementList changed to: \(isOverElementList)")
+        }
         
         // Only look for cell targets if not over element list
         if !isOverElementList {
-            // Find closest cell using adjusted coordinates
+            // Find closest cell
             let closestCell = layoutCells.enumerated()
                 .min(by: { first, second in
-                    let distance1 = distance(from: first.element.position, to: adjustedLocation)
-                    let distance2 = distance(from: second.element.position, to: adjustedLocation)
+                    let distance1 = distance(from: first.element.position, to: localLocation)
+                    let distance2 = distance(from: second.element.position, to: localLocation)
                     return distance1 < distance2
                 })
             
             if let closest = closestCell,
-               distance(from: closest.element.position, to: adjustedLocation) < cellSizeManager.size {
+               distance(from: closest.element.position, to: localLocation) < cellSizeManager.size {
                 hoveredCellIndex = closest.offset
             } else {
                 hoveredCellIndex = nil
@@ -823,36 +849,31 @@ struct DataStructureView: View {
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
-        defer {
-            dragState = nil
-            hoveredCellIndex = nil
-            draggingFromCellIndex = nil
-            isOverElementList = false
-        }
-        
-        if isOverElementList {
-            // If dragging from a cell, clear that cell and add to dropped elements
-            if let fromIndex = draggingFromCellIndex,
-               let element = dragState?.element,
-               !element.isEmpty {
-                print("Dropping element \(element) to element list from cell \(fromIndex)")
+        if isOverElementList, let element = dragState?.element {
+            // If dragging from a cell, clear that cell
+            if let fromIndex = draggingFromCellIndex {
+                print("\nDropping element \(element) to element list")
+                print("Current droppedElements before: \(droppedElements)")
+                
+                // First add to dropped elements
+                droppedElementsState.elements.append(element)
+                print("droppedElements after append: \(droppedElementsState.elements)")
+                print("Added \(element) to dropped elements (total count: \(droppedElementsState.elements.count))")
+                
+                // Then update the cell
                 onElementDropped("", fromIndex)
-                // Update current cells
                 var updatedCells = currentCells
                 var cell = updatedCells[fromIndex]
                 cell.setValue("")
                 updatedCells[fromIndex] = cell
                 currentCells = updatedCells
-                hasChanges = true  // Mark that changes were made
+                hasChanges = true
                 
-                // Only add to droppedElements if it wasn't in availableElements originally
-                if !(availableElements?.contains(element) ?? false) {
-                    print("Adding \(element) to dropped elements")
-                    droppedElements.append(element)
-                }
-                
-                // Force layout update with current cells
+                // Force layout updates last
+                renderCycle = UUID()
                 updateLayoutWithCurrentCells()
+                
+                print("Final droppedElements state: \(droppedElementsState.elements)")
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
@@ -881,16 +902,29 @@ struct DataStructureView: View {
                 currentCells = updatedCells
                 hasChanges = true  // Mark that changes were made
                 
-                // Remove the element from droppedElements if it was there
-                if let index = droppedElements.firstIndex(of: element) {
+                // Remove one instance of the element from droppedElements if it was there
+                if let index = droppedElementsState.elements.firstIndex(of: element) {
                     print("Removing \(element) from dropped elements")
-                    droppedElements.remove(at: index)
+                    droppedElementsState.elements.remove(at: index)
                 }
                 
                 // Force layout update with current cells
                 updateLayoutWithCurrentCells()
             }
         }
+        
+        // Always mark as changed if we have different elements in cells or dropped list
+        let currentCellValues = currentCells.map { $0.value }.filter { !$0.isEmpty }
+        let originalCellValues = originalCells.map { $0.value }.filter { !$0.isEmpty }
+        let currentElementsState = (currentCellValues + droppedElements).sorted()
+        let originalElementsState = (originalCellValues + originalAvailableElements).sorted()
+        hasChanges = currentElementsState != originalElementsState
+        
+        // Clean up state after handling the drop
+        dragState = nil
+        hoveredCellIndex = nil
+        draggingFromCellIndex = nil
+        isOverElementList = false
     }
     
     private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
@@ -900,13 +934,12 @@ struct DataStructureView: View {
     private func updateLayout() {
         guard !frame.isEmpty else { return }
         
+        print("\n=== updateLayout called ===")
+        print("droppedElements state in updateLayout: \(droppedElements)")
+        
         // Calculate scale factor based on current cell size
         let scaleFactor = cellSizeManager.size / 40 // 40 is the base size
         
-        print("\nUpdating layout:")
-        print("  - Frame: \(frame)")
-        print("  - Scale factor: \(scaleFactor)")
-        print("  - Layout type: \(layoutType)")
         
         // Don't adjust frame for arrays, only for linked lists
         var adjustedFrame = frame
@@ -929,26 +962,18 @@ struct DataStructureView: View {
             scale: scaleFactor
         )
         
-        // Log cell positions for debugging
-        print("\nCell positions after layout:")
-        for (index, cell) in newCells.enumerated() {
-            print("  Cell \(index): position (\(cell.position.x), \(cell.position.y))")
-        }
-        
-        // Log connection states for debugging
-        print("\nConnection states after layout:")
-        for state in newStates {
-            print("  Connection: from (\(state.fromPoint.x), \(state.fromPoint.y)) to (\(state.toPoint.x), \(state.toPoint.y))")
-        }
-        
         layoutCells = newCells
         connectionStates = newStates.enumerated().map { (index, state) in
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
+        
+        print("droppedElements after layout update: \(droppedElements)")
     }
     
     private func updateLayoutWithCurrentCells() {
+        print("\n=== updateLayoutWithCurrentCells called ===")
+        print("droppedElements before layout update: \(droppedElements)")
         var adjustedFrame = frame
         // For arrays, we don't need to adjust the frame
         if layoutType == .linkedList {
@@ -972,6 +997,7 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
+        print("droppedElements after layout update: \(droppedElements)")
     }
     
     private func canAutoPlay() -> Bool {
@@ -1233,8 +1259,28 @@ struct DataStructureView: View {
     }
 
     private func resetToOriginalState() {
+        // Reset cells to original state
         currentCells = originalCells
-        droppedElements = []
+        
+        // Get all elements currently in cells
+        let elementsInCells = currentCells.compactMap { cell -> String? in
+            let value = cell.value
+            return value.isEmpty ? nil : value
+        }
+        
+        // Create a mutable copy of original available elements
+        var availableElementsCopy = originalAvailableElements
+        
+        // Remove elements that are in cells from the available elements
+        for element in elementsInCells {
+            if let index = availableElementsCopy.firstIndex(of: element) {
+                availableElementsCopy.remove(at: index)
+            }
+        }
+        
+        // Set the remaining elements as dropped elements
+        droppedElementsState.elements = availableElementsCopy
+        
         hasChanges = false
         updateLayoutWithCurrentCells()
         renderCycle = UUID()
@@ -1293,9 +1339,7 @@ struct DataStructureView_Previews: PreviewProvider {
             BasicConnection(fromCellId: cells[1].id, toCellId: cells[2].id)
         ]
         
-        let zoomPanState = VisualizationZoomPanState()
-        
-        DataStructureView(
+        DataStructureViewContainer(
             layoutType: .linkedList,
             cells: cells,
             connections: connections,
@@ -1304,7 +1348,6 @@ struct DataStructureView_Previews: PreviewProvider {
             isAutoPlaying: false,
             onPlayPausePressed: {},
             autoPlayInterval: 4.0,
-            zoomPanState: zoomPanState,
             hint: "This is a hint",
             lineComment: "This is a line comment",
             isMultipleChoice: false,

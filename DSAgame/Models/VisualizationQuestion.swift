@@ -30,12 +30,6 @@ struct VisualizationQuestion {
     let layoutType: DataStructureLayoutType
 }
 
-// Add zoom and pan state manager
-class VisualizationZoomPanState: ObservableObject {
-    @Published var steadyZoom: CGFloat = 1.0
-    @Published var steadyPan: CGSize = .zero
-}
-
 // Add this before VisualizationQuestionView
 class VisualizationCompletionManager: ObservableObject {
     private var completedSteps: Set<UUID> = []
@@ -68,7 +62,6 @@ class VisualizationCompletionManager: ObservableObject {
     
     func updateCurrentStepIndex(_ index: Int) {
         currentStepIndex = index
-        print("Updated current step index to: \(index)")
     }
 }
 
@@ -88,7 +81,6 @@ struct VisualizationQuestionView: View {
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
     @State private var selectedAnswer: String = ""
-    @StateObject private var zoomPanState = VisualizationZoomPanState()
     @StateObject private var completionManager = VisualizationCompletionManager()
     @State private var isAutoPlaying = false
     @State private var autoPlayTimer: Timer?
@@ -110,9 +102,6 @@ struct VisualizationQuestionView: View {
     
     private var currentStep: VisualizationStep {
         let step = steps[currentStepIndex]
-        print("\n=== Current Step Status ===")
-        print("Step Index: \(currentStepIndex)")
-        print("Step Completion Status: \(completionManager.isStepCompleted(step))")
         if let answer = completionManager.getStoredAnswer(step) {
             print("Stored Answer: \(answer)")
         }
@@ -234,7 +223,6 @@ struct VisualizationQuestionView: View {
                         }
                     },
                     autoPlayInterval: calculateAutoPlayInterval(comment: currentStep.lineComment),
-                    zoomPanState: zoomPanState,
                     hint: currentStep.hint,
                     lineComment: currentStep.lineComment,
                     isMultipleChoice: currentStep.isMultipleChoice,
@@ -254,14 +242,6 @@ struct VisualizationQuestionView: View {
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear {
-                    print("\nDataStructureView appeared in VisualizationQuestionView:")
-                    print("Current step index: \(currentStepIndex)")
-                    print("Current step is multiple choice: \(currentStep.isMultipleChoice)")
-                    print("Current step multiple choice answers: \(currentStep.multipleChoiceAnswers)")
-                    print("Current step correct answer: \(currentStep.multipleChoiceCorrectAnswer)")
-                    print("Selected answer: \(selectedAnswer)")
-                    
-                    // If the question is completed, mark all steps as completed
                     if isCompleted {
                         let step = currentStep
                         if step.isMultipleChoice {
@@ -463,10 +443,6 @@ struct VisualizationQuestionView: View {
     }
     
     private func moveToNextStep() {
-        print("\n=== Moving to Next Step ===")
-        print("Current step index: \(currentStepIndex)")
-        print("Is completed: \(isCompleted)")
-        print("Is current step completed: \(isCurrentStepCompleted)")
         
         // If we're at the last step and it's completed, call onComplete
         if isLastStep && (isCompleted || isCurrentStepCompleted) {

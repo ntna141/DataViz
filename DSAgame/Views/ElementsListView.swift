@@ -2,7 +2,8 @@ import SwiftUI
 
 struct ElementsListView: View {
     let availableElements: [String]
-    let droppedElements: [String]
+    @ObservedObject var droppedElementsState: DroppedElementsState
+    var droppedElements: [String] { droppedElementsState.elements }
     let dragState: (element: String, location: CGPoint)?
     let isOverElementList: Bool
     let onDragStarted: (String, CGPoint) -> Void
@@ -35,7 +36,7 @@ struct ElementsListView: View {
             // Content
             HStack(spacing: cellSize * 0.2) {
                 let elements = availableElements + droppedElements
-                ForEach(elements, id: \.self) { element in
+                ForEach(Array(elements.enumerated()), id: \.offset) { index, element in
                     createDraggableElement(for: element)
                 }
                 
@@ -43,9 +44,9 @@ struct ElementsListView: View {
                     createDropHint()
                 }
             }
-            .padding(.horizontal, cellSize * 0.05)
+            .padding(.horizontal, cellSize * 0.2)
         }
-        .frame(width: calculateListWidth(), height: cellSize * 0.6)
+        .frame(width: calculateListWidth(), height: cellSize * 1.5)
         .overlay(
             GeometryReader { geometry in
                 Color.clear.onAppear {
@@ -61,10 +62,14 @@ struct ElementsListView: View {
     private func calculateListWidth() -> CGFloat {
         let elements = availableElements + droppedElements
         if elements.isEmpty {
-            return cellSize * 2 // Reduced width for drop hint
+            return cellSize * 3 // Width for drop hint
         } else {
-            return (CGFloat(elements.count) * cellSize) + // elements width
-                   (CGFloat(max(0, elements.count - 1))) // spacing between elements
+            return min(
+                (CGFloat(elements.count) * cellSize) + // elements width
+                (CGFloat(elements.count - 1) * (cellSize * 0.5)) + // spacing between elements
+                (cellSize * 0.4), // padding
+                UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
+            )
         }
     }
     
