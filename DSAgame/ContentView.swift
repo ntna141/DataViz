@@ -127,9 +127,8 @@ struct MapView: View {
                 .padding(.horizontal, 50)
                 
                 // Levels Grid
-                LazyVGrid(columns: columns, spacing: 30) {
+                LazyVGrid(columns: columns, spacing: 80) {
                     ForEach(levels.prefix(10), id: \.number) { level in
-                        // Level Card
                         VStack(spacing: 20) {
                             // Level Header
                             ZStack {
@@ -163,17 +162,30 @@ struct MapView: View {
                                     
                                     Text(level.topic)
                                         .font(.system(.title3, design: .monospaced))
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                    Text(level.description)
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.gray)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .fixedSize(horizontal: false, vertical: true)
+                                    
+                                    Spacer()  // Push all content to the top
                                 }
                                 .padding(20)
                             }
-                            .frame(height: 140)
+                            .frame(height: 200)  // Increased height to accommodate more text
+                            
+                            // Add decorative background between Header and Questions
+                            decorativeBackground(for: Int32(level.number))
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                )
+                                .padding(.vertical, 10)
                             
                             // Questions list
-                            VStack(spacing: 15) {
+                            VStack(spacing: 30) {
                                 ForEach(level.questions.indices, id: \.self) { index in
                                     let question = level.questions[index]
                                     if question.type == "visualization" {
@@ -199,6 +211,7 @@ struct MapView: View {
                     }
                 }
                 .padding(.horizontal, 50)
+                .padding(.vertical, 60)  // Keep vertical centering
                 .padding(.bottom, 50)
             }
         }
@@ -259,6 +272,218 @@ struct MapView: View {
             selectedLevelNumber = nil
         }
     }
+    
+    private func slugify(_ text: String) -> String {
+        return text.lowercased()
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "[^a-z0-9_]", with: "", options: .regularExpression)
+    }
+    
+    private func getPastelColors(for level: Int32) -> (Color, Color, Color) {
+        let colors: [(Color, Color, Color)] = [
+            (Color(red: 0.9, green: 0.95, blue: 1.0), Color(red: 0.4, green: 0.5, blue: 0.9), Color(red: 0.9, green: 0.4, blue: 0.5)),
+            (Color(red: 0.95, green: 1.0, blue: 0.9), Color(red: 0.4, green: 0.7, blue: 0.4), Color(red: 0.7, green: 0.4, blue: 0.8)),
+            (Color(red: 1.0, green: 0.95, blue: 0.9), Color(red: 0.9, green: 0.5, blue: 0.3), Color(red: 0.3, green: 0.6, blue: 0.8)),
+            (Color(red: 0.95, green: 0.9, blue: 1.0), Color(red: 0.7, green: 0.4, blue: 0.8), Color(red: 0.4, green: 0.8, blue: 0.6))
+        ]
+        let index = Int(level - 1) % colors.count
+        return colors[index]
+    }
+    
+       private func decorativeBackground(for level: Int32) -> some View {
+           let (color1, color2, color3) = getPastelColors(for: level)
+           
+           return Canvas { context, size in
+               // Background
+               let backgroundRect = CGRect(origin: .zero, size: size)
+               context.fill(Path(backgroundRect), with: .color(color1))
+               
+               // Calculate safe drawing area (slightly smaller than frame to prevent overflow)
+               let padding: CGFloat = 10
+               let safeRect = CGRect(x: padding, y: padding,
+                                   width: size.width - padding * 2,
+                                   height: size.height - padding * 2)
+               let centerX = safeRect.midX
+               let centerY = safeRect.midY
+               let maxRadius = min(safeRect.width, safeRect.height) * 0.4
+               
+               switch Int(level) % 4 {
+               case 0:  // Explosion pattern
+                   // Draw radiating lines
+                   for i in 0..<16 {
+                       let angle = Double(i) * .pi / 8
+                       var path = Path()
+                       path.move(to: CGPoint(x: centerX, y: centerY))
+                       let endX = centerX + cos(angle) * maxRadius
+                       let endY = centerY + sin(angle) * maxRadius
+                       path.addLine(to: CGPoint(x: endX, y: endY))
+                       context.stroke(path, with: .color(color2.opacity(0.8)), lineWidth: 3)
+                   }
+                   
+                   // Draw concentric circles
+                   for i in 1...4 {
+                       let radius = maxRadius * Double(i) / 4
+                       let rect = CGRect(x: centerX - radius, y: centerY - radius,
+                                       width: radius * 2, height: radius * 2)
+                       context.stroke(Path(ellipseIn: rect), with: .color(color3.opacity(0.8)), lineWidth: 2)
+                   }
+                   
+               case 1:  // Geometric pattern
+                   let gridSize = 4  // Reduced from 5 to make shapes larger
+                   let cellWidth = safeRect.width / Double(gridSize)
+                   let cellHeight = safeRect.height / Double(gridSize)
+                   
+                   for row in 0..<gridSize {
+                       for col in 0..<gridSize {
+                           let x = safeRect.minX + Double(col) * cellWidth
+                           let y = safeRect.minY + Double(row) * cellHeight
+                           
+                           if (row + col) % 2 == 0 {
+                               // Draw circles
+                               let radius = min(cellWidth, cellHeight) * 0.35
+                               let rect = CGRect(x: x + cellWidth/2 - radius, y: y + cellHeight/2 - radius,
+                                               width: radius * 2, height: radius * 2)
+                               context.fill(Path(ellipseIn: rect), with: .color(color2.opacity(0.8)))
+                           } else {
+                               // Draw rotated squares
+                               let squareSize = min(cellWidth, cellHeight) * 0.5
+                               var path = Path(CGRect(x: -squareSize/2, y: -squareSize/2,
+                                                    width: squareSize, height: squareSize))
+                               let transform = CGAffineTransform(translationX: x + cellWidth/2, y: y + cellHeight/2)
+                                   .rotated(by: .pi/4)
+                               path = path.applying(transform)
+                               context.fill(path, with: .color(color3.opacity(0.8)))
+                           }
+                       }
+                   }
+                   
+               case 2:  // Wave interference pattern
+                   for i in 0..<3 {
+                       var path = Path()
+                       let yOffset = safeRect.minY + safeRect.height * (0.25 + Double(i) * 0.25)
+                       path.move(to: CGPoint(x: safeRect.minX, y: yOffset))
+                       
+                       for x in stride(from: safeRect.minX, through: safeRect.maxX, by: 5) {
+                           let phase = Double(i) * .pi / 3
+                           let y = yOffset + sin(x / 30 + phase) * 12
+                           path.addLine(to: CGPoint(x: x, y: y))
+                       }
+                       context.stroke(path, with: .color(color2.opacity(0.8)), lineWidth: 2.5)
+                   }
+                   
+                   // Add crossing waves
+                   for i in 0..<3 {
+                       var path = Path()
+                       let xOffset = safeRect.minX + safeRect.width * (0.25 + Double(i) * 0.25)
+                       path.move(to: CGPoint(x: xOffset, y: safeRect.minY))
+                       
+                       for y in stride(from: safeRect.minY, through: safeRect.maxY, by: 5) {
+                           let phase = Double(i) * .pi / 3
+                           let x = xOffset + sin(y / 30 + phase) * 12
+                           path.addLine(to: CGPoint(x: x, y: y))
+                       }
+                       context.stroke(path, with: .color(color3.opacity(0.8)), lineWidth: 2.5)
+                   }
+                   
+               default:  // Root pattern
+                   // Start from center top
+                   let rootOrigin = CGPoint(x: centerX, y: safeRect.minY + padding)
+                   
+                   // Create multiple branching roots
+                   let numMainRoots = 4
+                   for i in 0..<numMainRoots {
+                       // Wider angle spread (0.4π to 1.3π instead of 0.7π to π)
+                       let angle = 2*Double.pi * (0.4 + Double(i) * 0.9 / Double(numMainRoots-1))
+                       // Increased length by 50%
+                       let mainLength = maxRadius * 2.4
+                       
+                       var rootPath = Path()
+                       rootPath.move(to: rootOrigin)
+                       
+                       // Create curved main root
+                       let endX = centerX + cos(angle) * mainLength
+                       let endY = rootOrigin.y + sin(angle) * mainLength
+                       
+                       // Adjusted control points for longer, more spread out curves
+                       let ctrl1X = centerX + cos(angle) * mainLength * 0.2
+                       let ctrl1Y = rootOrigin.y + sin(angle) * mainLength * 0.2
+                       let ctrl2X = centerX + cos(angle) * mainLength * 0.6
+                       let ctrl2Y = rootOrigin.y + sin(angle) * mainLength * 0.6
+                       
+                       rootPath.addCurve(
+                           to: CGPoint(x: endX, y: endY),
+                           control1: CGPoint(x: ctrl1X, y: ctrl1Y),
+                           control2: CGPoint(x: ctrl2X, y: ctrl2Y)
+                       )
+                       
+                       context.stroke(rootPath, with: .color(color2.opacity(0.8)), lineWidth: 3)
+                       
+                       // Add branches
+                       let numBranches = 5  // Increased number of branches
+                       for j in 1...numBranches {
+                           let t = Double(j) / Double(numBranches + 1)
+                           let branchStartX = centerX + cos(angle) * (mainLength * t)
+                           let branchStartY = rootOrigin.y + sin(angle) * (mainLength * t)
+                           
+                           // Create two branches, one on each side
+                           for side in [-1, 1] {
+                               // Increased angle spread for branches
+                               let branchAngle = angle + Double(side) * Double.pi * 0.3
+                               let branchLength = mainLength * (1.0 - t) * 0.7  // Increased branch length
+                               
+                               var branch = Path()
+                               branch.move(to: CGPoint(x: branchStartX, y: branchStartY))
+                               let branchEndX = branchStartX + cos(branchAngle) * branchLength
+                               let branchEndY = branchStartY + sin(branchAngle) * branchLength
+                               
+                               // Increased curve intensity for branches
+                               let branchCtrlX = branchStartX + cos(branchAngle) * branchLength * 0.5
+                               let branchCtrlY = branchStartY + sin(branchAngle) * branchLength * 0.5
+                               
+                               branch.addQuadCurve(
+                                   to: CGPoint(x: branchEndX, y: branchEndY),
+                                   control: CGPoint(x: branchCtrlX + Double(side) * 30, y: branchCtrlY)
+                               )
+                               
+                               context.stroke(branch, with: .color(color3.opacity(0.7)), lineWidth: 2)
+                               
+                               // Add smaller branches with curves
+                               if branchLength > maxRadius * 0.2 {
+                                   let numSubBranches = 2
+                                   for _ in 1...numSubBranches {
+                                       let subStartX = branchStartX + (branchEndX - branchStartX) * 0.5
+                                       let subStartY = branchStartY + (branchEndY - branchStartY) * 0.5
+                                       // Increased angle spread for sub-branches
+                                       let subAngle = branchAngle + Double(side) * Double.pi * 0.25
+                                       let subLength = branchLength * 0.5  // Increased sub-branch length
+                                       
+                                       var subBranch = Path()
+                                       subBranch.move(to: CGPoint(x: subStartX, y: subStartY))
+                                       let subEndX = subStartX + cos(subAngle) * subLength
+                                       let subEndY = subStartY + sin(subAngle) * subLength
+                                       
+                                       // Increased curve intensity for sub-branches
+                                       let subCtrlX = subStartX + cos(subAngle) * subLength * 0.5
+                                       let subCtrlY = subStartY + sin(subAngle) * subLength * 0.5
+                                       
+                                       subBranch.addQuadCurve(
+                                           to: CGPoint(x: subEndX, y: subEndY),
+                                           control: CGPoint(x: subCtrlX + Double(side) * 15, y: subCtrlY)
+                                       )
+                                       
+                                       context.stroke(subBranch, with: .color(color3.opacity(0.6)), lineWidth: 1.5)
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
+           }
+           .padding(4)  // Add padding to show the full border
+           .frame(maxWidth: .infinity)
+           .frame(height: 192)  // 200 - 8 to account for padding
+           .clipped()
+       }
 }
 
 struct QuestionRow: View {
@@ -285,8 +510,6 @@ struct QuestionRow: View {
                 Text("\(index + 1). \(question.title)")
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(isCompleted ? Color(white: 0.1) : .primary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                 
@@ -299,7 +522,7 @@ struct QuestionRow: View {
             .padding(.horizontal, 15)
             .padding(.vertical, 10)
         }
-        .frame(height: 70)
+        .frame(height: 60)  // Reduced height since we removed description
     }
 }
 
