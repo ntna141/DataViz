@@ -85,6 +85,7 @@ struct VisualizationQuestionView: View {
     @State private var isAutoPlaying = false
     @State private var autoPlayTimer: Timer?
     @StateObject private var cellSizeManager = CellSizeManager()
+    @StateObject private var elementListState = ElementListState()
     
     init(question: VisualizationQuestion, questionId: String, onComplete: @escaping () -> Void = {}, isCompleted: Bool = false) {
         self.question = question
@@ -237,7 +238,8 @@ struct VisualizationQuestionView: View {
                     selectedMultipleChoiceAnswer: selectedAnswer,
                     onShowAnswer: showAnswer,
                     isCompleted: completionManager.isStepCompleted(currentStep) && (currentStep.isMultipleChoice || currentStep.userInputRequired),
-                    questionId: questionId
+                    questionId: questionId,
+                    elementListState: elementListState
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -254,6 +256,9 @@ struct VisualizationQuestionView: View {
                             completionManager.markStepCompleted(step)
                         }
                     }
+                }
+                .onChange(of: currentStep.availableElements) { newElements in
+                    elementListState.hardReset(with: newElements)
                 }
             }
             
@@ -443,7 +448,6 @@ struct VisualizationQuestionView: View {
     }
     
     private func moveToNextStep() {
-        
         // If we're at the last step and it's completed, call onComplete
         if isLastStep && (isCompleted || isCurrentStepCompleted) {
             onComplete()
@@ -470,8 +474,12 @@ struct VisualizationQuestionView: View {
         let nextIndex = currentStepIndex + 1
         guard nextIndex < steps.count else { return }
         
-        currentStepIndex = nextIndex
+        // Reset state before moving to next step
         selectedAnswer = ""  // Reset selected answer when navigating
+        visualizationKey = UUID()  // Force a refresh of the visualization
+        
+        // Update the current step index last to trigger the state update
+        currentStepIndex = nextIndex
         
         // If the question is completed, mark the next step as completed too
         if isCompleted {
@@ -486,8 +494,6 @@ struct VisualizationQuestionView: View {
                 completionManager.markStepCompleted(nextStep)
             }
         }
-        
-        visualizationKey = UUID()
     }
     
     private func showAnswer() {

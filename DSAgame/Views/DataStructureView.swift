@@ -258,24 +258,68 @@ extension View {
 }
 
 // Add this before DataStructureView
-class DroppedElementsState: ObservableObject {
-    @Published var elements: [String] = []
+class ElementListState: ObservableObject {
+    @Published var currentList: [String]
+    
+    init(initialElements: [String]? = nil) {
+        print("\nInitializing ElementListState")
+        print("Initial elements: \(String(describing: initialElements))")
+        self.currentList = initialElements ?? []
+        print("Current list: \(self.currentList)")
+    }
+    
+    func reset(with elements: [String]?) {
+        print("\nSoft resetting element list")
+        print("Current list: \(currentList)")
+        print("New elements: \(String(describing: elements))")
+        // Do nothing to the list - keep it as is
+        print("Final list: \(currentList)")
+    }
+    
+    func hardReset(with elements: [String]?) {
+        print("\nHard resetting element list (step change)")
+        print("Current list: \(currentList)")
+        print("New elements: \(String(describing: elements))")
+        
+        // Clear the list first
+        currentList = []
+        
+        // Then set to new elements
+        if let elements = elements {
+            currentList = elements
+        }
+        print("Final list: \(currentList)")
+    }
+    
+    func append(_ element: String) {
+        print("Appending element: \(element)")
+        currentList.append(element)
+        print("Updated list: \(currentList)")
+    }
+    
+    func remove(_ element: String) {
+        print("Removing element: \(element)")
+        if let index = currentList.firstIndex(of: element) {
+            currentList.remove(at: index)
+        }
+        print("Updated list: \(currentList)")
+    }
 }
 
-private struct DroppedElementsKey: EnvironmentKey {
-    static let defaultValue = DroppedElementsState()
+private struct ElementListKey: EnvironmentKey {
+    static let defaultValue = ElementListState(initialElements: [])
 }
 
 extension EnvironmentValues {
-    var droppedElementsState: DroppedElementsState {
-        get { self[DroppedElementsKey.self] }
-        set { self[DroppedElementsKey.self] = newValue }
+    var elementListState: ElementListState {
+        get { self[ElementListKey.self] }
+        set { self[ElementListKey.self] = newValue }
     }
 }
 
 // Add this before DataStructureView
 struct DataStructureViewContainer: View {
-    @StateObject private var droppedElementsState = DroppedElementsState()
+    @StateObject private var elementListState: ElementListState
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
     let connections: [any DataStructureConnection]
@@ -293,6 +337,52 @@ struct DataStructureViewContainer: View {
     let onShowAnswer: () -> Void
     let isCompleted: Bool
     let questionId: String
+    
+    init(
+        layoutType: DataStructureLayoutType,
+        cells: [any DataStructureCell],
+        connections: [any DataStructureConnection],
+        availableElements: [String]? = nil,
+        onElementDropped: @escaping (String, Int) -> Void = { _, _ in },
+        isAutoPlaying: Bool = false,
+        onPlayPausePressed: @escaping () -> Void = {},
+        autoPlayInterval: TimeInterval = 4.0,
+        hint: String? = nil,
+        lineComment: String? = nil,
+        isMultipleChoice: Bool = false,
+        multipleChoiceAnswers: [String] = [],
+        onMultipleChoiceAnswerSelected: @escaping (String) -> Void = { _ in },
+        selectedMultipleChoiceAnswer: String = "",
+        onShowAnswer: @escaping () -> Void = {},
+        isCompleted: Bool = false,
+        questionId: String
+    ) {
+        print("\n=== DataStructureViewContainer Init ===")
+        print("Initializing with availableElements: \(String(describing: availableElements))")
+        
+        // Initialize the list state with available elements
+        let state = ElementListState(initialElements: availableElements)
+        self._elementListState = StateObject(wrappedValue: state)
+        
+        // Assign other properties
+        self.layoutType = layoutType
+        self.cells = cells
+        self.connections = connections
+        self.availableElements = availableElements
+        self.onElementDropped = onElementDropped
+        self.isAutoPlaying = isAutoPlaying
+        self.onPlayPausePressed = onPlayPausePressed
+        self.autoPlayInterval = autoPlayInterval
+        self.hint = hint
+        self.lineComment = lineComment
+        self.isMultipleChoice = isMultipleChoice
+        self.multipleChoiceAnswers = multipleChoiceAnswers
+        self.onMultipleChoiceAnswerSelected = onMultipleChoiceAnswerSelected
+        self.selectedMultipleChoiceAnswer = selectedMultipleChoiceAnswer
+        self.onShowAnswer = onShowAnswer
+        self.isCompleted = isCompleted
+        self.questionId = questionId
+    }
     
     var body: some View {
         DataStructureView(
@@ -312,9 +402,12 @@ struct DataStructureViewContainer: View {
             selectedMultipleChoiceAnswer: selectedMultipleChoiceAnswer,
             onShowAnswer: onShowAnswer,
             isCompleted: isCompleted,
-            questionId: questionId
+            questionId: questionId,
+            elementListState: elementListState
         )
-        .environment(\.droppedElementsState, droppedElementsState)
+        .onChange(of: availableElements) { newElements in
+            elementListState.hardReset(with: newElements)
+        }
     }
 }
 
@@ -336,6 +429,7 @@ struct DataStructureView: View {
     let onShowAnswer: () -> Void
     let isCompleted: Bool
     let questionId: String
+    @ObservedObject var elementListState: ElementListState
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
@@ -349,16 +443,14 @@ struct DataStructureView: View {
     @State private var renderCycle = UUID()
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
-    @Environment(\.droppedElementsState) private var droppedElementsState
     @State private var originalAvailableElements: [String] = []  // Track original available elements
     @State private var showingHint = false
     @State private var showingGuide = false
     @State private var currentGuideStep = 0
     @StateObject private var cellSizeManager = CellSizeManager()
     
-    private var droppedElements: [String] {
-        get { droppedElementsState.elements }
-        set { droppedElementsState.elements = newValue }
+    private var currentList: [String] {
+        elementListState.currentList
     }
     
     init(
@@ -378,11 +470,11 @@ struct DataStructureView: View {
         selectedMultipleChoiceAnswer: String = "",
         onShowAnswer: @escaping () -> Void = {},
         isCompleted: Bool = false,
-        questionId: String
+        questionId: String,
+        elementListState: ElementListState
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
-        print("Initial droppedElements: []")
         
         self.layoutType = layoutType
         self.cells = cells
@@ -405,6 +497,7 @@ struct DataStructureView: View {
         self._originalCells = State(initialValue: cells)
         self._originalAvailableElements = State(initialValue: availableElements ?? [])
         self.questionId = questionId
+        self.elementListState = elementListState
         
         // Check if this is the first time viewing any level
         let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
@@ -413,22 +506,39 @@ struct DataStructureView: View {
         self._showingGuide = State(initialValue: !hasSeenGuide)
         print("Setting initial showingGuide to: \(!hasSeenGuide)")
         self._currentGuideStep = State(initialValue: 0)
-        
-        print("Initialization complete")
     }
     
     var body: some View {
         GeometryReader { geometry in
             mainContent(geometry: geometry)
+            
+            // Guide overlay – for step changes, we reinitialize the list.
+            if showingGuide {
+                GuideCard(
+                    currentStep: currentGuideStep,
+                    onNext: {
+                        currentGuideStep += 1
+                        resetDroppedElementsForCurrentStep()
+                    },
+                    onBack: {
+                        currentGuideStep = max(0, currentGuideStep - 1)
+                        resetDroppedElementsForCurrentStep()
+                    },
+                    onClose: {
+                        showingGuide = false
+                        currentGuideStep = 0
+                        resetDroppedElementsForCurrentStep()
+                    },
+                    geometry: geometry,
+                    elementListState: elementListState
+                )
+                .environmentObject(cellSizeManager)
+            }
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
             handleFrameChange(newFrame)
         }
         .onChange(of: cells.map(\.id)) { _ in
-            print("\nCells changed in DataStructureView")
-            print("Is multiple choice: \(isMultipleChoice)")
-            print("Multiple choice answers: \(multipleChoiceAnswers)")
-            print("Selected answer: \(selectedMultipleChoiceAnswer)")
             updateLayout()
         }
         .onChange(of: connections.map(\.id)) { _ in
@@ -441,12 +551,14 @@ struct DataStructureView: View {
             updateLayout()
         }
         .onAppear {
-            print("\nDataStructureView body appeared")
-            print("Is multiple choice: \(isMultipleChoice)")
-            print("Multiple choice answers: \(multipleChoiceAnswers)")
-            print("Selected answer: \(selectedMultipleChoiceAnswer)")
-            print("ShowingGuide state: \(showingGuide)")
+            // Remove the reset call here
             updateLayout()
+        }
+        .onChange(of: availableElements) { newElements in
+            print("\nAvailable elements changed")
+            print("Current list: \(currentList)")
+            print("New elements: \(String(describing: newElements))")
+            print("Final list: \(currentList)")
         }
         .onChange(of: showingGuide) { newValue in
             // When the guide is closed, mark it as seen
@@ -457,7 +569,10 @@ struct DataStructureView: View {
                 UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
             }
         }
-        .environmentObject(cellSizeManager)
+        .onChange(of: cellSizeManager.size) { newSize in
+            cellSizeManager.updateSize(for: UIScreen.main.bounds.size)
+        }
+        .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: UIScreen.main.bounds.size))
     }
     
     private func mainContent(geometry: GeometryProxy) -> some View {
@@ -498,7 +613,7 @@ struct DataStructureView: View {
                     .padding(.leading, 30)
                     
                     // Reset button
-                    Button(action: resetToOriginalState) {
+                    Button(action: resetCurrentState) {
                         buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
                                 .font(.title)
@@ -576,10 +691,8 @@ struct DataStructureView: View {
                             onAnswerSelected: onMultipleChoiceAnswerSelected
                         )
                     } else if availableElements != nil {
-                        // Only show elements list if availableElements was explicitly included in the JSON
                         ElementsListView(
-                            availableElements: availableElements ?? [],
-                            droppedElementsState: droppedElementsState,
+                            elementListState: elementListState,
                             dragState: dragState,
                             isOverElementList: isOverElementList,
                             onDragStarted: { element, location in
@@ -671,24 +784,6 @@ struct DataStructureView: View {
                     .fixedSize(horizontal: true, vertical: true)  // Size to fit content
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)  // Center in screen
                 }
-            }
-
-            // Add guide overlay after the hint overlay
-            if showingGuide {
-                GuideCard(
-                    currentStep: currentGuideStep,
-                    onNext: {
-                        currentGuideStep += 1
-                    },
-                    onBack: {
-                        currentGuideStep -= 1
-                    },
-                    onClose: {
-                        showingGuide = false
-                        currentGuideStep = 0
-                    },
-                    geometry: geometry
-                )
             }
         }
         .onChange(of: cellSize) { newSize in
@@ -831,7 +926,7 @@ struct DataStructureView: View {
     }
     
     private func calculateListWidth() -> CGFloat {
-        let elements = (availableElements ?? []) + droppedElements
+        let elements = currentList
         if elements.isEmpty {
             return cellSizeManager.size * 3 // Width for "Drop here to remove" text
         } else {
@@ -853,12 +948,11 @@ struct DataStructureView: View {
             // If dragging from a cell, clear that cell
             if let fromIndex = draggingFromCellIndex {
                 print("\nDropping element \(element) to element list")
-                print("Current droppedElements before: \(droppedElements)")
+                print("Current list before: \(currentList)")
                 
-                // First add to dropped elements
-                droppedElementsState.elements.append(element)
-                print("droppedElements after append: \(droppedElementsState.elements)")
-                print("Added \(element) to dropped elements (total count: \(droppedElementsState.elements.count))")
+                // First add to list
+                elementListState.append(element)
+                print("Current list after append: \(currentList)")
                 
                 // Then update the cell
                 onElementDropped("", fromIndex)
@@ -872,8 +966,6 @@ struct DataStructureView: View {
                 // Force layout updates last
                 renderCycle = UUID()
                 updateLayoutWithCurrentCells()
-                
-                print("Final droppedElements state: \(droppedElementsState.elements)")
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
@@ -900,25 +992,15 @@ struct DataStructureView: View {
                 targetCell.setValue(element)
                 updatedCells[cellIndex] = targetCell
                 currentCells = updatedCells
-                hasChanges = true  // Mark that changes were made
+                hasChanges = true
                 
-                // Remove one instance of the element from droppedElements if it was there
-                if let index = droppedElementsState.elements.firstIndex(of: element) {
-                    print("Removing \(element) from dropped elements")
-                    droppedElementsState.elements.remove(at: index)
-                }
+                // Remove from list if it was there
+                elementListState.remove(element)
                 
                 // Force layout update with current cells
                 updateLayoutWithCurrentCells()
             }
         }
-        
-        // Always mark as changed if we have different elements in cells or dropped list
-        let currentCellValues = currentCells.map { $0.value }.filter { !$0.isEmpty }
-        let originalCellValues = originalCells.map { $0.value }.filter { !$0.isEmpty }
-        let currentElementsState = (currentCellValues + droppedElements).sorted()
-        let originalElementsState = (originalCellValues + originalAvailableElements).sorted()
-        hasChanges = currentElementsState != originalElementsState
         
         // Clean up state after handling the drop
         dragState = nil
@@ -935,11 +1017,10 @@ struct DataStructureView: View {
         guard !frame.isEmpty else { return }
         
         print("\n=== updateLayout called ===")
-        print("droppedElements state in updateLayout: \(droppedElements)")
+        print("Current list: \(currentList)")
         
         // Calculate scale factor based on current cell size
         let scaleFactor = cellSizeManager.size / 40 // 40 is the base size
-        
         
         // Don't adjust frame for arrays, only for linked lists
         var adjustedFrame = frame
@@ -967,13 +1048,12 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
-        
-        print("droppedElements after layout update: \(droppedElements)")
     }
     
     private func updateLayoutWithCurrentCells() {
         print("\n=== updateLayoutWithCurrentCells called ===")
-        print("droppedElements before layout update: \(droppedElements)")
+        print("Current list before layout update: \(currentList)")
+        
         var adjustedFrame = frame
         // For arrays, we don't need to adjust the frame
         if layoutType == .linkedList {
@@ -997,7 +1077,7 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
-        print("droppedElements after layout update: \(droppedElements)")
+        print("Current list after layout update: \(currentList)")
     }
     
     private func canAutoPlay() -> Bool {
@@ -1012,6 +1092,7 @@ struct DataStructureView: View {
         let onBack: () -> Void
         let onClose: () -> Void
         let geometry: GeometryProxy
+        @ObservedObject var elementListState: ElementListState
         @EnvironmentObject private var cellSizeManager: CellSizeManager
         
         var body: some View {
@@ -1217,7 +1298,10 @@ struct DataStructureView: View {
                         }
                         
                         if currentStep < 1 {
-                            Button(action: onNext) {
+                            Button(action: {
+                                elementListState.reset(with: [])
+                                onNext()
+                            }) {
                                 buttonBackground {
                                     HStack {
                                         Text("Next")
@@ -1258,32 +1342,35 @@ struct DataStructureView: View {
         }
     }
 
-    private func resetToOriginalState() {
-        // Reset cells to original state
-        currentCells = originalCells
+    private func resetCurrentState() {
+        print("\nResetting current state")
+        print("Current cells: \(currentCells.map { $0.value })")
+        print("Current list: \(currentList)")
         
-        // Get all elements currently in cells
-        let elementsInCells = currentCells.compactMap { cell -> String? in
-            let value = cell.value
-            return value.isEmpty ? nil : value
+        // Collect all current elements (from both cells and list)
+        let elementsInCells = Set(currentCells.map { $0.value }.filter { !$0.isEmpty })
+        let elementsInList = Set(currentList)
+        let allCurrentElements = Array(elementsInCells.union(elementsInList)).sorted()
+        
+        // Reset cells to empty
+        var emptyCells = currentCells
+        for i in emptyCells.indices {
+            var cell = emptyCells[i]
+            cell.setValue("")
+            emptyCells[i] = cell
         }
+        currentCells = emptyCells
         
-        // Create a mutable copy of original available elements
-        var availableElementsCopy = originalAvailableElements
-        
-        // Remove elements that are in cells from the available elements
-        for element in elementsInCells {
-            if let index = availableElementsCopy.firstIndex(of: element) {
-                availableElementsCopy.remove(at: index)
-            }
-        }
-        
-        // Set the remaining elements as dropped elements
-        droppedElementsState.elements = availableElementsCopy
+        // Use normal reset for in-step resets
+        elementListState.reset(with: allCurrentElements)
         
         hasChanges = false
         updateLayoutWithCurrentCells()
         renderCycle = UUID()
+        
+        print("After reset:")
+        print("Cells: \(currentCells.map { $0.value })")
+        print("Current list: \(currentList)")
     }
 
     private var shouldDisableNextButton: Bool {
@@ -1314,6 +1401,26 @@ struct DataStructureView: View {
         
         // Clamp the total interval between 2 and 7 seconds
         return min(max(baseInterval + additionalTime, 2.0), 7.0)
+    }
+
+    /// This helper resets the element list for the current guide step
+    private func resetDroppedElementsForCurrentStep() {
+        // Only reset if we have non-nil availableElements
+        if let elements = availableElements {
+            print("\nResetting element list for current step")
+            print("Current list: \(currentList)")
+            print("New elements: \(elements)")
+            // Use regular reset here too
+            elementListState.reset(with: elements)
+            print("Updated list: \(currentList)")
+        }
+    }
+
+    // Move initialization logic to a separate function
+    private func initializeList() {
+        print("\nInitializing list")
+        print("Available elements: \(String(describing: availableElements))")
+        elementListState.reset(with: availableElements)
     }
 }
 

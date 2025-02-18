@@ -1,9 +1,7 @@
 import SwiftUI
 
 struct ElementsListView: View {
-    let availableElements: [String]
-    @ObservedObject var droppedElementsState: DroppedElementsState
-    var droppedElements: [String] { droppedElementsState.elements }
+    @ObservedObject var elementListState: ElementListState
     let dragState: (element: String, location: CGPoint)?
     let isOverElementList: Bool
     let onDragStarted: (String, CGPoint) -> Void
@@ -22,8 +20,8 @@ struct ElementsListView: View {
             // Main rectangle
             Rectangle()
                 .fill(Color(red: isOverElementList ? 0.7 : 0.95, 
-                            green: isOverElementList ? 0.7 : 0.95, 
-                            blue: isOverElementList ? 0.9 : 1.0))
+                          green: isOverElementList ? 0.7 : 0.95, 
+                          blue: isOverElementList ? 0.9 : 1.0))
                 .overlay(
                     Rectangle()
                         .stroke(
@@ -35,13 +33,12 @@ struct ElementsListView: View {
             
             // Content
             HStack(spacing: cellSize * 0.2) {
-                let elements = availableElements + droppedElements
-                ForEach(Array(elements.enumerated()), id: \.offset) { index, element in
-                    createDraggableElement(for: element)
-                }
-                
-                if shouldShowDropHint {
+                if elementListState.currentList.isEmpty {
                     createDropHint()
+                } else {
+                    ForEach(Array(elementListState.currentList.enumerated()), id: \.offset) { index, element in
+                        createDraggableElement(for: element)
+                    }
                 }
             }
             .padding(.horizontal, cellSize * 0.2)
@@ -55,18 +52,13 @@ struct ElementsListView: View {
         )
     }
     
-    private var shouldShowDropHint: Bool {
-        availableElements.isEmpty && droppedElements.isEmpty
-    }
-    
     private func calculateListWidth() -> CGFloat {
-        let elements = availableElements + droppedElements
-        if elements.isEmpty {
+        if elementListState.currentList.isEmpty {
             return cellSize * 3 // Width for drop hint
         } else {
             return min(
-                (CGFloat(elements.count) * cellSize) + // elements width
-                (CGFloat(elements.count - 1) * (cellSize * 0.5)) + // spacing between elements
+                (CGFloat(elementListState.currentList.count) * cellSize) + // elements width
+                (CGFloat(elementListState.currentList.count - 1) * (cellSize * 0.5)) + // spacing between elements
                 (cellSize * 0.4), // padding
                 UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
             )
