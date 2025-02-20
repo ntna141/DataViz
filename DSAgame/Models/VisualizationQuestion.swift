@@ -80,6 +80,8 @@ struct VisualizationQuestionView: View {
     @State private var steps: [VisualizationStep]  
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
+    @State private var showingGuide = false
+    @State private var currentGuideStep = 0
     @State private var selectedAnswer: String = ""
     @StateObject private var completionManager = VisualizationCompletionManager()
     @State private var isAutoPlaying = false
@@ -97,7 +99,16 @@ struct VisualizationQuestionView: View {
         
         let firstStep = question.steps[0]
         _originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: firstStep.cells))
-
+        
+        // Check if guide has been seen before - only show on first app launch
+        let defaults = UserDefaults.standard
+        let hasSeenGuide = defaults.bool(forKey: "hasSeenDataStructureGuide")
+        if !hasSeenGuide {
+            defaults.set(true, forKey: "hasSeenDataStructureGuide")
+            defaults.synchronize()
+        }
+        _showingGuide = State(initialValue: !hasSeenGuide)
+        _currentGuideStep = State(initialValue: 0)
     }
     
     private var currentStep: VisualizationStep {
@@ -241,6 +252,10 @@ struct VisualizationQuestionView: View {
                     onShowAnswer: showAnswer,
                     isCompleted: isCurrentStepCompleted,
                     questionId: questionId,
+                    onShowGuide: {
+                        showingGuide = true
+                    },
+                    shouldHideButtons: $showingGuide,
                     elementListState: elementListState,
                     originalCellsState: originalCellsState
                 )
@@ -325,82 +340,119 @@ struct VisualizationQuestionView: View {
             
             VStack {
                 Spacer()
-                HStack {
-                    
-                    Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
-                    
-                    
-                    Button(action: {
-                        if currentStepIndex > 0 {
-                            let prevIndex = currentStepIndex - 1
-                            currentStepIndex = prevIndex
-                            selectedAnswer = ""  
-                            visualizationKey = UUID()
+                if !showingGuide {
+                    HStack {
+                        
+                        Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
+                        
+                        
+                        Button(action: {
+                            if currentStepIndex > 0 {
+                                let prevIndex = currentStepIndex - 1
+                                currentStepIndex = prevIndex
+                                selectedAnswer = ""  
+                                visualizationKey = UUID()
+                            }
+                        }) {
+                            ZStack {
+                                
+                                Rectangle()
+                                    .fill(Color.black)
+                                    .offset(x: 6, y: 6)
+                                
+                                
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .overlay(
+                                        Rectangle()
+                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                    )
+                                
+                                
+                                Text("Previous")
+                                    .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
+                                    .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
                         }
-                    }) {
-                        ZStack {
-                            
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            
-                            Text("Previous")
-                                .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
+                        .disabled(currentStepIndex == 0)
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                        .padding(.leading, 40)
+                        
+                        Spacer()
+                        
+                        
+                        Button(action: {
+                            if shouldDisableNextButton {
+                                onComplete()
+                            } else {
+                                moveToNextStep()
+                            }
+                        }) {
+                            ZStack {
+                                
+                                Rectangle()
+                                    .fill(Color.black)
+                                    .offset(x: 6, y: 6)
+                                
+                                
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .overlay(
+                                        Rectangle()
+                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                    )
+                                
+                                
+                                Text(shouldShowComplete ? "Complete" : "Next")
+                                    .foregroundColor(shouldDisableNextButton ? Color.gray : Color.blue)
+                                    .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
                         }
+                        .disabled(shouldDisableNextButton)
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                        .padding(.trailing, 40)
+                        
+                        Spacer()
                     }
-                    .disabled(currentStepIndex == 0)
-                    .buttonStyle(.plain)
-                    .frame(width: 120, height: 40)
-                    .padding(.leading, 40)
-                    
-                    Spacer()
-                    
-                    
-                    Button(action: {
-                        if shouldDisableNextButton {
-                            onComplete()
-                        } else {
-                            moveToNextStep()
-                        }
-                    }) {
-                        ZStack {
-                            
-                            Rectangle()
-                                .fill(Color.black)
-                                .offset(x: 6, y: 6)
-                            
-                            
-                            Rectangle()
-                                .fill(Color.white)
-                                .overlay(
-                                    Rectangle()
-                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                )
-                            
-                            
-                            Text(shouldShowComplete ? "Complete" : "Next")
-                                .foregroundColor(shouldDisableNextButton ? Color.gray : Color.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
-                        }
-                    }
-                    .disabled(shouldDisableNextButton)
-                    .buttonStyle(.plain)
-                    .frame(width: 120, height: 40)
-                    .padding(.trailing, 40)
-                    
-                    Spacer()
+                    .padding()
                 }
-                .padding()
+            }
+            
+            // Guide overlay
+            if showingGuide {
+                GeometryReader { geometry in
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                showingGuide = false
+                            }
+                        
+                        GuideCard(
+                            currentStep: currentGuideStep,
+                            onNext: {
+                                currentGuideStep += 1
+                                resetDroppedElementsForCurrentStep()
+                            },
+                            onBack: {
+                                currentGuideStep = max(0, currentGuideStep - 1)
+                                resetDroppedElementsForCurrentStep()
+                            },
+                            onClose: {
+                                showingGuide = false
+                                currentGuideStep = 0
+                                resetDroppedElementsForCurrentStep()
+                                UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
+                            },
+                            geometry: geometry,
+                            elementListState: elementListState
+                        )
+                        .environmentObject(cellSizeManager)
+                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                    }
+                }
             }
         }
         .onChange(of: question.layoutType) { newType in
@@ -611,6 +663,243 @@ struct VisualizationQuestionView: View {
         
         
         return min(max(baseInterval + additionalTime, 2.0), 7.0)
+    }
+    
+    private func resetDroppedElementsForCurrentStep() {
+        if let elements = currentStep.availableElements {
+            elementListState.hardReset(with: elements)
+        }
+    }
+}
+
+private struct GuideCard: View {
+    let currentStep: Int
+    let onNext: () -> Void
+    let onBack: () -> Void
+    let onClose: () -> Void
+    let geometry: GeometryProxy
+    @ObservedObject var elementListState: ElementListState
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
+    
+    var body: some View {
+        ZStack {
+            VStack(spacing: 20) {
+                HStack {
+                    Image(systemName: "questionmark.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.blue)
+                    Text("Guide")
+                        .font(.system(.title2, design: .monospaced).weight(.bold))
+                    Spacer()
+                    Button(action: onClose) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                ScrollView {
+                    if currentStep == 0 {
+                        VStack(alignment: .leading, spacing: 25) {
+                            Text("Button Functions")
+                                .font(.system(.title3, design: .monospaced).weight(.bold))
+                                .padding(.bottom, 5)
+                            
+                            HStack {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.blue)
+                                Text("Autoplay")
+                                    .font(.system(.body, design: .monospaced))
+                            }
+                            .padding(.bottom, 5)
+                            
+                            Text("Autoplay will automatically move through steps (the pause is based on the length of the text) until it reaches a question")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.gray)
+                                .padding(.leading)
+                                .padding(.bottom, 20)
+                            
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.orange)
+                                Text("Reset")
+                                    .font(.system(.body, design: .monospaced))
+                            }
+                            .padding(.bottom, 5)
+                            
+                            Text("Reset the current step to its original state if you've moved elements around")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.gray)
+                                .padding(.leading)
+                                .padding(.bottom, 10)
+                            
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.green)
+                                Text("Show Answer")
+                                    .font(.system(.body, design: .monospaced))
+                            }
+                            .padding(.bottom, 5)
+                            
+                            Text("If you have answered a question before, this button will show, and you can either move on or click it to show the correct answer")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.gray)
+                                .padding(.leading)
+                                .padding(.bottom, 5)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 10)
+                    } else if currentStep == 1 {
+                        VStack(alignment: .leading, spacing: 25) {
+                            Text("Drag and Drop")
+                                .font(.system(.title3, design: .monospaced).weight(.bold))
+                                .padding(.bottom, 10)
+                            
+                            Text("You can drag elements between cells or to/from the element list to create the correct data structure:")
+                                .font(.system(.body, design: .monospaced))
+                                .padding(.bottom, 10)
+                            
+                            VStack(spacing: 50) {
+                                VStack(alignment: .leading, spacing: 25) {
+                                    HStack(spacing: cellSizeManager.size * 0.5) {
+                                        ForEach(0..<2) { i in
+                                            ZStack {
+                                                Rectangle()
+                                                    .fill(Color.black)
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .offset(x: 6, y: 6)
+                                                
+                                                Rectangle()
+                                                    .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .overlay(
+                                                        Rectangle()
+                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                    )
+                                                Text(i == 0 ? "1" : "?")
+                                                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                            }
+                                        }
+                                    }
+                                    .padding(.bottom, 10)
+                                    
+                                    VStack(alignment: .leading, spacing: 20) {
+                                        ZStack {
+                                            Rectangle()
+                                                .fill(Color.black)
+                                                .offset(x: 6, y: 6)
+                                            
+                                            Rectangle()
+                                                .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                                )
+                                            
+                                            HStack(spacing: cellSizeManager.size * 0.2) {
+                                                ForEach(["2", "3"], id: \.self) { element in
+                                                    ZStack {
+                                                        Rectangle()
+                                                            .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                            .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                            .overlay(
+                                                                Rectangle()
+                                                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                            )
+                                                        Text(element)
+                                                            .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                                    }
+                                                }
+                                            }
+                                            .padding(.horizontal, cellSizeManager.size * 0.2)
+                                        }
+                                        .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
+                                        
+                                        ZStack {
+                                            Rectangle()
+                                                .fill(Color.black)
+                                                .offset(x: 6, y: 6)
+                                            
+                                            Rectangle()
+                                                .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                                                )
+                                            
+                                            Text("Drop here to remove")
+                                                .font(.system(size: cellSizeManager.size * 0.35))
+                                                .foregroundColor(.gray)
+                                                .monospaced()
+                                        }
+                                        .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 30)
+                    }
+                }
+                
+                HStack(spacing: 20) {
+                    if currentStep > 0 {
+                        Button(action: onBack) {
+                            buttonBackground {
+                                HStack {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
+                                }
+                                .foregroundColor(.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                    }
+                    
+                    if currentStep < 1 {
+                        Button(action: {
+                            elementListState.reset(with: [])
+                            onNext()
+                        }) {
+                            buttonBackground {
+                                HStack {
+                                    Text("Next")
+                                    Image(systemName: "chevron.right")
+                                }
+                                .foregroundColor(.blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                    }
+                }
+                .padding(.top, 30)
+            }
+            .padding(50)
+            .background(
+                ZStack {
+                    Rectangle()
+                        .fill(Color.black)
+                        .offset(x: 6, y: 6)
+                    
+                    Rectangle()
+                        .fill(Color.white)
+                        .overlay(
+                            Rectangle()
+                                .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
+                        )
+                }
+            )
+            .frame(minWidth: 400, maxWidth: 500)
+            .frame(minHeight: 600)
+            .fixedSize(horizontal: true, vertical: true)
+        }
     }
 }
 

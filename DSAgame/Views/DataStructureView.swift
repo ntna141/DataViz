@@ -419,6 +419,8 @@ struct DataStructureViewContainer: View {
             onShowAnswer: onShowAnswer,
             isCompleted: isCompleted,
             questionId: questionId,
+            onShowGuide: {},
+            shouldHideButtons: .constant(false),
             elementListState: elementListState,
             originalCellsState: originalCellsState
         )
@@ -449,6 +451,8 @@ struct DataStructureView: View {
     let onShowAnswer: () -> Void
     let isCompleted: Bool
     let questionId: String
+    let onShowGuide: () -> Void
+    @Binding var shouldHideButtons: Bool
     @ObservedObject var elementListState: ElementListState
     @ObservedObject var originalCellsState: OriginalCellsState
     @Environment(\.presentationMode) var presentationMode
@@ -465,8 +469,6 @@ struct DataStructureView: View {
     @State private var isOverElementList: Bool = false
     @State private var originalAvailableElements: [String] = []
     @State private var showingHint = false
-    @State private var showingGuide = false
-    @State private var currentGuideStep = 0
     @StateObject private var cellSizeManager = CellSizeManager()
     
     private var currentList: [String] {
@@ -491,10 +493,11 @@ struct DataStructureView: View {
         onShowAnswer: @escaping () -> Void = {},
         isCompleted: Bool = false,
         questionId: String,
+        onShowGuide: @escaping () -> Void,
+        shouldHideButtons: Binding<Bool>,
         elementListState: ElementListState,
         originalCellsState: OriginalCellsState
     ) {
-        
         self.layoutType = layoutType
         self.cells = cells
         self.connections = connections
@@ -517,45 +520,18 @@ struct DataStructureView: View {
         self.questionId = questionId
         self.elementListState = elementListState
         self.originalCellsState = originalCellsState
-        
-        
-        let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
-        self._showingGuide = State(initialValue: !hasSeenGuide)
-        self._currentGuideStep = State(initialValue: 0)
+        self.onShowGuide = onShowGuide
+        self._shouldHideButtons = shouldHideButtons
     }
     
     var body: some View {
         GeometryReader { geometry in
             mainContent(geometry: geometry)
-            
-            
-            if showingGuide {
-                GuideCard(
-                    currentStep: currentGuideStep,
-                    onNext: {
-                        currentGuideStep += 1
-                        resetDroppedElementsForCurrentStep()
-                    },
-                    onBack: {
-                        currentGuideStep = max(0, currentGuideStep - 1)
-                        resetDroppedElementsForCurrentStep()
-                    },
-                    onClose: {
-                        showingGuide = false
-                        currentGuideStep = 0
-                        resetDroppedElementsForCurrentStep()
-                    },
-                    geometry: geometry,
-                    elementListState: elementListState
-                )
-                .environmentObject(cellSizeManager)
-            }
         }
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
             handleFrameChange(newFrame)
         }
         .onAppear {
-            
             currentCells = cells.map { cell in
                 var copy = (cell as! BasicCell).deepCopy()
                 copy.position = cell.position
@@ -567,15 +543,8 @@ struct DataStructureView: View {
             }
             updateLayout()
         }
-        .onChange(of: showingGuide) { newValue in
-            
-            if !newValue {
-                UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
-            }
-        }
         .onChange(of: cellSizeManager.size) { newSize in
             cellSizeManager.updateSize(for: UIScreen.main.bounds.size)
-            
             updateLayout()
         }
         .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: UIScreen.main.bounds.size))
@@ -606,8 +575,7 @@ struct DataStructureView: View {
                 HStack {
                     
                     Button(action: {
-                        showingGuide = true
-                        currentGuideStep = 0
+                        onShowGuide()
                     }) {
                         buttonBackground {
                             Image(systemName: "questionmark.circle.fill")
@@ -1097,266 +1065,11 @@ struct DataStructureView: View {
     }
 
     
-    private struct GuideCard: View {
-        let currentStep: Int
-        let onNext: () -> Void
-        let onBack: () -> Void
-        let onClose: () -> Void
-        let geometry: GeometryProxy
-        @ObservedObject var elementListState: ElementListState
-        @EnvironmentObject private var cellSizeManager: CellSizeManager
-        
-        var body: some View {
-            ZStack {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        onClose()
-                    }
-                
-                VStack(spacing: 20) {
-                    HStack {
-                        Image(systemName: "questionmark.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.blue)
-                        Text("Guide")
-                            .font(.system(.title2, design: .monospaced).weight(.bold))
-                        Spacer()
-                        Button(action: onClose) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    
-                    ScrollView {
-                        if currentStep == 0 {
-                            
-                            VStack(alignment: .leading, spacing: 25) {
-                                Text("Button Functions")
-                                    .font(.system(.title3, design: .monospaced).weight(.bold))
-                                    .padding(.bottom, 5)
-                                
-                                HStack {
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.title)
-                                        .foregroundColor(.blue)
-                                    Text("Autoplay")
-                                        .font(.system(.body, design: .monospaced))
-                                }
-                                .padding(.bottom, 5)
-                                
-                                Text("Autoplay will automatically move through steps (the pause is based on the length of the text) until it reaches a question")
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                    .padding(.leading)
-                                    .padding(.bottom, 20)
-                                
-                                HStack {
-                                    Image(systemName: "arrow.counterclockwise.circle.fill")
-                                        .font(.title)
-                                        .foregroundColor(.orange)
-                                    Text("Reset")
-                                        .font(.system(.body, design: .monospaced))
-                                }
-                                .padding(.bottom, 5)
-                                
-                                Text("Reset the current step to its original state if you've moved elements around")
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                    .padding(.leading)
-                                    .padding(.bottom, 20)
-                                
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.title)
-                                        .foregroundColor(.green)
-                                    Text("Show Answer")
-                                        .font(.system(.body, design: .monospaced))
-                                }
-                                .padding(.bottom, 5)
-                                
-                                Text("If you have answered a question before, this button will show, and you can either move on or click it to show the correct answer")
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                    .padding(.leading)
-                                    .padding(.bottom, 5)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 20)
-                        } else if currentStep == 1 {
-                            
-                            VStack(alignment: .leading, spacing: 25) {
-                                Text("Drag and Drop")
-                                    .font(.system(.title3, design: .monospaced).weight(.bold))
-                                    .padding(.bottom, 10)
-                                
-                                Text("You can drag elements between cells or to/from the element list to create the correct data structure:")
-                                    .font(.system(.body, design: .monospaced))
-                                    .padding(.bottom, 20)
-                                
-                                
-                                VStack(spacing: 50) {
-                                    
-                                    VStack(alignment: .leading, spacing: 25) {
-                                        
-                                  HStack(spacing: cellSizeManager.size * 0.5) {
-                                            
-                                            ForEach(0..<2) { i in
-                                                ZStack {
-                                                    
-                                                    Rectangle()
-                                                        .fill(Color.black)
-                                                        .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                                                        .offset(x: 6, y: 6)  
-                                                    
-                                                    
-                                                    Rectangle()
-                                                        .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
-                                                        .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                                                        .overlay(
-                                                            Rectangle()
-                                                                .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
-                                                        )
-                                                    Text(i == 0 ? "1" : "?")
-                                                        .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
-                                                }
-                                            }
-                                        }
-                                        .padding(.bottom, 20)
-                                        
-                                        VStack(alignment: .leading, spacing: 20) {
-                                            
-                                            ZStack {
-                                                
-                                                Rectangle()
-                                                    .fill(Color.black)
-                                                    .offset(x: 6, y: 6)
-                                                
-                                                
-                                                Rectangle()
-                                                    .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
-                                                    .overlay(
-                                                        Rectangle()
-                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                                    )
-                                                
-                                                
-                                                HStack(spacing: cellSizeManager.size * 0.2) {
-                                                    ForEach(["2", "3"], id: \.self) { element in
-                                                        ZStack {
-                                                            Rectangle()
-                                                                .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
-                                                                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                                                                .overlay(
-                                                                    Rectangle()
-                                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
-                                                                )
-                                                            Text(element)
-                                                                .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
-                                                        }
-                                                    }
-                                                }
-                                                .padding(.horizontal, cellSizeManager.size * 0.2)
-                                            }
-                                            .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
-                                            
-                                            
-                                            ZStack {
-                                                
-                                                Rectangle()
-                                                    .fill(Color.black)
-                                                    .offset(x: 6, y: 6)
-                                                
-                                                
-                                                Rectangle()
-                                                    .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
-                                                    .overlay(
-                                                        Rectangle()
-                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                                                    )
-                                                
-                                                Text("Drop here to remove")
-                                                    .font(.system(size: cellSizeManager.size * 0.35))
-                                                    .foregroundColor(.gray)
-                                                    .monospaced()
-                                            }
-                                            .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2) 
-                                        }
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 30)
-                        }
-                    }
-                    
-                    
-                    HStack(spacing: 20) {
-                        if currentStep > 0 {
-                            Button(action: onBack) {
-                                buttonBackground {
-                                    HStack {
-                                        Image(systemName: "chevron.left")
-                                        Text("Back")
-                                    }
-                                    .foregroundColor(.blue)
-                                    .font(.system(.body, design: .monospaced).weight(.bold))
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .frame(width: 120, height: 40)
-                        }
-                        
-                        if currentStep < 1 {
-                            Button(action: {
-                                elementListState.reset(with: [])
-                                onNext()
-                            }) {
-                                buttonBackground {
-                                    HStack {
-                                        Text("Next")
-                                        Image(systemName: "chevron.right")
-                                    }
-                                    .foregroundColor(.blue)
-                                    .font(.system(.body, design: .monospaced).weight(.bold))
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .frame(width: 120, height: 40)
-                        }
-                    }
-                    .padding(.top, 30)
-                }
-                .padding(50)
-                .background(
-                    ZStack {
-                        
-                        Rectangle()
-                            .fill(Color.black)
-                            .offset(x: 6, y: 6)
-                        
-                        
-                        Rectangle()
-                            .fill(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
-                            )
-                    }
-                )
-                .frame(minWidth: 400, maxWidth: 500)
-                .frame(minHeight: 600)
-                .fixedSize(horizontal: true, vertical: true)
-                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-            }
-        }
-    }
-
     private func resetCurrentState() {
-
+        // Reset cells to original state
         currentCells = originalCellsState.getCells()
         
+        // Reset available elements
         elementListState.hardReset(with: availableElements)
         updateLayout()
     }
@@ -1377,14 +1090,6 @@ struct DataStructureView: View {
         }
         
         return true
-    }
-
-    private func moveToNextStep() {
-        
-        if isCompleted {
-            currentGuideStep += 1
-            renderCycle = UUID()
-        }
     }
 
     private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
@@ -1428,13 +1133,13 @@ struct CellView: View {
     
     var body: some View {
         ZStack {
-            // Shadow layer
+            
             Rectangle()
                 .fill(Color.black)
                 .frame(width: cellSizeManager.size, height: cellSizeManager.size)
                 .offset(x: 6, y: 6)
             
-            // Main cell layer
+            
             Rectangle()
                 .fill(state.style.fillColor)
                 .frame(width: cellSizeManager.size, height: cellSizeManager.size)
@@ -1449,7 +1154,7 @@ struct CellView: View {
                         )
                 )
             
-            // Cell value or placeholder
+            
             if !state.value.isEmpty {
                 Text(state.value)
                     .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
@@ -1460,7 +1165,7 @@ struct CellView: View {
                     .foregroundColor(.gray)
             }
             
-            // Optional label
+            
             if let label = state.label {
                 Text(label)
                     .font(.system(.caption, design: .monospaced))
