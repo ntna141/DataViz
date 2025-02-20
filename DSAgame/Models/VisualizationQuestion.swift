@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-// Represents a single step in the visualization
+
 struct VisualizationStep {
     let id = UUID()
     let codeHighlightedLine: Int
@@ -16,7 +16,7 @@ struct VisualizationStep {
     var multipleChoiceCorrectAnswer: String = ""
 }
 
-// Represents a visualization question
+
 struct VisualizationQuestion {
     let id = UUID()
     let title: String
@@ -30,7 +30,7 @@ struct VisualizationQuestion {
     let layoutType: DataStructureLayoutType
 }
 
-// Add this before VisualizationQuestionView
+
 class VisualizationCompletionManager: ObservableObject {
     private var completedSteps: Set<UUID> = []
     private var stepAnswers: [UUID: String] = [:]
@@ -65,7 +65,7 @@ class VisualizationCompletionManager: ObservableObject {
     }
 }
 
-// Main visualization question view
+
 struct VisualizationQuestionView: View {
     let question: VisualizationQuestion
     let questionId: String
@@ -77,7 +77,7 @@ struct VisualizationQuestionView: View {
             completionManager.updateCurrentStepIndex(currentStepIndex)
         }
     }
-    @State private var steps: [VisualizationStep]  // Store all steps to maintain their state
+    @State private var steps: [VisualizationStep]  
     @State private var visualizationKey = UUID()
     @State private var showingHint = false
     @State private var selectedAnswer: String = ""
@@ -93,23 +93,15 @@ struct VisualizationQuestionView: View {
         self.questionId = questionId
         self.onComplete = onComplete
         self.isCompleted = isCompleted
-        _steps = State(initialValue: question.steps)  // Initialize steps array
+        _steps = State(initialValue: question.steps)  
         
-        // Initialize originalCellsState with the first step's cells
         let firstStep = question.steps[0]
         _originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: firstStep.cells))
-        
-        if firstStep.isMultipleChoice {
-            print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
-            print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
-        }
+
     }
     
     private var currentStep: VisualizationStep {
         let step = steps[currentStepIndex]
-        if let answer = completionManager.getStoredAnswer(step) {
-            print("Stored Answer: \(answer)")
-        }
         return step
     }
     
@@ -117,10 +109,10 @@ struct VisualizationQuestionView: View {
         steps[currentStepIndex] = step
         visualizationKey = UUID()
         
-        // Update original cells state when step changes
+        
         originalCellsState.hardReset(with: step.cells)
         
-        // Update element list state if needed
+        
         if let elements = step.availableElements {
             elementListState.hardReset(with: elements)
         }
@@ -129,25 +121,25 @@ struct VisualizationQuestionView: View {
     private var isCurrentStepCompleted: Bool {
         let step = currentStep
         
-        // For multiple choice questions
+        
         if step.isMultipleChoice {
-            // If already completed, return true
+            
             if completionManager.isStepCompleted(step) {
                 return true
             }
             
-            // Check if current answer is correct
+            
             return selectedAnswer == step.multipleChoiceCorrectAnswer
         }
         
-        // For user input questions
+        
         if step.userInputRequired {
-            // If already completed, return true
+            
             if completionManager.isStepCompleted(step) {
                 return true
             }
             
-            // Check if current state matches next step
+            
             guard let nextStep = steps[safe: currentStepIndex + 1] else { return false }
             return zip(step.cells, nextStep.cells).allSatisfy { current, next in
                 if next.value.isEmpty {
@@ -157,7 +149,7 @@ struct VisualizationQuestionView: View {
             }
         }
         
-        // For non-interactive steps, mark as completed when visited
+        
         if !completionManager.isStepCompleted(step) {
             completionManager.markStepCompleted(step)
         }
@@ -167,16 +159,16 @@ struct VisualizationQuestionView: View {
     var body: some View {
         ZStack {
             HStack(spacing: 0) {
-                // Left half - Code viewer
+                
                 VStack(spacing: 8) {
-                    // Title
+                    
                     Text(question.title)
                         .font(.system(.title, design: .monospaced))
                         .padding(.top, 30)
                         .frame(maxWidth: .infinity * 0.95, alignment: .leading)
                         .padding(.leading, 16)
                     
-                    // Back button
+                    
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
@@ -196,7 +188,7 @@ struct VisualizationQuestionView: View {
                     .buttonStyle(.plain)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    // Code viewer
+                    
                     CodeViewer(lines: question.code.map { line in
                         var modifiedLine = line
                         modifiedLine.isHighlighted = line.number == currentStep.codeHighlightedLine
@@ -216,7 +208,7 @@ struct VisualizationQuestionView: View {
                 )
                 .ignoresSafeArea(.container, edges: .leading)
                 
-                // Right half - Data structure view
+                
                 DataStructureView(
                     layoutType: question.layoutType,
                     cells: currentStep.cells,
@@ -242,9 +234,7 @@ struct VisualizationQuestionView: View {
                     multipleChoiceAnswers: currentStep.multipleChoiceAnswers,
                     onMultipleChoiceAnswerSelected: { answer in
                         if !isCurrentStepCompleted {
-                            print("\nMultiple choice answer selected: \(answer)")
                             selectedAnswer = answer
-                            print("Updated selectedAnswer to: \(selectedAnswer)")
                         }
                     },
                     selectedMultipleChoiceAnswer: selectedAnswer,
@@ -275,7 +265,7 @@ struct VisualizationQuestionView: View {
                 }
             }
             
-            // Hint overlay
+            
             if showingHint {
                 ZStack {
                     Color.black.opacity(0.3)
@@ -285,12 +275,12 @@ struct VisualizationQuestionView: View {
                         }
                     
                     ZStack {
-                        // Shadow layer for the entire box
+                        
                         Rectangle()
                             .fill(Color.black)
                             .offset(x: 6, y: 6)
                         
-                        // Main box
+                        
                         Rectangle()
                             .fill(Color.white)
                             .overlay(
@@ -332,29 +322,29 @@ struct VisualizationQuestionView: View {
                 }
             }
             
-            // Add navigation buttons at the bottom
+            
             VStack {
                 Spacer()
                 HStack {
-                    // This Spacer takes 25% of the space
+                    
                     Spacer().frame(width: UIScreen.main.bounds.width * 0.25)
                     
-                    // Previous button
+                    
                     Button(action: {
                         if currentStepIndex > 0 {
                             let prevIndex = currentStepIndex - 1
                             currentStepIndex = prevIndex
-                            selectedAnswer = ""  // Always reset selected answer when navigating
+                            selectedAnswer = ""  
                             visualizationKey = UUID()
                         }
                     }) {
                         ZStack {
-                            // Shadow layer
+                            
                             Rectangle()
                                 .fill(Color.black)
                                 .offset(x: 6, y: 6)
                             
-                            // Main rectangle
+                            
                             Rectangle()
                                 .fill(Color.white)
                                 .overlay(
@@ -362,7 +352,7 @@ struct VisualizationQuestionView: View {
                                         .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                                 )
                             
-                            // Button content
+                            
                             Text("Previous")
                                 .foregroundColor(currentStepIndex == 0 ? Color.gray : Color.blue)
                                 .font(.system(.body, design: .monospaced).weight(.bold))
@@ -375,7 +365,7 @@ struct VisualizationQuestionView: View {
                     
                     Spacer()
                     
-                    // Next/Complete button
+                    
                     Button(action: {
                         if shouldDisableNextButton {
                             onComplete()
@@ -384,12 +374,12 @@ struct VisualizationQuestionView: View {
                         }
                     }) {
                         ZStack {
-                            // Shadow layer
+                            
                             Rectangle()
                                 .fill(Color.black)
                                 .offset(x: 6, y: 6)
                             
-                            // Main rectangle
+                            
                             Rectangle()
                                 .fill(Color.white)
                                 .overlay(
@@ -397,7 +387,7 @@ struct VisualizationQuestionView: View {
                                         .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                                 )
                             
-                            // Button content
+                            
                             Text(shouldShowComplete ? "Complete" : "Next")
                                 .foregroundColor(shouldDisableNextButton ? Color.gray : Color.blue)
                                 .font(.system(.body, design: .monospaced).weight(.bold))
@@ -428,25 +418,25 @@ struct VisualizationQuestionView: View {
     }
     
     private var shouldDisableNextButton: Bool {
-        // If the question is already completed, allow moving forward
+        
         if isCompleted {
             return false
         }
         
-        // If the current step requires input or is multiple choice, check completion
+        
         if currentStep.userInputRequired || currentStep.isMultipleChoice {
             return !isCurrentStepCompleted
         }
         
-        // For non-interactive steps, always allow moving forward
+        
         return false
     }
     
     private var shouldShowComplete: Bool {
-        // Show Complete if we're on the last step and either:
-        // 1. The question is already completed, or
-        // 2. The current step is completed (for interactive steps)
-        // 3. The current step doesn't require interaction
+        
+        
+        
+        
         isLastStep && (
             isCompleted ||
             isCurrentStepCompleted ||
@@ -455,25 +445,25 @@ struct VisualizationQuestionView: View {
     }
     
     private var shouldShowAnswerButton: Bool {
-        // Only show answer button if:
-        // 1. The question is completed AND
-        // 2. The current step is interactive (multiple choice or user input)
+        
+        
+        
         isCompleted && (currentStep.isMultipleChoice || currentStep.userInputRequired)
     }
     
     private func moveToNextStep() {
-        // If we're at the last step and it's completed, call onComplete
+        
         if isLastStep && (isCompleted || isCurrentStepCompleted) {
             onComplete()
             return
         }
         
-        // Only move to next step if current step is completed or question is completed
+        
         if !isCompleted && !isCurrentStepCompleted {
             return
         }
         
-        // Mark current step as completed and store the answer/cells
+        
         let step = currentStep
         if !completionManager.isStepCompleted(step) {
             if step.isMultipleChoice {
@@ -488,18 +478,18 @@ struct VisualizationQuestionView: View {
         let nextIndex = currentStepIndex + 1
         guard nextIndex < steps.count else { return }
         
-        // Reset state before moving to next step
-        selectedAnswer = ""  // Reset selected answer when navigating
-        visualizationKey = UUID()  // Force a refresh of the visualization
         
-        // Update the current step index last to trigger the state update
+        selectedAnswer = ""  
+        visualizationKey = UUID()  
+        
+        
         currentStepIndex = nextIndex
         
-        // Initialize cells for the new step
+        
         let nextStep = steps[nextIndex]
         originalCellsState.hardReset(with: nextStep.cells)
         
-        // If the question is completed, mark the next step as completed too
+        
         if isCompleted {
             if nextStep.isMultipleChoice {
                 completionManager.markStepCompleted(nextStep, answer: nextStep.multipleChoiceCorrectAnswer)
@@ -550,12 +540,12 @@ struct VisualizationQuestionView: View {
     
     private func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
         ZStack {
-            // Shadow layer
+            
             Rectangle()
                 .fill(Color.black)
                 .offset(x: 6, y: 6)
             
-            // Main Rectangle
+            
             Rectangle()
                 .fill(Color.white)
                 .overlay(
@@ -584,17 +574,17 @@ struct VisualizationQuestionView: View {
     }
     
     private func scheduleNextStep() {
-        // Cancel any existing timer
+        
         autoPlayTimer?.invalidate()
         
-        // Calculate interval based on current step's comment
+        
         let interval = calculateAutoPlayInterval(comment: currentStep.lineComment)
         
-        // Schedule next step
+        
         autoPlayTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [self] _ in
             if isAutoPlaying && !isLastStep && !currentStep.userInputRequired {
                 moveToNextStep()
-                // If we can continue, schedule the next step
+                
                 if !isLastStep && !currentStep.userInputRequired {
                     scheduleNextStep()
                 } else {
@@ -607,19 +597,19 @@ struct VisualizationQuestionView: View {
     }
     
     private func handleLayoutTypeChange(_ newType: DataStructureLayoutType) {
-        // Implementation of handleLayoutTypeChange method
+        
     }
     
     private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
-        guard let comment = comment else { return 3.0 }  // Default interval if no comment
+        guard let comment = comment else { return 3.0 }  
         
-        // Base interval of 2 seconds
+        
         let baseInterval: TimeInterval = 2.0
         
-        // Add 0.05 seconds per character (about 20 chars per second reading speed)
+        
         let additionalTime = TimeInterval(comment.count) * 0.05
         
-        // Clamp the total interval between 2 and 7 seconds
+        
         return min(max(baseInterval + additionalTime, 2.0), 7.0)
     }
 }

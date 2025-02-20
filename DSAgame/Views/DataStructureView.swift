@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Draggable element view
+
 struct DraggableElementView: View {
     let element: String
     let isDragging: Bool
@@ -10,14 +10,14 @@ struct DraggableElementView: View {
     @EnvironmentObject private var cellSizeManager: CellSizeManager
     
     var body: some View {
-        // Main element with outline
+        
         Rectangle()
-            .fill(Color(red: 0.96, green: 0.95, blue: 0.91))  // Same beige as cells
+            .fill(Color(red: 0.96, green: 0.95, blue: 0.91))  
             .overlay(
                 Rectangle()
                     .stroke(
-                        Color(red: 0.2, green: 0.2, blue: 0.2),  // Same dark outline as cells
-                        lineWidth: 3.6  // Same as cell stroke width
+                        Color(red: 0.2, green: 0.2, blue: 0.2),  
+                        lineWidth: 3.6  
                     )
             )
             .overlay(
@@ -31,16 +31,12 @@ struct DraggableElementView: View {
             .gesture(
                 DragGesture(coordinateSpace: .global)
                     .onChanged { value in
-                        print("DraggableElementView - Drag changed for element: \(element)")
-                        print("  isDragging: \(isDragging)")
                         if !isDragging {
-                            print("  Starting drag at: \(value.location)")
                             onDragStarted(value.location)
                         }
                         onDragChanged(value)
                     }
                     .onEnded { value in
-                        print("DraggableElementView - Drag ended for element: \(element)")
                         onDragEnded(value)
                     }
             )
@@ -48,7 +44,7 @@ struct DraggableElementView: View {
     }
 }
 
-// Helper extension for CGRect
+
 extension CGRect {
     func convert(from globalPoint: CGPoint) -> CGPoint {
         CGPoint(
@@ -58,7 +54,7 @@ extension CGRect {
     }
 }
 
-// Add this helper view
+
 struct LayoutCellView: View {
     let cell: any DataStructureCell
     let index: Int
@@ -85,7 +81,7 @@ struct LayoutCellView: View {
         CellView(state: displayState)
             .id("\(cell.id)-\(renderCycle)")
             .position(cell.position)
-            .contentShape(Rectangle())  // Make entire area draggable
+            .contentShape(Rectangle())  
             .gesture(
                 DragGesture(coordinateSpace: .global)
                     .onChanged { value in
@@ -98,7 +94,7 @@ struct LayoutCellView: View {
     }
 }
 
-// Connection layer component
+
 struct ConnectionsLayer: View {
     let connectionStates: [(id: String, state: ConnectionDisplayState)]
     
@@ -109,7 +105,7 @@ struct ConnectionsLayer: View {
     }
 }
 
-// Cells layer component
+
 struct CellsLayer: View {
     let layoutCells: [any DataStructureCell]
     let hoveredCellIndex: Int?
@@ -149,24 +145,24 @@ struct CellsLayer: View {
     
     private func handleDragChange(value: DragGesture.Value, frame: CGRect) {
         if dragState == nil {
-            // Initialize drag state when starting drag from a cell
+            
             onDragChanged(value, frame)
         }
-        // Update drag position
+        
         onDragChanged(value, frame)
     }
 }
 
-// Add grid background view
+
 struct GridBackground: View {
-    let cellSize: CGFloat = 20 // Size of each grid cell
+    let cellSize: CGFloat = 20 
     let lineWidth: CGFloat = 0.3
     let lineColor: Color = .blue.opacity(0.3)
     
     var body: some View {
         GeometryReader { geometry in
             Path { path in
-                // Vertical lines
+                
                 let horizontalLineCount = Int(geometry.size.width / cellSize) + 1
                 for i in 0...horizontalLineCount {
                     let x = CGFloat(i) * cellSize
@@ -174,7 +170,7 @@ struct GridBackground: View {
                     path.addLine(to: CGPoint(x: x, y: geometry.size.height))
                 }
                 
-                // Horizontal lines
+                
                 let verticalLineCount = Int(geometry.size.height / cellSize) + 1
                 for i in 0...verticalLineCount {
                     let y = CGFloat(i) * cellSize
@@ -188,7 +184,7 @@ struct GridBackground: View {
     }
 }
 
-// Add MultipleChoiceView before DataStructureView
+
 struct MultipleChoiceView: View {
     let answers: [String]
     let selectedAnswer: String
@@ -207,12 +203,12 @@ struct MultipleChoiceView: View {
                         onAnswerSelected(answer)
                     }) {
                         ZStack {
-                            // Shadow layer
+                            
                             Rectangle()
                                 .fill(Color.black)
                                 .offset(x: 6, y: 6)
                             
-                            // Main rectangle with outline
+                            
                             Rectangle()
                                 .fill(selectedAnswer == answer ? Color.blue : Color(red: 0.96, green: 0.95, blue: 0.91))
                                 .overlay(
@@ -235,16 +231,16 @@ struct MultipleChoiceView: View {
     }
 }
 
-// Add this extension before the DataStructureView struct
+
 extension View {
     func buttonBackground<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
         ZStack {
-            // Shadow layer
+            
             Rectangle()
                 .fill(Color.black)
                 .offset(x: 6, y: 6)
             
-            // Main Rectangle
+            
             Rectangle()
                 .fill(Color.white)
                 .overlay(
@@ -257,52 +253,36 @@ extension View {
     }
 }
 
-// Add this before DataStructureView
+
 class ElementListState: ObservableObject {
     @Published var currentList: [String]
     
     init(initialElements: [String]? = nil) {
-        print("\nInitializing ElementListState")
-        print("Initial elements: \(String(describing: initialElements))")
         self.currentList = initialElements ?? []
-        print("Current list: \(self.currentList)")
     }
     
     func reset(with elements: [String]?) {
-        print("\nSoft resetting element list")
-        print("Current list: \(currentList)")
-        print("New elements: \(String(describing: elements))")
-        // Do nothing to the list - keep it as is
-        print("Final list: \(currentList)")
     }
     
     func hardReset(with elements: [String]?) {
-        print("\nHard resetting element list (step change)")
-        print("Current list: \(currentList)")
-        print("New elements: \(String(describing: elements))")
-        
-        // Clear the list first
         currentList = []
         
-        // Then set to new elements
+        currentList = []
+        
+        
         if let elements = elements {
             currentList = elements
         }
-        print("Final list: \(currentList)")
     }
     
     func append(_ element: String) {
-        print("Appending element: \(element)")
         currentList.append(element)
-        print("Updated list: \(currentList)")
     }
     
     func remove(_ element: String) {
-        print("Removing element: \(element)")
         if let index = currentList.firstIndex(of: element) {
             currentList.remove(at: index)
         }
-        print("Updated list: \(currentList)")
     }
 }
 
@@ -317,19 +297,16 @@ extension EnvironmentValues {
     }
 }
 
-// Add this before DataStructureView
+
 class OriginalCellsState: ObservableObject {
     @Published private(set) var currentCells: [any DataStructureCell]
     
     init(cells: [any DataStructureCell]) {
-        print("\nInitializing OriginalCellsState")
-        print("Initial cells: \(cells.map { $0.value })")
         self.currentCells = cells.map { cell in
             var copy = (cell as! BasicCell).deepCopy()
             copy.position = cell.position
             return copy
         }
-        print("Stored cells: \(self.currentCells.map { $0.value })")
     }
     
     func getCells() -> [any DataStructureCell] {
@@ -341,21 +318,16 @@ class OriginalCellsState: ObservableObject {
     }
     
     func hardReset(with cells: [any DataStructureCell]) {
-        print("\nHard resetting original cells state")
-        print("Current cells: \(currentCells.map { $0.value })")
-        print("New cells: \(cells.map { $0.value })")
         
-        // Make deep copies of the new cells
         self.currentCells = cells.map { cell in
             var copy = (cell as! BasicCell).deepCopy()
             copy.position = cell.position
             return copy
         }
-        print("Updated cells: \(currentCells.map { $0.value })")
     }
 }
 
-// Add this before DataStructureView
+
 struct DataStructureViewContainer: View {
     @StateObject private var elementListState: ElementListState
     @StateObject private var originalCellsState: OriginalCellsState
@@ -396,17 +368,15 @@ struct DataStructureViewContainer: View {
         isCompleted: Bool = false,
         questionId: String
     ) {
-        print("\n=== DataStructureViewContainer Init ===")
-        print("Initializing with availableElements: \(String(describing: availableElements))")
         
-        // Initialize the list state with available elements
+        
         let state = ElementListState(initialElements: availableElements)
         self._elementListState = StateObject(wrappedValue: state)
         
-        // Initialize the original cells state
+        
         self._originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: cells))
         
-        // Assign other properties
+        
         self.layoutType = layoutType
         self.cells = cells
         self.connections = connections
@@ -427,7 +397,6 @@ struct DataStructureViewContainer: View {
     }
     
     private func updateOriginalCellsState() {
-        print("\nUpdating original cells state")
         originalCellsState.hardReset(with: cells)
     }
     
@@ -525,8 +494,6 @@ struct DataStructureView: View {
         elementListState: ElementListState,
         originalCellsState: OriginalCellsState
     ) {
-        print("\n=== DataStructureView Init ===")
-        print("availableElements: \(String(describing: availableElements))")
         
         self.layoutType = layoutType
         self.cells = cells
@@ -551,12 +518,9 @@ struct DataStructureView: View {
         self.elementListState = elementListState
         self.originalCellsState = originalCellsState
         
-        // Check if this is the first time viewing any level
+        
         let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
-        print("\n=== Guide Initialization ===")
-        print("Has seen guide: \(hasSeenGuide)")
         self._showingGuide = State(initialValue: !hasSeenGuide)
-        print("Setting initial showingGuide to: \(!hasSeenGuide)")
         self._currentGuideStep = State(initialValue: 0)
     }
     
@@ -564,7 +528,7 @@ struct DataStructureView: View {
         GeometryReader { geometry in
             mainContent(geometry: geometry)
             
-            // Guide overlay – for step changes, we reinitialize the list.
+            
             if showingGuide {
                 GuideCard(
                     currentStep: currentGuideStep,
@@ -591,36 +555,27 @@ struct DataStructureView: View {
             handleFrameChange(newFrame)
         }
         .onAppear {
-            // Initialize current cells from cells property
+            
             currentCells = cells.map { cell in
                 var copy = (cell as! BasicCell).deepCopy()
                 copy.position = cell.position
                 return copy
             }
-            // Initialize original cells state only if it hasn't been initialized yet
+            
             if originalCellsState.getCells().isEmpty {
                 originalCellsState.hardReset(with: cells)
             }
             updateLayout()
         }
-        .onChange(of: availableElements) { newElements in
-            print("\nAvailable elements changed")
-            print("Current list: \(currentList)")
-            print("New elements: \(String(describing: newElements))")
-            print("Final list: \(currentList)")
-        }
         .onChange(of: showingGuide) { newValue in
-            // When the guide is closed, mark it as seen
-            print("\n=== Guide State Changed ===")
-            print("ShowingGuide changed to: \(newValue)")
+            
             if !newValue {
-                print("Guide closed, marking as seen in UserDefaults")
                 UserDefaults.standard.set(true, forKey: "hasSeenDataStructureGuide")
             }
         }
         .onChange(of: cellSizeManager.size) { newSize in
             cellSizeManager.updateSize(for: UIScreen.main.bounds.size)
-            // Only update layout when cell size changes
+            
             updateLayout()
         }
         .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: UIScreen.main.bounds.size))
@@ -631,25 +586,25 @@ struct DataStructureView: View {
         let topPadding = adaptiveElementListPadding(for: geometry.size)
         
         return ZStack {
-            // Single container for data structure area
+            
             ZStack {
-                // Background and gesture handler
+                
                 GridBackground()
                     .contentShape(Rectangle())
                 
-                // Data structure content
+                
                 dataStructureArea(geometry: geometry, cellSize: cellSize)
             }
             
-            // Overlay elements that should not be transformed
+            
             if let dragState = dragState {
                 draggedElementOverlay(dragState: dragState, geometry: geometry)
             }
             
             VStack {
-                // Top controls
+                
                 HStack {
-                    // Guide button
+                    
                     Button(action: {
                         showingGuide = true
                         currentGuideStep = 0
@@ -663,7 +618,7 @@ struct DataStructureView: View {
                     .frame(width: 44, height: 44)
                     .padding(.leading, 30)
                     
-                    // Reset button
+                    
                     Button(action: resetCurrentState) {
                         buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
@@ -675,7 +630,7 @@ struct DataStructureView: View {
                     .frame(width: 44, height: 44)
                     .padding(.leading, 10)
                     
-                    // Show Answer button - only show if the question is completed AND it's an interactive step
+                    
                     if isCompleted && (isMultipleChoice || availableElements != nil) {
                         Button(action: onShowAnswer) {
                             buttonBackground {
@@ -691,7 +646,7 @@ struct DataStructureView: View {
                     
                     Spacer()
                     
-                    // Hint button - only show if hint is available
+                    
                     if let hint = hint {
                         Button(action: {
                             showingHint = true
@@ -712,7 +667,7 @@ struct DataStructureView: View {
                         .padding(.trailing, 20)
                     }
                     
-                    // Play/Pause button (moved to end)
+                    
                     Button(action: onPlayPausePressed) {
                         buttonBackground {
                             Image(systemName: isAutoPlaying ? "pause.circle.fill" : "play.circle.fill")
@@ -756,7 +711,7 @@ struct DataStructureView: View {
                         .padding(.horizontal, 30)
                     }
                     
-                    // Subtitles at the bottom
+                    
                     if let comment = lineComment {
                         Text(comment)
                             .font(.system(.body, design: .monospaced))
@@ -769,7 +724,7 @@ struct DataStructureView: View {
                 }
             }
             
-            // Hint overlay
+            
             if showingHint {
                 ZStack {
                     Color.black.opacity(0.3)
@@ -811,12 +766,12 @@ struct DataStructureView: View {
                     .padding(40)
                     .background(
                         ZStack {
-                            // Shadow layer
+                            
                             Rectangle()
                                 .fill(Color.black)
                                 .offset(x: 6, y: 6)
                             
-                            // Main box
+                            
                             Rectangle()
                                 .fill(Color.white)
                                 .overlay(
@@ -826,8 +781,8 @@ struct DataStructureView: View {
                         }
                     )
                     .frame(minWidth: 400, maxWidth: 600)
-                    .fixedSize(horizontal: true, vertical: true)  // Size to fit content
-                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)  // Center in screen
+                    .fixedSize(horizontal: true, vertical: true)  
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)  
                 }
             }
         }
@@ -874,7 +829,6 @@ struct DataStructureView: View {
     private func handleFrameChange(_ newFrame: CGRect) {
         if newFrame != frame {
             frame = newFrame
-            print("Frame updated to: \(newFrame)")
             updateLayout()
         }
     }
@@ -885,15 +839,15 @@ struct DataStructureView: View {
     }
     
     private func adaptiveCellSize(for size: CGSize) -> CGFloat {
-        // Base size on the smaller dimension, with a reasonable range
+        
         let dimension = min(size.width, size.height)
-        let baseSize = dimension * 0.15 // Increased from 0.1 to 0.15 for better visibility
-        return min(max(baseSize, 60), 100) // Increased min and max sizes
+        let baseSize = dimension * 0.15 
+        return min(max(baseSize, 60), 100) 
     }
     
     private func adaptiveElementListPadding(for size: CGSize) -> CGFloat {
-        // More padding on larger screens, increased by 20
-        return size.height > 800 ? 120 : 30  // Increased from 100 to 120 and from 8 to 28
+        
+        return size.height > 800 ? 120 : 30  
     }
     
     private func handleDragChanged(_ value: DragGesture.Value, in globalFrame: CGRect) {
@@ -902,7 +856,7 @@ struct DataStructureView: View {
         if dragState != nil {
             dragState?.location = localLocation
         } else {
-            // When starting a drag, use coordinates for hit testing
+            
             let index = layoutCells.firstIndex { cell in
                 let distance = sqrt(
                     pow(cell.position.x - localLocation.x, 2) +
@@ -912,21 +866,19 @@ struct DataStructureView: View {
             }
             
             if let index = index, !layoutCells[index].value.isEmpty {
-                print("  Starting drag from cell \(index) with value \(layoutCells[index].value)")
                 draggingFromCellIndex = index
-                // Start the drag at the actual cursor position
                 dragState = (element: layoutCells[index].value, location: localLocation)
             }
         }
         
-        // Calculate the element list frame at the bottom
+        
         let listHeight = cellSizeManager.size * 1.5
-        let listY = globalFrame.height - 180 // Adjusted to account for padding and subtitle
+        let listY = globalFrame.height - 180 
         let listWidth = calculateListWidth()
         let listX = (globalFrame.width - listWidth) / 2
         
-        // Add generous padding to make the hit area larger
-        let dropPadding: CGFloat = cellSizeManager.size * 1.2 // Increased padding
+        
+        let dropPadding: CGFloat = cellSizeManager.size * 1.2 
         let dropZone = CGRect(
             x: listX - dropPadding,
             y: listY - dropPadding,
@@ -934,7 +886,7 @@ struct DataStructureView: View {
             height: listHeight + (dropPadding * 2)
         )
         
-        // Check if any part of the dragged element intersects with the drop zone
+        
         let draggedElementSize = cellSizeManager.size
         let draggedElementFrame = CGRect(
             x: localLocation.x - draggedElementSize/2,
@@ -945,13 +897,10 @@ struct DataStructureView: View {
         
         let wasOverList = isOverElementList
         isOverElementList = dropZone.intersects(draggedElementFrame)
-        if isOverElementList != wasOverList {
-            print("  isOverElementList changed to: \(isOverElementList)")
-        }
         
-        // Only look for cell targets if not over element list
+        
         if !isOverElementList {
-            // Find closest cell
+            
             let closestCell = layoutCells.enumerated()
                 .min(by: { first, second in
                     let distance1 = distance(from: first.element.position, to: localLocation)
@@ -973,13 +922,13 @@ struct DataStructureView: View {
     private func calculateListWidth() -> CGFloat {
         let elements = currentList
         if elements.isEmpty {
-            return cellSizeManager.size * 3 // Width for "Drop here to remove" text
+            return cellSizeManager.size * 3 
         } else {
             return min(
                 CGFloat(elements.count) * cellSizeManager.size +
-                CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + // spacing between elements
-                (cellSizeManager.size * 0.4), // padding (0.2 on each side)
-                UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
+                CGFloat(elements.count - 1) * (cellSizeManager.size * 0.2) + 
+                (cellSizeManager.size * 0.4), 
+                UIScreen.main.bounds.width * 0.8 
             )
         }
     }
@@ -990,16 +939,10 @@ struct DataStructureView: View {
     
     private func handleDragEnded(_ value: DragGesture.Value) {
         if isOverElementList, let element = dragState?.element {
-            // If dragging from a cell, clear that cell
+            
             if let fromIndex = draggingFromCellIndex {
-                print("\nDropping element \(element) to element list")
-                print("Current list before: \(currentList)")
-                
-                // First add to list
                 elementListState.append(element)
-                print("Current list after append: \(currentList)")
                 
-                // Then update the cell
                 onElementDropped("", fromIndex)
                 var updatedCells = currentCells
                 var cell = updatedCells[fromIndex]
@@ -1008,33 +951,31 @@ struct DataStructureView: View {
                 currentCells = updatedCells
                 hasChanges = true
                 
-                // Update layout cells directly
+                
                 var updatedLayoutCells = layoutCells
                 var layoutCell = updatedLayoutCells[fromIndex]
                 layoutCell.setValue("")
                 updatedLayoutCells[fromIndex] = layoutCell
                 layoutCells = updatedLayoutCells
                 
-                // Force layout updates last
+                
                 renderCycle = UUID()
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
-            print("Attempting to drop element \(element) into cell \(cellIndex)")
-            // Only drop if the target cell is empty or if we're dragging from a different cell
+            
             if layoutCells[cellIndex].value.isEmpty || cellIndex != draggingFromCellIndex {
-                // If dragging from a cell, clear that cell first
+                
                 if let fromIndex = draggingFromCellIndex {
-                    print("Clearing source cell \(fromIndex)")
                     onElementDropped("", fromIndex)
-                    // Update current cells for source
+                    
                     var updatedCells = currentCells
                     var sourceCell = updatedCells[fromIndex]
                     sourceCell.setValue("")
                     updatedCells[fromIndex] = sourceCell
                     currentCells = updatedCells
                     
-                    // Update layout cells for source
+                    
                     var updatedLayoutCells = layoutCells
                     var sourceLayoutCell = updatedLayoutCells[fromIndex]
                     sourceLayoutCell.setValue("")
@@ -1042,16 +983,15 @@ struct DataStructureView: View {
                     layoutCells = updatedLayoutCells
                 }
                 
-                print("Dropping \(element) into cell \(cellIndex)")
                 onElementDropped(element, cellIndex)
-                // Update current cells for target
+                
                 var updatedCells = currentCells
                 var targetCell = updatedCells[cellIndex]
                 targetCell.setValue(element)
                 updatedCells[cellIndex] = targetCell
                 currentCells = updatedCells
                 
-                // Update layout cells for target
+                
                 var updatedLayoutCells = layoutCells
                 var targetLayoutCell = updatedLayoutCells[cellIndex]
                 targetLayoutCell.setValue(element)
@@ -1060,15 +1000,15 @@ struct DataStructureView: View {
                 
                 hasChanges = true
                 
-                // Remove from list if it was there
+                
                 elementListState.remove(element)
                 
-                // Force layout update
+                
                 renderCycle = UUID()
             }
         }
         
-        // Clean up state after handling the drop
+        
         dragState = nil
         hoveredCellIndex = nil
         draggingFromCellIndex = nil
@@ -1082,16 +1022,13 @@ struct DataStructureView: View {
     private func updateLayout() {
         guard !frame.isEmpty else { return }
         
-        print("\n=== updateLayout called ===")
-        print("Current list: \(currentList)")
         
-        // Calculate scale factor based on current cell size
-        let scaleFactor = cellSizeManager.size / 40 // 40 is the base size
+        let scaleFactor = cellSizeManager.size / 40 
         
-        // Don't adjust frame for arrays, only for linked lists
+        
         var adjustedFrame = frame
         if layoutType == .linkedList {
-            // Move connection points to cell edges instead of center
+            
             adjustedFrame = CGRect(
                 x: frame.origin.x + cellSizeManager.size / 2,
                 y: frame.origin.y,
@@ -1100,12 +1037,9 @@ struct DataStructureView: View {
             )
         }
         
-        print("  - Adjusted frame: \(adjustedFrame)")
-        
-        // Make deep copies of current cells to preserve their values
         let cellsToLayout = currentCells.map { cell in
             var copy = (cell as! BasicCell).deepCopy()
-            copy.position = cell.position // Preserve position
+            copy.position = cell.position 
             return copy
         }
         
@@ -1124,11 +1058,8 @@ struct DataStructureView: View {
     }
     
     private func updateLayoutWithCurrentCells() {
-        print("\n=== updateLayoutWithCurrentCells called ===")
-        print("Current list before layout update: \(currentList)")
-        
         var adjustedFrame = frame
-        // For arrays, we don't need to adjust the frame
+        
         if layoutType == .linkedList {
             adjustedFrame = CGRect(
                 x: frame.origin.x + cellSizeManager.size / 2,
@@ -1140,10 +1071,10 @@ struct DataStructureView: View {
         
         let scaleFactor = cellSizeManager.size / 40
         
-        // Make deep copies of current cells to preserve their values
+        
         let cellsToLayout = currentCells.map { cell in
             var copy = (cell as! BasicCell).deepCopy()
-            copy.position = cell.position // Preserve position
+            copy.position = cell.position 
             return copy
         }
         
@@ -1158,15 +1089,14 @@ struct DataStructureView: View {
             (id: "\(index)", state: state)
         }
         renderCycle = UUID()
-        print("Current list after layout update: \(currentList)")
     }
     
     private func canAutoPlay() -> Bool {
-        // Can auto-play if there are cells to display and we're not dragging
+        
         return !cells.isEmpty && !currentCells.isEmpty && dragState == nil && (availableElements ?? []).isEmpty
     }
 
-    // Guide card content
+    
     private struct GuideCard: View {
         let currentStep: Int
         let onNext: () -> Void
@@ -1201,7 +1131,7 @@ struct DataStructureView: View {
                     
                     ScrollView {
                         if currentStep == 0 {
-                            // First card - Button functions
+                            
                             VStack(alignment: .leading, spacing: 25) {
                                 Text("Button Functions")
                                     .font(.system(.title3, design: .monospaced).weight(.bold))
@@ -1255,7 +1185,7 @@ struct DataStructureView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 20)
                         } else if currentStep == 1 {
-                            // Second card - Drag and Drop
+                            
                             VStack(alignment: .leading, spacing: 25) {
                                 Text("Drag and Drop")
                                     .font(.system(.title3, design: .monospaced).weight(.bold))
@@ -1265,22 +1195,22 @@ struct DataStructureView: View {
                                     .font(.system(.body, design: .monospaced))
                                     .padding(.bottom, 20)
                                 
-                                // Example visualization
+                                
                                 VStack(spacing: 50) {
-                                    // First example: Cells with element list
+                                    
                                     VStack(alignment: .leading, spacing: 25) {
                                         
                                   HStack(spacing: cellSizeManager.size * 0.5) {
-                                            // Example cells
+                                            
                                             ForEach(0..<2) { i in
                                                 ZStack {
-                                                    // Shadow layer
+                                                    
                                                     Rectangle()
                                                         .fill(Color.black)
                                                         .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                                                        .offset(x: 6, y: 6)  // Updated shadow offset to 8 points
+                                                        .offset(x: 6, y: 6)  
                                                     
-                                                    // Main cell
+                                                    
                                                     Rectangle()
                                                         .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
                                                         .frame(width: cellSizeManager.size, height: cellSizeManager.size)
@@ -1296,14 +1226,14 @@ struct DataStructureView: View {
                                         .padding(.bottom, 20)
                                         
                                         VStack(alignment: .leading, spacing: 20) {
-                                            // Example element list with elements
+                                            
                                             ZStack {
-                                                // Shadow layer
+                                                
                                                 Rectangle()
                                                     .fill(Color.black)
                                                     .offset(x: 6, y: 6)
                                                 
-                                                // Main rectangle
+                                                
                                                 Rectangle()
                                                     .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
                                                     .overlay(
@@ -1311,7 +1241,7 @@ struct DataStructureView: View {
                                                             .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                                                     )
                                                 
-                                                // Elements
+                                                
                                                 HStack(spacing: cellSizeManager.size * 0.2) {
                                                     ForEach(["2", "3"], id: \.self) { element in
                                                         ZStack {
@@ -1331,14 +1261,14 @@ struct DataStructureView: View {
                                             }
                                             .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
                                             
-                                            // Empty element list
+                                            
                                             ZStack {
-                                                // Shadow layer
+                                                
                                                 Rectangle()
                                                     .fill(Color.black)
                                                     .offset(x: 6, y: 6)
                                                 
-                                                // Main rectangle
+                                                
                                                 Rectangle()
                                                     .fill(Color(red: 0.95, green: 0.95, blue: 1.0))
                                                     .overlay(
@@ -1361,7 +1291,7 @@ struct DataStructureView: View {
                         }
                     }
                     
-                    // Navigation buttons
+                    
                     HStack(spacing: 20) {
                         if currentStep > 0 {
                             Button(action: onBack) {
@@ -1401,12 +1331,12 @@ struct DataStructureView: View {
                 .padding(50)
                 .background(
                     ZStack {
-                        // Shadow layer
+                        
                         Rectangle()
                             .fill(Color.black)
                             .offset(x: 6, y: 6)
                         
-                        // Main box
+                        
                         Rectangle()
                             .fill(Color.white)
                             .overlay(
@@ -1424,39 +1354,33 @@ struct DataStructureView: View {
     }
 
     private func resetCurrentState() {
-        print("\nResetting current state")
-        print("Original cells: \(originalCellsState.getCells().map { $0.value })")
-        // Reset current cells to the original state
+
         currentCells = originalCellsState.getCells()
-        // Reset element list
+        
         elementListState.hardReset(with: availableElements)
         updateLayout()
-        print("Current cells after reset: \(currentCells.map { $0.value })")
     }
 
     private func updateCurrentCells(_ newCells: [any DataStructureCell]) {
-        print("\nUpdating current cells")
-        print("Original cells before: \(originalCellsState.getCells().map { $0.value })")
         currentCells = newCells.map { cell in
             var copy = (cell as! BasicCell).deepCopy()
             copy.position = cell.position
             return copy
         }
         updateLayout()
-        print("Current cells after update: \(currentCells.map { $0.value })")
     }
 
     private var shouldDisableNextButton: Bool {
-        // If the question is already completed, allow moving forward
+        
         if isCompleted {
             return false
         }
-        // Otherwise, disable the button
+        
         return true
     }
 
     private func moveToNextStep() {
-        // If the question is completed, move to next step
+        
         if isCompleted {
             currentGuideStep += 1
             renderCycle = UUID()
@@ -1464,133 +1388,36 @@ struct DataStructureView: View {
     }
 
     private func calculateAutoPlayInterval(comment: String?) -> TimeInterval {
-        guard let comment = comment else { return 3.0 }  // Default interval if no comment
+        guard let comment = comment else { return 3.0 }  
         
-        // Base interval of 2 seconds
+        
         let baseInterval: TimeInterval = 2.0
         
-        // Add 0.05 seconds per character (about 20 chars per second reading speed)
+        
         let additionalTime = TimeInterval(comment.count) * 0.05
         
-        // Clamp the total interval between 2 and 7 seconds
+        
         return min(max(baseInterval + additionalTime, 2.0), 7.0)
     }
 
-    /// This helper resets the element list for the current guide step
+    
     private func resetDroppedElementsForCurrentStep() {
-        // Only reset if we have non-nil availableElements
+        
         if let elements = availableElements {
-            print("\nResetting element list for current step")
-            print("Current list: \(currentList)")
-            print("New elements: \(elements)")
-            // Use regular reset here too
             elementListState.reset(with: elements)
-            print("Updated list: \(currentList)")
         }
     }
 
-    // Move initialization logic to a separate function
+    
     private func initializeList() {
-        print("\nInitializing list")
-        print("Available elements: \(String(describing: availableElements))")
         elementListState.reset(with: availableElements)
     }
 }
 
-// Helper for getting frame size
+
 struct FramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
         value = nextValue()
-    }
-}
-
-// Preview
-struct DataStructureView_Previews: PreviewProvider {
-    static var previews: some View {
-        let cells: [any DataStructureCell] = [
-            BasicCell(value: "1"),
-            BasicCell(value: "2"),
-            BasicCell(value: "3", label: "head")
-        ]
-        
-        let connections: [any DataStructureConnection] = [
-            BasicConnection(fromCellId: cells[0].id, toCellId: cells[1].id),
-            BasicConnection(fromCellId: cells[1].id, toCellId: cells[2].id)
-        ]
-        
-        DataStructureViewContainer(
-            layoutType: .linkedList,
-            cells: cells,
-            connections: connections,
-            availableElements: ["4", "5", "6"],
-            onElementDropped: { _, _ in },
-            isAutoPlaying: false,
-            onPlayPausePressed: {},
-            autoPlayInterval: 4.0,
-            hint: "This is a hint",
-            lineComment: "This is a line comment",
-            isMultipleChoice: false,
-            multipleChoiceAnswers: [],
-            onMultipleChoiceAnswerSelected: { _ in },
-            selectedMultipleChoiceAnswer: "",
-            onShowAnswer: {},
-            isCompleted: false,
-            questionId: "1"
-        )
-        .frame(width: 500, height: 300)
-        .previewLayout(.sizeThatFits)
-    }
-}
-
-// Update CellView to use the environment object
-struct CellView: View {
-    let state: CellDisplayState
-    @EnvironmentObject private var cellSizeManager: CellSizeManager
-    
-    var body: some View {
-        ZStack {
-            // Shadow layer
-            Rectangle()
-                .fill(Color.black)
-                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                .offset(x: 6, y: 6)
-            
-            // Main cell layer
-            Rectangle()
-                .fill(state.style.fillColor)
-                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
-                .overlay(
-                    Rectangle()
-                        .stroke(
-                            state.style.strokeColor,
-                            style: StrokeStyle(
-                                lineWidth: state.style.strokeWidth,
-                                dash: state.style.isDashed ? [5] : []
-                            )
-                        )
-                )
-            
-            // Cell value or placeholder
-            if !state.value.isEmpty {
-                Text(state.value)
-                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
-                    .foregroundColor(.black)
-            } else {
-                Text("?")
-                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
-                    .foregroundColor(.gray)
-            }
-            
-            // Optional label
-            if let label = state.label {
-                Text(label)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.gray)
-                    .padding(.horizontal, 4)
-                    .background(Color.white.opacity(0.8))
-                    .offset(y: -cellSizeManager.size * 0.8)
-            }
-        }
     }
 }

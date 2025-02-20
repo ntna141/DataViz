@@ -285,7 +285,7 @@ struct ConnectionView: View {
     private func calculateLabelPosition(from: CGPoint, to: CGPoint) -> CGPoint {
         let midX = (from.x + to.x) / 2
         let midY = (from.y + to.y) / 2
-        return CGPoint(x: midX, y: midY - 15) // Offset above the line
+        return CGPoint(x: midX, y: midY - 5) // Changed from -15 to +15 to move below the line
     }
 }
 

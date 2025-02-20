@@ -6,14 +6,13 @@ class VisualizationManager {
     
     private init() {}
     
-    // Create a visualization question from JSON data
+    
     func createVisualization(from jsonData: LevelData.Question) -> VisualizationQuestion? {
         guard let visualization = jsonData.visualization else {
-            print("No visualization data found")
             return nil
         }
         
-        // Create code lines
+        
         let codeLines = visualization.code.enumerated().map { index, line in
             CodeLine(
                 number: index + 1,
@@ -22,9 +21,9 @@ class VisualizationManager {
             )
         }
         
-        // Create steps
+        
         let steps = visualization.steps.map { stepData -> VisualizationStep in
-            // Convert nodes to cells
+            
             let cells = stepData.nodes.map { node -> BasicCell in
                 BasicCell(
                     id: UUID().uuidString,
@@ -35,7 +34,7 @@ class VisualizationManager {
                 )
             }
             
-            // Convert connections
+            
             let connections = (stepData.connections ?? []).map { connection -> BasicConnection in
                 let fromId = connection.from.map { cells[$0].id } ?? UUID().uuidString
                 let toId = connection.to.map { cells[$0].id } ?? UUID().uuidString

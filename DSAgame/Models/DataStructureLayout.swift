@@ -1,36 +1,36 @@
 import SwiftUI
 
-// Protocol for layout strategies
+
 protocol DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell]
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState]
 }
 
-// Layout configuration
+
 struct LayoutConfig {
     static let cellRadius: CGFloat = 24
     static let horizontalSpacing: CGFloat = 30
     static let verticalSpacing: CGFloat = 30
-    static let elementListHeight: CGFloat = 100 // Height reserved for element list
+    static let elementListHeight: CGFloat = 100 
     
     static var cellDiameter: CGFloat { cellRadius * 2 }
 }
 
-// Linked list layout strategy
+
 struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        // Calculate total width needed
+        
         let totalWidth = CGFloat(cells.count) * LayoutConfig.cellDiameter + 
                         CGFloat(cells.count - 1) * LayoutConfig.horizontalSpacing
         
-        // Calculate starting position to center the list
-        // Adjust vertical position to account for element list
+        
+        
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
         let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
         
-        // Use cells directly without reordering
+        
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
             mutableCell.position = CGPoint(
@@ -61,8 +61,8 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                 )
             }
             
-            // For linked lists, we want the arrow to point from left to right
-            // Calculate points on the edge of the circles
+            
+            
             let fromPoint = CGPoint(
                 x: fromCell.position.x + LayoutConfig.cellRadius,
                 y: fromCell.position.y
@@ -86,20 +86,24 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
     }
 }
 
-// Binary tree layout strategy
+
 struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        // Calculate tree dimensions
+        
         let levels = Int(log2(Double(cells.count))) + 1
         let maxNodesInBottomLevel = pow(2.0, Double(levels - 1))
         let totalWidth = maxNodesInBottomLevel * Double(LayoutConfig.cellDiameter) + 
                         (maxNodesInBottomLevel - 1) * Double(LayoutConfig.horizontalSpacing)
-        let totalHeight = CGFloat(levels - 1) * (LayoutConfig.cellDiameter + LayoutConfig.verticalSpacing)
         
-        // Center the tree both horizontally and vertically
-        // Account for element list in vertical centering
+        
+        let verticalSpacingMultiplier: CGFloat = 1.7  
+        let totalHeight = CGFloat(levels - 1) * (LayoutConfig.cellDiameter + 
+                                                LayoutConfig.verticalSpacing * verticalSpacingMultiplier)
+        
+        
+        
         let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + 
                     LayoutConfig.cellRadius - (frame.height * 0.1)
         
@@ -109,7 +113,7 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
             let nodesInLevel = pow(2.0, Double(level))
             let position = Double(index + 1) - pow(2.0, Double(level))
             
-            // Calculate horizontal spacing for this level
+            
             let levelWidth = nodesInLevel * Double(LayoutConfig.cellDiameter) + 
                            (nodesInLevel - 1) * Double(LayoutConfig.horizontalSpacing)
             let levelStartX = (Double(frame.width) - levelWidth) / 2 + Double(LayoutConfig.cellRadius)
@@ -117,25 +121,26 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
             
             mutableCell.position = CGPoint(
                 x: x,
-                y: startY + CGFloat(level) * (LayoutConfig.cellDiameter + LayoutConfig.verticalSpacing)
+                y: startY + CGFloat(level) * (LayoutConfig.cellDiameter + 
+                                            LayoutConfig.verticalSpacing * verticalSpacingMultiplier)
             )
             return mutableCell
         }
     }
     
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
-        // Similar to linked list but with curved connections
+        
         connections.compactMap { connection in
             guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
                   let toCell = cells.first(where: { $0.id == connection.toCellId }) else {
                 return nil
             }
             
-            // Calculate edge points
+            
             let angle = atan2(fromCell.position.y - toCell.position.y,
                             fromCell.position.x - toCell.position.x)
             
-            // Calculate points on the edge of the circles
+            
             let fromPoint = CGPoint(
                 x: toCell.position.x + LayoutConfig.cellRadius * cos(angle),
                 y: toCell.position.y + LayoutConfig.cellRadius * sin(angle)
@@ -152,7 +157,7 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                                 toPoint: toPoint,
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
-                                style: .curved, // Use curved style for tree connections
+                                style: .curved, 
                                 visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
                                 scale: scale
                              )
@@ -172,18 +177,18 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
     }
 }
 
-// Array layout strategy
+
 struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        // Group cells by their row
+        
         let rowGroups = Dictionary(grouping: cells) { $0.row }
         let rowCount = rowGroups.count
         
-        // Calculate vertical spacing between rows
+        
         let availableHeight = frame.height - LayoutConfig.elementListHeight
-        let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 50 // Increase vertical spacing between rows by additional 20 points
+        let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 50 
         let startY = (availableHeight - (CGFloat(rowCount - 1) * verticalSpacing)) / 2
         
         return cells.map { cell in
@@ -191,7 +196,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             let rowIndex = cell.row
             let cellsInRow = rowGroups[rowIndex]?.count ?? 1
             
-            // Calculate horizontal position within row
+            
             let totalWidth = CGFloat(cellsInRow) * LayoutConfig.cellDiameter + 
                            CGFloat(cellsInRow - 1) * LayoutConfig.horizontalSpacing
             let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
@@ -206,50 +211,38 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     }
     
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
-        print("\nUpdating connection points for array layout:")
         return connections.compactMap { connection in
-            // Support both index-based and label-based connections
+            
             let fromCell: (any DataStructureCell)?
             let toCell: (any DataStructureCell)?
             
             if let fromLabel = connection.fromLabel {
                 fromCell = cells.first(where: { $0.label == fromLabel })
-                print("Looking for fromLabel: \(fromLabel), found: \(fromCell?.label ?? "none")")
             } else {
                 fromCell = cells.first(where: { $0.id == connection.fromCellId })
-                print("Looking for fromId: \(connection.fromCellId), found: \(fromCell?.id ?? "none")")
             }
             
             if let toLabel = connection.toLabel {
                 toCell = cells.first(where: { $0.label == toLabel })
-                print("Looking for toLabel: \(toLabel), found: \(toCell?.label ?? "none")")
             } else {
                 toCell = cells.first(where: { $0.id == connection.toCellId })
-                print("Looking for toId: \(connection.toCellId), found: \(toCell?.id ?? "none")")
             }
             
             guard let fromCell = fromCell, let toCell = toCell else {
-                print("⚠️ Failed to find cells for connection")
-                print("  - From Cell ID: \(connection.fromCellId)")
-                print("  - To Cell ID: \(connection.toCellId)")
-                print("  - From Label: \(connection.fromLabel ?? "none")")
-                print("  - To Label: \(connection.toLabel ?? "none")")
-                print("  - Available Cell IDs: \(cells.map { $0.id }.joined(separator: ", "))")
-                print("  - Available Labels: \(cells.compactMap { $0.label }.joined(separator: ", "))")
                 return nil
             }
             
-            // Calculate connection points from the edges of cells
+            
             let angle = atan2(fromCell.position.y - toCell.position.y,
                              fromCell.position.x - toCell.position.x)
             
-            // Add a fixed offset for vertical connections
-            let verticalThreshold = CGFloat.pi / 4  // 45 degrees
+            
+            let verticalThreshold = CGFloat.pi / 4  
             let isMoreVertical = abs(angle) > verticalThreshold
 
             let offset = isMoreVertical ? 
-                LayoutConfig.cellRadius * 0.2 :  // Use larger fixed offset for vertical connections
-                LayoutConfig.cellRadius * 0.2        // Use normal offset for other connections
+                LayoutConfig.cellRadius * 0.2 :  
+                LayoutConfig.cellRadius * 0.2        
 
             let fromPoint = CGPoint(
                 x: fromCell.position.x + offset * cos(angle),
@@ -261,12 +254,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 y: toCell.position.y - offset * sin(angle)
             )
             
-            print("\nCalculated connection points:")
-            print("  - From Cell: position (\(fromCell.position.x), \(fromCell.position.y))")
-            print("  - To Cell: position (\(toCell.position.x), \(toCell.position.y))")
-            print("  - Connection Points: from (\(fromPoint.x), \(fromPoint.y)) to (\(toPoint.x), \(toPoint.y))")
             
-            // If cells are in different rows, swap the points
             let isDifferentRows = fromCell.row != toCell.row
             return ConnectionDisplayState(
                 fromPoint: fromPoint,
@@ -281,7 +269,7 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     }
 }
 
-// Layout manager that coordinates between different layout strategies
+
 class DataStructureLayoutManager {
     private var layoutStrategy: DataStructureLayoutStrategy
     
@@ -296,7 +284,7 @@ class DataStructureLayoutManager {
         scale: CGFloat
     ) -> ([any DataStructureCell], [ConnectionDisplayState]) {
         
-        // Ensure we have a valid frame
+        
         guard frame.width > 0, frame.height > 0 else {
             return (cells, [])
         }
@@ -328,7 +316,7 @@ class DataStructureLayoutManager {
     }
 }
 
-// Layout types
+
 enum DataStructureLayoutType: String {
     case linkedList = "linkedList"
     case binaryTree = "binaryTree"

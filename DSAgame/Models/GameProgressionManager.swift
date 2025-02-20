@@ -12,7 +12,6 @@ class GameProgressionManager {
     
     private func loadLevelData() {
         guard let url = Bundle.main.url(forResource: "levels", withExtension: "json") else {
-            print("Could not find levels.json in bundle")
             return
         }
         
@@ -36,7 +35,7 @@ class GameProgressionManager {
     func markQuestionCompleted(_ questionId: String) {
         completedQuestions.insert(questionId)
         
-        // Check if this completes a level
+        
         if let levelNumber = Int(questionId.split(separator: "-").first ?? "") {
             checkAndUpdateLevelCompletion(levelNumber)
         }
@@ -50,7 +49,7 @@ class GameProgressionManager {
     private func checkAndUpdateLevelCompletion(_ levelNumber: Int) {
         let questions = getQuestions(forLevel: levelNumber)
         
-        // Check if all questions in the level are completed
+        
         let allCompleted = questions.enumerated().allSatisfy { index, _ in
             completedQuestions.contains("\(levelNumber)-\(index)")
         }
