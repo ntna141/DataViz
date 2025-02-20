@@ -1421,3 +1421,54 @@ struct FramePreferenceKey: PreferenceKey {
         value = nextValue()
     }
 }
+
+struct CellView: View {
+    let state: CellDisplayState
+    @EnvironmentObject private var cellSizeManager: CellSizeManager
+    
+    var body: some View {
+        ZStack {
+            // Shadow layer
+            Rectangle()
+                .fill(Color.black)
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                .offset(x: 6, y: 6)
+            
+            // Main cell layer
+            Rectangle()
+                .fill(state.style.fillColor)
+                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                .overlay(
+                    Rectangle()
+                        .stroke(
+                            state.style.strokeColor,
+                            style: StrokeStyle(
+                                lineWidth: state.style.strokeWidth,
+                                dash: state.style.isDashed ? [5] : []
+                            )
+                        )
+                )
+            
+            // Cell value or placeholder
+            if !state.value.isEmpty {
+                Text(state.value)
+                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                    .foregroundColor(.black)
+            } else {
+                Text("?")
+                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                    .foregroundColor(.gray)
+            }
+            
+            // Optional label
+            if let label = state.label {
+                Text(label)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 4)
+                    .background(Color.white.opacity(0.8))
+                    .offset(y: -cellSizeManager.size * 0.8)
+            }
+        }
+    }
+}
