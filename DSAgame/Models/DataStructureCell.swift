@@ -16,6 +16,9 @@ protocol DataStructureCell: Identifiable {
     mutating func setHighlighted(_ highlighted: Bool)
     mutating func setLabel(_ label: String?)
     
+    // Deep copy
+    func deepCopy() -> Self
+    
     // Visual state
     var displayState: CellDisplayState { get }
 }
@@ -129,6 +132,17 @@ struct BasicCell: DataStructureCell, Identifiable {
     
     mutating func setLabel(_ label: String?) {
         self.label = label
+    }
+    
+    // Add deep copy function
+    func deepCopy() -> BasicCell {
+        BasicCell(
+            id: self.id,
+            value: self._value,
+            isHighlighted: self.isHighlighted,
+            label: self.label,
+            row: self.row
+        )
     }
     
     var displayState: CellDisplayState {

@@ -86,6 +86,7 @@ struct VisualizationQuestionView: View {
     @State private var autoPlayTimer: Timer?
     @StateObject private var cellSizeManager = CellSizeManager()
     @StateObject private var elementListState = ElementListState()
+    @StateObject private var originalCellsState: OriginalCellsState
     
     init(question: VisualizationQuestion, questionId: String, onComplete: @escaping () -> Void = {}, isCompleted: Bool = false) {
         self.question = question
@@ -94,7 +95,10 @@ struct VisualizationQuestionView: View {
         self.isCompleted = isCompleted
         _steps = State(initialValue: question.steps)  // Initialize steps array
         
+        // Initialize originalCellsState with the first step's cells
         let firstStep = question.steps[0]
+        _originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: firstStep.cells))
+        
         if firstStep.isMultipleChoice {
             print("Multiple choice answers: \(firstStep.multipleChoiceAnswers)")
             print("Correct answer: \(firstStep.multipleChoiceCorrectAnswer)")
@@ -112,6 +116,14 @@ struct VisualizationQuestionView: View {
     private func updateCurrentStep(_ step: VisualizationStep) {
         steps[currentStepIndex] = step
         visualizationKey = UUID()
+        
+        // Update original cells state when step changes
+        originalCellsState.hardReset(with: step.cells)
+        
+        // Update element list state if needed
+        if let elements = step.availableElements {
+            elementListState.hardReset(with: elements)
+        }
     }
     
     private var isCurrentStepCompleted: Bool {
@@ -237,9 +249,10 @@ struct VisualizationQuestionView: View {
                     },
                     selectedMultipleChoiceAnswer: selectedAnswer,
                     onShowAnswer: showAnswer,
-                    isCompleted: completionManager.isStepCompleted(currentStep) && (currentStep.isMultipleChoice || currentStep.userInputRequired),
+                    isCompleted: isCurrentStepCompleted,
                     questionId: questionId,
-                    elementListState: elementListState
+                    elementListState: elementListState,
+                    originalCellsState: originalCellsState
                 )
                 .id(visualizationKey)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -409,6 +422,7 @@ struct VisualizationQuestionView: View {
         }
     }
     
+    
     private var isLastStep: Bool {
         currentStepIndex == question.steps.count - 1
     }
@@ -481,9 +495,12 @@ struct VisualizationQuestionView: View {
         // Update the current step index last to trigger the state update
         currentStepIndex = nextIndex
         
+        // Initialize cells for the new step
+        let nextStep = steps[nextIndex]
+        originalCellsState.hardReset(with: nextStep.cells)
+        
         // If the question is completed, mark the next step as completed too
         if isCompleted {
-            let nextStep = steps[nextIndex]
             if nextStep.isMultipleChoice {
                 completionManager.markStepCompleted(nextStep, answer: nextStep.multipleChoiceCorrectAnswer)
             } else if nextStep.userInputRequired {

@@ -318,8 +318,47 @@ extension EnvironmentValues {
 }
 
 // Add this before DataStructureView
+class OriginalCellsState: ObservableObject {
+    @Published private(set) var currentCells: [any DataStructureCell]
+    
+    init(cells: [any DataStructureCell]) {
+        print("\nInitializing OriginalCellsState")
+        print("Initial cells: \(cells.map { $0.value })")
+        self.currentCells = cells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position
+            return copy
+        }
+        print("Stored cells: \(self.currentCells.map { $0.value })")
+    }
+    
+    func getCells() -> [any DataStructureCell] {
+        return currentCells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position
+            return copy
+        }
+    }
+    
+    func hardReset(with cells: [any DataStructureCell]) {
+        print("\nHard resetting original cells state")
+        print("Current cells: \(currentCells.map { $0.value })")
+        print("New cells: \(cells.map { $0.value })")
+        
+        // Make deep copies of the new cells
+        self.currentCells = cells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position
+            return copy
+        }
+        print("Updated cells: \(currentCells.map { $0.value })")
+    }
+}
+
+// Add this before DataStructureView
 struct DataStructureViewContainer: View {
     @StateObject private var elementListState: ElementListState
+    @StateObject private var originalCellsState: OriginalCellsState
     let layoutType: DataStructureLayoutType
     let cells: [any DataStructureCell]
     let connections: [any DataStructureConnection]
@@ -364,6 +403,9 @@ struct DataStructureViewContainer: View {
         let state = ElementListState(initialElements: availableElements)
         self._elementListState = StateObject(wrappedValue: state)
         
+        // Initialize the original cells state
+        self._originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: cells))
+        
         // Assign other properties
         self.layoutType = layoutType
         self.cells = cells
@@ -382,6 +424,11 @@ struct DataStructureViewContainer: View {
         self.onShowAnswer = onShowAnswer
         self.isCompleted = isCompleted
         self.questionId = questionId
+    }
+    
+    private func updateOriginalCellsState() {
+        print("\nUpdating original cells state")
+        originalCellsState.hardReset(with: cells)
     }
     
     var body: some View {
@@ -403,10 +450,14 @@ struct DataStructureViewContainer: View {
             onShowAnswer: onShowAnswer,
             isCompleted: isCompleted,
             questionId: questionId,
-            elementListState: elementListState
+            elementListState: elementListState,
+            originalCellsState: originalCellsState
         )
         .onChange(of: availableElements) { newElements in
             elementListState.hardReset(with: newElements)
+        }
+        .onAppear {
+            updateOriginalCellsState()
         }
     }
 }
@@ -430,12 +481,12 @@ struct DataStructureView: View {
     let isCompleted: Bool
     let questionId: String
     @ObservedObject var elementListState: ElementListState
+    @ObservedObject var originalCellsState: OriginalCellsState
     @Environment(\.presentationMode) var presentationMode
     @State private var frame: CGRect = .zero
     @State private var layoutManager: DataStructureLayoutManager
     @State private var layoutCells: [any DataStructureCell] = []
     @State private var currentCells: [any DataStructureCell] = []
-    @State private var originalCells: [any DataStructureCell] = []
     @State private var hasChanges: Bool = false
     @State private var connectionStates: [(id: String, state: ConnectionDisplayState)] = []
     @State private var dragState: (element: String, location: CGPoint)?
@@ -443,7 +494,7 @@ struct DataStructureView: View {
     @State private var renderCycle = UUID()
     @State private var draggingFromCellIndex: Int?
     @State private var isOverElementList: Bool = false
-    @State private var originalAvailableElements: [String] = []  // Track original available elements
+    @State private var originalAvailableElements: [String] = []
     @State private var showingHint = false
     @State private var showingGuide = false
     @State private var currentGuideStep = 0
@@ -471,7 +522,8 @@ struct DataStructureView: View {
         onShowAnswer: @escaping () -> Void = {},
         isCompleted: Bool = false,
         questionId: String,
-        elementListState: ElementListState
+        elementListState: ElementListState,
+        originalCellsState: OriginalCellsState
     ) {
         print("\n=== DataStructureView Init ===")
         print("availableElements: \(String(describing: availableElements))")
@@ -494,10 +546,10 @@ struct DataStructureView: View {
         self.isCompleted = isCompleted
         self._layoutManager = State(initialValue: DataStructureLayoutManager(layoutType: layoutType))
         self._currentCells = State(initialValue: cells)
-        self._originalCells = State(initialValue: cells)
         self._originalAvailableElements = State(initialValue: availableElements ?? [])
         self.questionId = questionId
         self.elementListState = elementListState
+        self.originalCellsState = originalCellsState
         
         // Check if this is the first time viewing any level
         let hasSeenGuide = UserDefaults.standard.bool(forKey: "hasSeenDataStructureGuide")
@@ -538,20 +590,17 @@ struct DataStructureView: View {
         .onPreferenceChange(FramePreferenceKey.self) { newFrame in
             handleFrameChange(newFrame)
         }
-        .onChange(of: cells.map(\.id)) { _ in
-            updateLayout()
-        }
-        .onChange(of: connections.map(\.id)) { _ in
-            updateLayout()
-        }
-        .onChange(of: layoutType) { _ in
-            updateLayout()
-        }
-        .onChange(of: frame) { _ in
-            updateLayout()
-        }
         .onAppear {
-            // Remove the reset call here
+            // Initialize current cells from cells property
+            currentCells = cells.map { cell in
+                var copy = (cell as! BasicCell).deepCopy()
+                copy.position = cell.position
+                return copy
+            }
+            // Initialize original cells state only if it hasn't been initialized yet
+            if originalCellsState.getCells().isEmpty {
+                originalCellsState.hardReset(with: cells)
+            }
             updateLayout()
         }
         .onChange(of: availableElements) { newElements in
@@ -571,6 +620,8 @@ struct DataStructureView: View {
         }
         .onChange(of: cellSizeManager.size) { newSize in
             cellSizeManager.updateSize(for: UIScreen.main.bounds.size)
+            // Only update layout when cell size changes
+            updateLayout()
         }
         .preference(key: FramePreferenceKey.self, value: CGRect(origin: .zero, size: UIScreen.main.bounds.size))
     }
@@ -617,21 +668,15 @@ struct DataStructureView: View {
                         buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
                                 .font(.title)
-                                .foregroundColor(.gray.opacity(hasChanges ? 0 : 1))
-                                .overlay(
-                                    Image(systemName: "arrow.counterclockwise.circle.fill")
-                                        .font(.title)
-                                        .foregroundColor(.orange.opacity(hasChanges ? 1 : 0))
-                                )
+                                .foregroundColor(hasChanges ? .orange : .gray)
                         }
                     }
                     .buttonStyle(.plain)
                     .frame(width: 44, height: 44)
                     .padding(.leading, 10)
-                    .allowsHitTesting(hasChanges)
                     
-                    // Show Answer button - only show if the question is completed
-                    if isCompleted {
+                    // Show Answer button - only show if the question is completed AND it's an interactive step
+                    if isCompleted && (isMultipleChoice || availableElements != nil) {
                         Button(action: onShowAnswer) {
                             buttonBackground {
                                 Image(systemName: "checkmark.circle.fill")
@@ -963,9 +1008,15 @@ struct DataStructureView: View {
                 currentCells = updatedCells
                 hasChanges = true
                 
+                // Update layout cells directly
+                var updatedLayoutCells = layoutCells
+                var layoutCell = updatedLayoutCells[fromIndex]
+                layoutCell.setValue("")
+                updatedLayoutCells[fromIndex] = layoutCell
+                layoutCells = updatedLayoutCells
+                
                 // Force layout updates last
                 renderCycle = UUID()
-                updateLayoutWithCurrentCells()
             }
         } else if let cellIndex = hoveredCellIndex,
                   let element = dragState?.element {
@@ -982,6 +1033,13 @@ struct DataStructureView: View {
                     sourceCell.setValue("")
                     updatedCells[fromIndex] = sourceCell
                     currentCells = updatedCells
+                    
+                    // Update layout cells for source
+                    var updatedLayoutCells = layoutCells
+                    var sourceLayoutCell = updatedLayoutCells[fromIndex]
+                    sourceLayoutCell.setValue("")
+                    updatedLayoutCells[fromIndex] = sourceLayoutCell
+                    layoutCells = updatedLayoutCells
                 }
                 
                 print("Dropping \(element) into cell \(cellIndex)")
@@ -992,13 +1050,21 @@ struct DataStructureView: View {
                 targetCell.setValue(element)
                 updatedCells[cellIndex] = targetCell
                 currentCells = updatedCells
+                
+                // Update layout cells for target
+                var updatedLayoutCells = layoutCells
+                var targetLayoutCell = updatedLayoutCells[cellIndex]
+                targetLayoutCell.setValue(element)
+                updatedLayoutCells[cellIndex] = targetLayoutCell
+                layoutCells = updatedLayoutCells
+                
                 hasChanges = true
                 
                 // Remove from list if it was there
                 elementListState.remove(element)
                 
-                // Force layout update with current cells
-                updateLayoutWithCurrentCells()
+                // Force layout update
+                renderCycle = UUID()
             }
         }
         
@@ -1036,8 +1102,15 @@ struct DataStructureView: View {
         
         print("  - Adjusted frame: \(adjustedFrame)")
         
+        // Make deep copies of current cells to preserve their values
+        let cellsToLayout = currentCells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position // Preserve position
+            return copy
+        }
+        
         let (newCells, newStates) = layoutManager.updateLayout(
-            cells: currentCells,
+            cells: cellsToLayout,
             connections: connections,
             in: adjustedFrame,
             scale: scaleFactor
@@ -1066,8 +1139,16 @@ struct DataStructureView: View {
         }
         
         let scaleFactor = cellSizeManager.size / 40
+        
+        // Make deep copies of current cells to preserve their values
+        let cellsToLayout = currentCells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position // Preserve position
+            return copy
+        }
+        
         let (newCells, newStates) = layoutManager.updateLayout(
-            cells: currentCells,
+            cells: cellsToLayout,
             connections: connections,
             in: adjustedFrame,
             scale: scaleFactor
@@ -1344,33 +1425,25 @@ struct DataStructureView: View {
 
     private func resetCurrentState() {
         print("\nResetting current state")
-        print("Current cells: \(currentCells.map { $0.value })")
-        print("Current list: \(currentList)")
-        
-        // Collect all current elements (from both cells and list)
-        let elementsInCells = Set(currentCells.map { $0.value }.filter { !$0.isEmpty })
-        let elementsInList = Set(currentList)
-        let allCurrentElements = Array(elementsInCells.union(elementsInList)).sorted()
-        
-        // Reset cells to empty
-        var emptyCells = currentCells
-        for i in emptyCells.indices {
-            var cell = emptyCells[i]
-            cell.setValue("")
-            emptyCells[i] = cell
+        print("Original cells: \(originalCellsState.getCells().map { $0.value })")
+        // Reset current cells to the original state
+        currentCells = originalCellsState.getCells()
+        // Reset element list
+        elementListState.hardReset(with: availableElements)
+        updateLayout()
+        print("Current cells after reset: \(currentCells.map { $0.value })")
+    }
+
+    private func updateCurrentCells(_ newCells: [any DataStructureCell]) {
+        print("\nUpdating current cells")
+        print("Original cells before: \(originalCellsState.getCells().map { $0.value })")
+        currentCells = newCells.map { cell in
+            var copy = (cell as! BasicCell).deepCopy()
+            copy.position = cell.position
+            return copy
         }
-        currentCells = emptyCells
-        
-        // Use normal reset for in-step resets
-        elementListState.reset(with: allCurrentElements)
-        
-        hasChanges = false
-        updateLayoutWithCurrentCells()
-        renderCycle = UUID()
-        
-        print("After reset:")
-        print("Cells: \(currentCells.map { $0.value })")
-        print("Current list: \(currentList)")
+        updateLayout()
+        print("Current cells after update: \(currentCells.map { $0.value })")
     }
 
     private var shouldDisableNextButton: Bool {
