@@ -2898,8 +2898,8 @@
                                         "style": "straight"
                                     },
                                     {
-                                        "fromLabel": "newNode",
-                                        "toLabel": "node1",
+                                        "fromLabel": "node1",
+                                        "toLabel": "newNode",
                                         "style": "straight",
                                         "isHighlighted": true
                                     }
@@ -2940,13 +2940,13 @@
                                         "style": "straight"
                                     },
                                     {
-                                        "fromLabel": "newNode",
-                                        "toLabel": "node1",
+                                        "fromLabel": "node1",
+                                        "toLabel": "newNode",
                                         "style": "straight"
                                     },
                                     {
-                                        "fromLabel": "node2",
-                                        "toLabel": "newNode",
+                                        "fromLabel": "newNode",
+                                        "toLabel": "node2",
                                         "style": "straight",
                                         "isHighlighted": true
                                     }
@@ -2985,13 +2985,13 @@
                                         "style": "straight"
                                     },
                                     {
-                                        "fromLabel": "newNode",
-                                        "toLabel": "node1",
+                                        "fromLabel": "node1",
+                                        "toLabel": "newNode",
                                         "style": "straight"
                                     },
                                     {
-                                        "fromLabel": "node2",
-                                        "toLabel": "newNode",
+                                        "fromLabel": "newNode",
+                                        "toLabel": "node2",
                                         "style": "straight"
                                     }
                                 ]

@@ -10,7 +10,7 @@ protocol DataStructureLayoutStrategy {
 struct LayoutConfig {
     static let cellRadius: CGFloat = 24
     static let horizontalSpacing: CGFloat = 30
-    static let verticalSpacing: CGFloat = 30
+    static let verticalSpacing: CGFloat = 35
     static let elementListHeight: CGFloat = 100 
     
     static var cellDiameter: CGFloat { cellRadius * 2 }

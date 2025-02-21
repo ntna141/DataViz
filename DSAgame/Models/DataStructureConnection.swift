@@ -262,7 +262,7 @@ struct ConnectionView: View {
         
         let adjustedOffset = if isDifferentRows {
             // For different rows, use much larger offset
-            baseOffset * 1.7
+            baseOffset * 1.9
         } else {
             // For same row, use normal offset
             baseOffset
