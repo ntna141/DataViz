@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Protocol defining the core behavior of a connection between cells
+
 protocol DataStructureConnection: Identifiable {
     var id: String { get }
     var fromCellId: String { get }
@@ -11,24 +11,24 @@ protocol DataStructureConnection: Identifiable {
     var isHighlighted: Bool { get set }
     var style: ConnectionStyle { get set }
     
-    // Core connection behaviors
+    
     mutating func highlight()
     mutating func unhighlight()
     mutating func setLabel(_ label: String?)
     mutating func setStyle(_ style: ConnectionStyle)
     
-    // Visual state
+    
     var displayState: ConnectionDisplayState { get }
 }
 
-// Style options for connections
+
 enum ConnectionStyle: String, Codable {
     case straight = "straight"
     case curved = "curved"
     case selfPointing = "selfPointing"
 }
 
-// Helper struct for decoding connections from JSON
+
 struct ConnectionData: Codable {
     let from: Int?
     let to: Int?
@@ -54,7 +54,7 @@ struct ConnectionData: Codable {
     }
 }
 
-// Represents the visual state of a connection
+
 struct ConnectionDisplayState {
     let fromPoint: CGPoint
     let toPoint: CGPoint
@@ -88,7 +88,7 @@ struct ConnectionDisplayState {
     }
 }
 
-// Base implementation of a connection
+
 struct BasicConnection: DataStructureConnection, Codable {
     let id: String
     let fromCellId: String
@@ -108,16 +108,16 @@ struct BasicConnection: DataStructureConnection, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
         
-        // Try to decode connection data
+        
         let connectionData = try ConnectionData(from: decoder)
         
-        // Handle both index-based and label-based connections
+        
         if let fromIndex = connectionData.from, let toIndex = connectionData.to {
-            // For index-based connections, we'll use placeholder IDs that will be updated later
+            
             fromCellId = "node_\(fromIndex)"
             toCellId = "node_\(toIndex)"
         } else {
-            // For label-based connections, use the labels as IDs
+            
             fromCellId = connectionData.fromLabel ?? ""
             toCellId = connectionData.toLabel ?? ""
         }
@@ -149,7 +149,7 @@ struct BasicConnection: DataStructureConnection, Codable {
         self.style = style
     }
     
-    // MARK: - Connection Behaviors
+    
     
     mutating func highlight() {
         isHighlighted = true
@@ -167,7 +167,7 @@ struct BasicConnection: DataStructureConnection, Codable {
         self.style = style
     }
     
-    // MARK: - Display State
+    
     
     var displayState: ConnectionDisplayState {
         _displayState ?? ConnectionDisplayState(
@@ -183,14 +183,14 @@ struct BasicConnection: DataStructureConnection, Codable {
     }
 }
 
-// View for rendering a connection
+
 struct ConnectionView: View {
     let state: ConnectionDisplayState
     
     var body: some View {
         let adjustedPoints = calculateEdgePoints()
         ZStack {
-            // Connection line
+            
             switch state.style {
             case .straight:
                 StraightConnectionShape(from: adjustedPoints.from, to: adjustedPoints.to)
@@ -223,7 +223,7 @@ struct ConnectionView: View {
                     )
             }
             
-            // Arrow head with scaling
+            
             if state.style != .selfPointing {
                 ArrowHead(
                     from: adjustedPoints.from,
@@ -233,7 +233,7 @@ struct ConnectionView: View {
                     .fill(state.visualStyle.strokeColor)
             }
             
-            // Optional label
+            
             if let label = state.label {
                 Text(label)
                     .font(.caption)
@@ -249,13 +249,13 @@ struct ConnectionView: View {
     private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
         let cellSize = 40.0 * state.scale
         
-        // Calculate the distance between points
+        
         let dx = state.toPoint.x - state.fromPoint.x
         let dy = state.toPoint.y - state.fromPoint.y
         
         if state.isBinaryTree {
-            // For binary trees, use a percentage-based approach
-            // Move 30% along the line from source to target
+            
+            
             let fromPoint = CGPoint(
                 x: state.fromPoint.x + dx * 0.3,
                 y: state.fromPoint.y + dy * 0.3
@@ -268,24 +268,24 @@ struct ConnectionView: View {
             
             return (from: toPoint, to: fromPoint)
         } else {
-            // Calculate angle from source to target
+            
             let angle = atan2(dy, dx)
             
-            // Check if nodes are on different rows
+            
             let isDifferentRows = abs(dy) > cellSize / 2
             
-            // Base offset for same-row connections
+            
             let baseOffset = cellSize / 2 * 1.2
             
             let adjustedOffset = if isDifferentRows {
-                // For different rows in other structures, use much larger offset
+                
                 baseOffset * 1.9
             } else {
-                // For same row, use normal offset
+                
                 baseOffset
             }
             
-            // Calculate the points where the line intersects with the cell edges
+            
             let fromPoint = CGPoint(
                 x: state.fromPoint.x + cos(angle) * adjustedOffset,
                 y: state.fromPoint.y + sin(angle) * adjustedOffset
@@ -303,11 +303,11 @@ struct ConnectionView: View {
     private func calculateLabelPosition(from: CGPoint, to: CGPoint) -> CGPoint {
         let midX = (from.x + to.x) / 2
         let midY = (from.y + to.y) / 2
-        return CGPoint(x: midX, y: midY - 5) // Changed from -15 to +15 to move below the line
+        return CGPoint(x: midX, y: midY - 5) 
     }
 }
 
-// Helper shapes for different connection styles
+
 struct StraightConnectionShape: Shape {
     let from: CGPoint
     let to: CGPoint
@@ -366,12 +366,12 @@ struct ArrowHead: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        // Calculate angle from source to target (not reversed)
+        
         let angle = atan2(to.y - from.y, to.x - from.x)
         let arrowLength: CGFloat = 10 * scale
         let arrowAngle: CGFloat = .pi / 6
         
-        // Calculate arrow head points relative to the target point
+        
         let point1 = CGPoint(
             x: to.x - arrowLength * cos(angle - arrowAngle),
             y: to.y - arrowLength * sin(angle - arrowAngle)
@@ -382,7 +382,7 @@ struct ArrowHead: Shape {
             y: to.y - arrowLength * sin(angle + arrowAngle)
         )
         
-        // Draw arrow head starting from the tip
+        
         path.move(to: to)
         path.addLine(to: point1)
         path.addLine(to: point2)

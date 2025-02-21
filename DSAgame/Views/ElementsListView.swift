@@ -12,12 +12,12 @@ struct ElementsListView: View {
     
     var body: some View {
         ZStack {       
-            // Shadow layer
+            
             Rectangle()
                 .fill(Color.black)
                 .offset(x: 6, y: 6)
             
-            // Main rectangle
+            
             Rectangle()
                 .fill(Color(red: isOverElementList ? 0.7 : 0.95, 
                           green: isOverElementList ? 0.7 : 0.95, 
@@ -31,7 +31,7 @@ struct ElementsListView: View {
                 )
                 .animation(.easeInOut, value: isOverElementList)
             
-            // Content
+            
             HStack(spacing: cellSize * 0.2) {
                 if elementListState.currentList.isEmpty {
                     createDropHint()
@@ -54,13 +54,13 @@ struct ElementsListView: View {
     
     private func calculateListWidth() -> CGFloat {
         if elementListState.currentList.isEmpty {
-            return cellSize * 3 // Width for drop hint
+            return cellSize * 3 
         } else {
             return min(
-                (CGFloat(elementListState.currentList.count) * cellSize) + // elements width
-                (CGFloat(elementListState.currentList.count - 1) * (cellSize * 0.5)) + // spacing between elements
-                (cellSize * 0.4), // padding
-                UIScreen.main.bounds.width * 0.8 // Maximum width of 80% of screen width
+                (CGFloat(elementListState.currentList.count) * cellSize) + 
+                (CGFloat(elementListState.currentList.count - 1) * (cellSize * 0.5)) + 
+                (cellSize * 0.4), 
+                UIScreen.main.bounds.width * 0.8 
             )
         }
     }

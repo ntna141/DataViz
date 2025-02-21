@@ -906,43 +906,24 @@ struct DataStructureView: View {
     }
     
     private func handleDragEnded(_ value: DragGesture.Value) {
-        if isOverElementList, let element = dragState?.element {
-            
-            if let fromIndex = draggingFromCellIndex {
-                elementListState.append(element)
-                
-                onElementDropped("", fromIndex)
-                var updatedCells = currentCells
-                var cell = updatedCells[fromIndex]
-                cell.setValue("")
-                updatedCells[fromIndex] = cell
-                currentCells = updatedCells
-                hasChanges = true
-                
-                
-                var updatedLayoutCells = layoutCells
-                var layoutCell = updatedLayoutCells[fromIndex]
-                layoutCell.setValue("")
-                updatedLayoutCells[fromIndex] = layoutCell
-                layoutCells = updatedLayoutCells
-                
-                
-                renderCycle = UUID()
-            }
-        } else if let cellIndex = hoveredCellIndex,
-                  let element = dragState?.element {
+        if let cellIndex = hoveredCellIndex,
+           let element = dragState?.element {
             
             if layoutCells[cellIndex].value.isEmpty || cellIndex != draggingFromCellIndex {
+                // Save the value that's being replaced (if any)
+                let replacedValue = layoutCells[cellIndex].value
+                if !replacedValue.isEmpty {
+                    elementListState.append(replacedValue)
+                }
                 
+                // Handle dragging from another cell
                 if let fromIndex = draggingFromCellIndex {
                     onElementDropped("", fromIndex)
-                    
                     var updatedCells = currentCells
                     var sourceCell = updatedCells[fromIndex]
                     sourceCell.setValue("")
                     updatedCells[fromIndex] = sourceCell
                     currentCells = updatedCells
-                    
                     
                     var updatedLayoutCells = layoutCells
                     var sourceLayoutCell = updatedLayoutCells[fromIndex]
@@ -950,15 +931,14 @@ struct DataStructureView: View {
                     updatedLayoutCells[fromIndex] = sourceLayoutCell
                     layoutCells = updatedLayoutCells
                 }
-                
+
+                // Place new element
                 onElementDropped(element, cellIndex)
-                
                 var updatedCells = currentCells
                 var targetCell = updatedCells[cellIndex]
                 targetCell.setValue(element)
                 updatedCells[cellIndex] = targetCell
                 currentCells = updatedCells
-                
                 
                 var updatedLayoutCells = layoutCells
                 var targetLayoutCell = updatedLayoutCells[cellIndex]
@@ -967,15 +947,10 @@ struct DataStructureView: View {
                 layoutCells = updatedLayoutCells
                 
                 hasChanges = true
-                
-                
                 elementListState.remove(element)
-                
-                
                 renderCycle = UUID()
             }
         }
-        
         
         dragState = nil
         hoveredCellIndex = nil
