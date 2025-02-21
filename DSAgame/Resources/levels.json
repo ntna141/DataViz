@@ -3165,7 +3165,7 @@
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Building a Binary Tree",
+                    "title": "Understanding Binary Tree Structure",
                     "description": "Learn how to construct a basic binary tree by adding nodes as left and right children",
                     "hint": "Each node in a binary tree can have up to two children: a left child and a right child.",
                     "review": "Excellent! You've learned how to create a basic binary tree structure. Remember that each node can have at most two children.",
@@ -3178,49 +3178,215 @@
                             "    var right: TreeNode?",
                             "}",
                             "",
-                            "func createTree() {",
+                            "func createBinaryTree() {",
                             "    let root = TreeNode(10)",
                             "    root.left = TreeNode(5)",
                             "    root.right = TreeNode(15)",
+                            "}",
+                            "",
+                            "func createCoolTree() {",
+                            "    let root = TreeNode(20)",
+                            "    root.left = TreeNode(10)",
+                            "    root.right = TreeNode(30)",
+                            "    root.left.left = TreeNode(5)",
+                            "    root.left.right = TreeNode(15)",
+                            "    root.right.left = TreeNode(25)",
+                            "    root.right.right = TreeNode(35)",
                             "}"
                         ],
                         "dataStructureType": "binaryTree",
                         "steps": [
                             {
                                 "lineNumber": 1,
-                                "comment": "First, we define our TreeNode class",
+                                "comment": "A binary tree's node is quite similar to a linked list's node, but it has two children instead of one. It stores its value, and the address of its left and right children so we can go from one node to another.",
                                 "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "value"
+                                    },
+                                    {
+                                        "value": "0x0",
+                                        "label": "left address"
+                                    },
+                                    {
+                                        "value": "0x1",
+                                        "label": "right address"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 2,
+                                "comment": "Also similar to linked list, we usually simplify our representation of the tree by not showing the addresses of the children but just the values.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "A tree starts with a root node, which is the first node in the tree and has no parent. In this case, the root node is 10.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "The two children of the root node are 5, which is the left child, and 15, which is the right child. In this case, 5 and 15 are also called leaf nodes, as they have no children.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "isHighlighted": true,
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "isHighlighted": true,
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 6,
+                                "comment": "What we are working with here is a binary tree, where each node has at most two children but other than that, the children can be any value and have any order.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 13,
+                                "comment": "Let's try to construct a tree using this function, can you show the result after we run this code?.",
+                                "hint": "You will see that this is very similar to how we traverse a linked list, from one node to its children.",
+                                "userInputRequired": true,
+                                "availableElements": [
+                                    "5",
+                                    "10",
+                                    "15",
+                                    "20",
+                                    "25",
+                                    "30",
+                                    "35"
+                                ],
                                 "nodes": [
                                     {
                                         "value": "",
                                         "label": "root"
-                                    }
-                                ],
-                                "connections": []
-                            },
-                            {
-                                "lineNumber": 8,
-                                "comment": "Create the root node with value 10",
-                                "userInputRequired": false,
-                                "nodes": [
+                                    },
                                     {
-                                        "value": "10",
-                                        "label": "root"
-                                    }
-                                ],
-                                "connections": []
-                            },
-                            {
-                                "lineNumber": 9,
-                                "comment": "Add the left child with value 5",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "5"
-                                ],
-                                "nodes": [
+                                        "value": ""
+                                    },
                                     {
-                                        "value": "10",
-                                        "label": "root"
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
                                     },
                                     {
                                         "value": ""
@@ -3230,42 +3396,94 @@
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "straight",
-                                        "label": "left"
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 10,
-                                "comment": "Add the right child with value 15",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "15"
-                                ],
+                                "lineNumber": 13,
+                                "comment": "Great! See how easy it is after you understand traversal? Let's move on to the next topic.",
+                                "hint": "You will see that this is very similar to how we traverse a linked list, from one node to its children.",
+                                "userInputRequired": false,
                                 "nodes": [
                                     {
-                                        "value": "10",
+                                        "value": "20",
                                         "label": "root"
+                                    },
+                                    {
+                                        "value": "10"
+                                    },
+                                    {
+                                        "value": "30"
                                     },
                                     {
                                         "value": "5"
                                     },
                                     {
-                                        "value": ""
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "25"
+                                    },
+                                    {
+                                        "value": "35"
                                     }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "straight",
-                                        "label": "left"
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
-                                        "style": "straight",
-                                        "label": "right"
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
                                     }
                                 ]
                             }

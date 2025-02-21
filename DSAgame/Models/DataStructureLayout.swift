@@ -9,8 +9,8 @@ protocol DataStructureLayoutStrategy {
 
 struct LayoutConfig {
     static let cellRadius: CGFloat = 24
-    static let horizontalSpacing: CGFloat = 30
-    static let verticalSpacing: CGFloat = 35
+    static let horizontalSpacing: CGFloat = 50
+    static let verticalSpacing: CGFloat = 40
     static let elementListHeight: CGFloat = 100 
     
     static var cellDiameter: CGFloat { cellRadius * 2 }
@@ -21,15 +21,11 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        
         let totalWidth = CGFloat(cells.count) * LayoutConfig.cellDiameter + 
                         CGFloat(cells.count - 1) * LayoutConfig.horizontalSpacing
         
-        
-        
         let startX = (frame.width - totalWidth) / 2 + LayoutConfig.cellRadius
         let centerY = (frame.height - LayoutConfig.elementListHeight) / 2 - (frame.height * 0.1)
-        
         
         return cells.enumerated().map { index, cell in
             var mutableCell = cell
@@ -57,11 +53,10 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                     isHighlighted: connection.isHighlighted,
                     style: connection.style,
                     visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
-                    scale: scale
+                    scale: scale,
+                    isBinaryTree: false
                 )
             }
-            
-            
             
             let fromPoint = CGPoint(
                 x: fromCell.position.x + LayoutConfig.cellRadius,
@@ -80,7 +75,8 @@ struct LinkedListLayoutStrategy: DataStructureLayoutStrategy {
                 isHighlighted: connection.isHighlighted,
                 style: connection.style,
                 visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
-                scale: scale
+                scale: scale,
+                isBinaryTree: false
             )
         }
     }
@@ -91,18 +87,14 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        
         let levels = Int(log2(Double(cells.count))) + 1
         let maxNodesInBottomLevel = pow(2.0, Double(levels - 1))
         let totalWidth = maxNodesInBottomLevel * Double(LayoutConfig.cellDiameter) + 
                         (maxNodesInBottomLevel - 1) * Double(LayoutConfig.horizontalSpacing)
         
-        
         let verticalSpacingMultiplier: CGFloat = 1.7  
         let totalHeight = CGFloat(levels - 1) * (LayoutConfig.cellDiameter + 
                                                 LayoutConfig.verticalSpacing * verticalSpacingMultiplier)
-        
-        
         
         let startY = ((frame.height - LayoutConfig.elementListHeight) - totalHeight) / 2 + 
                     LayoutConfig.cellRadius - (frame.height * 0.1)
@@ -112,7 +104,6 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
             let level = Int(floor(log2(Double(index + 1))))
             let nodesInLevel = pow(2.0, Double(level))
             let position = Double(index + 1) - pow(2.0, Double(level))
-            
             
             let levelWidth = nodesInLevel * Double(LayoutConfig.cellDiameter) + 
                            (nodesInLevel - 1) * Double(LayoutConfig.horizontalSpacing)
@@ -129,17 +120,23 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
     }
     
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
-        
-        connections.compactMap { connection in
+        return connections.compactMap { connection in
             guard let fromCell = cells.first(where: { $0.id == connection.fromCellId }),
                   let toCell = cells.first(where: { $0.id == connection.toCellId }) else {
-                return nil
+                return ConnectionDisplayState(
+                    fromPoint: .zero,
+                    toPoint: .zero,
+                    label: connection.label,
+                    isHighlighted: connection.isHighlighted,
+                    style: connection.style,
+                    visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                    scale: scale,
+                    isBinaryTree: true
+                )
             }
-            
             
             let angle = atan2(fromCell.position.y - toCell.position.y,
                             fromCell.position.x - toCell.position.x)
-            
             
             let fromPoint = CGPoint(
                 x: toCell.position.x + LayoutConfig.cellRadius * cos(angle),
@@ -157,9 +154,10 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                                 toPoint: toPoint,
                                 label: connection.label,
                                 isHighlighted: connection.isHighlighted,
-                                style: .curved, 
+                                style: .curved,
                                 visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
-                                scale: scale
+                                scale: scale,
+                                isBinaryTree: true
                              )
             
             displayState = ConnectionDisplayState(
@@ -169,7 +167,8 @@ struct BinaryTreeLayoutStrategy: DataStructureLayoutStrategy {
                 isHighlighted: displayState.isHighlighted,
                 style: displayState.style,
                 visualStyle: displayState.visualStyle,
-                scale: scale
+                scale: scale,
+                isBinaryTree: true
             )
             
             return displayState
@@ -182,10 +181,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     func calculateLayout(cells: [any DataStructureCell], in frame: CGRect) -> [any DataStructureCell] {
         guard !cells.isEmpty else { return [] }
         
-        
         let rowGroups = Dictionary(grouping: cells) { $0.row }
         let rowCount = rowGroups.count
-        
         
         let availableHeight = frame.height - LayoutConfig.elementListHeight
         let verticalSpacing = (LayoutConfig.verticalSpacing * 2) + 50 
@@ -195,7 +192,6 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             var mutableCell = cell
             let rowIndex = cell.row
             let cellsInRow = rowGroups[rowIndex]?.count ?? 1
-            
             
             let totalWidth = CGFloat(cellsInRow) * LayoutConfig.cellDiameter + 
                            CGFloat(cellsInRow - 1) * LayoutConfig.horizontalSpacing
@@ -212,7 +208,6 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
     
     func updateConnectionPoints(cells: [any DataStructureCell], connections: [any DataStructureConnection], scale: CGFloat) -> [ConnectionDisplayState] {
         return connections.compactMap { connection in
-            
             let fromCell: (any DataStructureCell)?
             let toCell: (any DataStructureCell)?
             
@@ -229,13 +224,20 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
             }
             
             guard let fromCell = fromCell, let toCell = toCell else {
-                return nil
+                return ConnectionDisplayState(
+                    fromPoint: .zero,
+                    toPoint: .zero,
+                    label: connection.label,
+                    isHighlighted: connection.isHighlighted,
+                    style: connection.style,
+                    visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
+                    scale: scale,
+                    isBinaryTree: false
+                )
             }
-            
             
             let angle = atan2(fromCell.position.y - toCell.position.y,
                              fromCell.position.x - toCell.position.x)
-            
             
             let verticalThreshold = CGFloat.pi / 4  
             let isMoreVertical = abs(angle) > verticalThreshold
@@ -254,8 +256,6 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 y: toCell.position.y - offset * sin(angle)
             )
             
-            
-            let isDifferentRows = fromCell.row != toCell.row
             return ConnectionDisplayState(
                 fromPoint: fromPoint,
                 toPoint: toPoint,
@@ -263,7 +263,8 @@ struct ArrayLayoutStrategy: DataStructureLayoutStrategy {
                 isHighlighted: connection.isHighlighted,
                 style: connection.style,
                 visualStyle: connection.isHighlighted ? .highlighted(scale: scale) : .standard(scale: scale),
-                scale: scale
+                scale: scale,
+                isBinaryTree: false
             )
         }
     }

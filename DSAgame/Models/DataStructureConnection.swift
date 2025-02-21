@@ -63,6 +63,7 @@ struct ConnectionDisplayState {
     let style: ConnectionStyle
     let visualStyle: ConnectionVisualStyle
     let scale: CGFloat
+    let isBinaryTree: Bool
     
     struct ConnectionVisualStyle {
         let strokeColor: Color
@@ -176,7 +177,8 @@ struct BasicConnection: DataStructureConnection, Codable {
             isHighlighted: isHighlighted,
             style: style,
             visualStyle: isHighlighted ? .highlighted(scale: 1) : .standard(scale: 1),
-            scale: 1
+            scale: 1,
+            isBinaryTree: false
         )
     }
 }
@@ -245,41 +247,57 @@ struct ConnectionView: View {
     }
     
     private func calculateEdgePoints() -> (from: CGPoint, to: CGPoint) {
-        let cellSize = 40.0 * state.scale // Base cell size * scale
+        let cellSize = 40.0 * state.scale
         
         // Calculate the distance between points
         let dx = state.toPoint.x - state.fromPoint.x
         let dy = state.toPoint.y - state.fromPoint.y
         
-        // Calculate angle from source to target
-        let angle = atan2(dy, dx)
-        
-        // Check if nodes are on different rows
-        let isDifferentRows = abs(dy) > cellSize / 2
-        
-        // Base offset for same-row connections
-        let baseOffset = cellSize / 2 * 1.2
-        
-        let adjustedOffset = if isDifferentRows {
-            // For different rows, use much larger offset
-            baseOffset * 1.9
+        if state.isBinaryTree {
+            // For binary trees, use a percentage-based approach
+            // Move 30% along the line from source to target
+            let fromPoint = CGPoint(
+                x: state.fromPoint.x + dx * 0.3,
+                y: state.fromPoint.y + dy * 0.3
+            )
+            
+            let toPoint = CGPoint(
+                x: state.toPoint.x - dx * 0.3,
+                y: state.toPoint.y - dy * 0.3
+            )
+            
+            return (from: toPoint, to: fromPoint)
         } else {
-            // For same row, use normal offset
-            baseOffset
+            // Calculate angle from source to target
+            let angle = atan2(dy, dx)
+            
+            // Check if nodes are on different rows
+            let isDifferentRows = abs(dy) > cellSize / 2
+            
+            // Base offset for same-row connections
+            let baseOffset = cellSize / 2 * 1.2
+            
+            let adjustedOffset = if isDifferentRows {
+                // For different rows in other structures, use much larger offset
+                baseOffset * 1.9
+            } else {
+                // For same row, use normal offset
+                baseOffset
+            }
+            
+            // Calculate the points where the line intersects with the cell edges
+            let fromPoint = CGPoint(
+                x: state.fromPoint.x + cos(angle) * adjustedOffset,
+                y: state.fromPoint.y + sin(angle) * adjustedOffset
+            )
+            
+            let toPoint = CGPoint(
+                x: state.toPoint.x - cos(angle) * adjustedOffset,
+                y: state.toPoint.y - sin(angle) * adjustedOffset
+            )
+            
+            return (from: fromPoint, to: toPoint)
         }
-        
-        // Calculate the points where the line intersects with the cell edges
-        let fromPoint = CGPoint(
-            x: state.fromPoint.x + cos(angle) * adjustedOffset,
-            y: state.fromPoint.y + sin(angle) * adjustedOffset
-        )
-        
-        let toPoint = CGPoint(
-            x: state.toPoint.x - cos(angle) * adjustedOffset,
-            y: state.toPoint.y - sin(angle) * adjustedOffset
-        )
-        
-        return (from: fromPoint, to: toPoint)
     }
     
     private func calculateLabelPosition(from: CGPoint, to: CGPoint) -> CGPoint {
@@ -372,4 +390,5 @@ struct ArrowHead: Shape {
         
         return path
     }
-} 
+}
+

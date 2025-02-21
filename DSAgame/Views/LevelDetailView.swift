@@ -33,10 +33,19 @@ struct ReviewScreen: View {
                             Text("Great Job!")
                                 .font(.system(.title, design: .monospaced))
                                 .fontWeight(.bold)
-                                .padding(.top, 50)
+                                .padding(.horizontal, 15)
+                                .padding(.vertical, 8)
+                                .background(Color.yellow.opacity(0.3))
+                                .cornerRadius(10)
+                                .padding(.top, 20)
                             
-                            Spacer()
-                                .frame(height: 20)
+                            Text("""
+                                ┌─────┐
+                                │ ^ᴗ^ │
+                                └─────┘
+                                """)
+                                .font(.system(size: 30, design: .monospaced))
+                                .fontWeight(.bold)
                             
                             // Review text box
                             ScrollView {
@@ -55,31 +64,58 @@ struct ReviewScreen: View {
                                         )
                                     
                                     Text(review)
-                                        .font(.system(.body, design: .monospaced))
-                                        .multilineTextAlignment(.center)
-                                        .padding(30)
+                                        .font(.system(.body, design: .monospaced, weight: .bold))
+                                        .multilineTextAlignment(.leading)
+                                        .lineSpacing(12)
+                                        .padding(40)
                                 }
                             }
-                            .frame(minHeight: 300, maxHeight: geometry.size.height * 0.6)
-                            .frame(maxWidth: .infinity)
+                            .frame(height: geometry.size.height * 0.4)
+                            .padding(.top, 30)
+                            .padding(.horizontal, 20)
                             
                             Spacer()
-                                .frame(height: 40)
                             
-                            // Buttons with restored retro styling
-                            VStack(spacing: 25) {
-                                ZStack {
-                                    // Shadow
-                                    Text("Start Next Question")
-                                        .font(.system(.title3, design: .monospaced))
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.blue)
-                                        .offset(x: 6, y: 6)
-                                    
-                                    // Main button
-                                    Button(action: onNext) {
+                            // Buttons
+                            HStack(spacing: 25) {
+                                Button(action: onBackToMap) {
+                                    ZStack {
+                                        // Shadow
+                                        Text("Back to Map")
+                                            .font(.system(.title3, design: .monospaced))
+                                            .foregroundColor(.black)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.black)
+                                            .offset(x: 6, y: 6)
+                                        
+                                        // Main button
+                                        Text("Back to Map")
+                                            .font(.system(.title3, design: .monospaced))
+                                            .foregroundColor(.black)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.white)
+                                            .overlay(
+                                                Rectangle()
+                                                    .stroke(Color.black, lineWidth: 2)
+                                            )
+                                    }
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                Button(action: onNext) {
+                                    ZStack {
+                                        // Shadow
+                                        Text("Start Next Question")
+                                            .font(.system(.title3, design: .monospaced))
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.blue)
+                                            .offset(x: 6, y: 6)
+                                        
+                                        // Main button
                                         Text("Start Next Question")
                                             .font(.system(.title3, design: .monospaced))
                                             .foregroundColor(.white)
@@ -92,40 +128,15 @@ struct ReviewScreen: View {
                                             )
                                     }
                                 }
-                                
-                                ZStack {
-                                    // Shadow
-                                    Text("Back to Map")
-                                        .font(.system(.title3, design: .monospaced))
-                                        .foregroundColor(.blue)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.white)
-                                        .offset(x: 6, y: 6)
-                                    
-                                    // Main button
-                                    Button(action: onBackToMap) {
-                                        Text("Back to Map")
-                                            .font(.system(.title3, design: .monospaced))
-                                            .foregroundColor(.blue)
-                                            .frame(maxWidth: .infinity)
-                                            .padding()
-                                            .background(Color.white)
-                                            .overlay(
-                                                Rectangle()
-                                                    .stroke(Color.black, lineWidth: 2)
-                                            )
-                                    }
-                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                             .padding(.horizontal)
-                            .padding(.bottom, 50)
                         }
                         .padding(40)
                     }
                     .padding(10)
-                    .padding(.top, 20)
-                    .frame(width: geometry.size.width > 768 ? geometry.size.width / 2 : geometry.size.width * 0.9)
+                    .padding(.top, 5)
+                    .frame(width: geometry.size.width > 768 ? geometry.size.width * 0.7 : geometry.size.width * 0.95)
                     .frame(height: geometry.size.width > 768 ? geometry.size.height * 0.95 : nil)
                     .frame(minHeight: geometry.size.height * 0.85)
                     .padding(.vertical, 20)
