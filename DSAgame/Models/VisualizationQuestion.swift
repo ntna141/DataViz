@@ -962,24 +962,19 @@ private struct GuideCard: View {
 
                         HStack(spacing: 100) {  
                             
-                            if currentStep > 0 {
-                                Button(action: onBack) {
-                                    buttonBackground {
-                                        HStack {
-                                            Image(systemName: "chevron.left")
-                                            Text("Back")
-                                        }
-                                        .foregroundColor(currentStep == 0 ? .gray : .blue)
-                                        .font(.system(.body, design: .monospaced).weight(.bold))
-                                    }
+                        Button(action: onBack) {
+                            buttonBackground {
+                                HStack {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
                                 }
-                                .buttonStyle(.plain)
-                                .frame(width: 120, height: 40)
-                                .disabled(currentStep == 0)
-                            } else {
-                                Spacer()
-                                    .frame(width: 120, height: 40)
+                                .foregroundColor(currentStep == 0 ? .gray : .blue)
+                                .font(.system(.body, design: .monospaced).weight(.bold))
                             }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 120, height: 40)
+                        .disabled(currentStep == 0)
                             
                             
                             Button(action: {

@@ -1,6 +1,6 @@
 import Foundation
 
-// JSON decoding models
+
 struct LevelData: Codable {
     let levels: [Level]
     

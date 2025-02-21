@@ -3172,27 +3172,26 @@
                     "difficulty": 1,
                     "visualization": {
                         "code": [
-                            "class TreeNode {",
-                            "    var value: Int",
-                            "    var left: TreeNode?",
-                            "    var right: TreeNode?",
+                            "class TreeNode:",
+                            "    self.value = value",
+                            "    self.left = None",
+                            "    self.right = None",
                             "}",
                             "",
-                            "func createBinaryTree() {",
-                            "    let root = TreeNode(10)",
+                            "def create_binary_tree():",
+                            "    root = TreeNode(10)",
                             "    root.left = TreeNode(5)",
                             "    root.right = TreeNode(15)",
                             "}",
                             "",
-                            "func createCoolTree() {",
-                            "    let root = TreeNode(20)",
+                            "def create_cool_tree():",
+                            "    root = TreeNode(20)",
                             "    root.left = TreeNode(10)",
                             "    root.right = TreeNode(30)",
                             "    root.left.left = TreeNode(5)",
                             "    root.left.right = TreeNode(15)",
                             "    root.right.left = TreeNode(25)",
-                            "    root.right.right = TreeNode(35)",
-                            "}"
+                            "    root.right.right = TreeNode(35)"
                         ],
                         "dataStructureType": "binaryTree",
                         "steps": [
@@ -3291,8 +3290,72 @@
                                 ]
                             },
                             {
-                                "lineNumber": 6,
-                                "comment": "The two children of the root node are 5, which is the left child, and 15, which is the right child. In this case, 5 and 15 are also called leaf nodes, as they have no children.",
+                                "lineNumber": 9,
+                                "comment": "The node (5) is defined as the left of the root or root.left",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "isHighlighted": true,
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 10,
+                                "comment": "The node (15) is defined as the right of the root or root.right",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "left child"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "isHighlighted": true,
+                                        "label": "right child"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight" 
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 7,
+                                "comment": "In this case, 5 and 15 are also called leaf nodes, as they have no children.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -3357,7 +3420,7 @@
                             {
                                 "lineNumber": 13,
                                 "comment": "Let's try to construct a tree using this function, can you show the result after we run this code?.",
-                                "hint": "You will see that this is very similar to how we traverse a linked list, from one node to its children.",
+                                "hint": "You will see that this is very similar to how we traverse a linked list where node.next.next gets us from the first to the third node. Here, node.left gets us from the root to the left child, and node.right gets us from the root to the right child.",
                                 "userInputRequired": true,
                                 "availableElements": [
                                     "5",
@@ -3492,29 +3555,59 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Inserting into a Binary Search Tree",
-                    "description": "Learn how to insert a new node into a binary search tree while maintaining the ordering property",
+                    "title": "Inserting and removing nodes from a Binary Search Tree",
+                    "description": "Learn how to insert and remove nodes from a binary search tree while maintaining the ordering property",
                     "hint": "In a binary search tree, values less than a node go to the left, greater values go to the right.",
-                    "review": "Great job! You've learned how to maintain the binary search tree property when inserting new nodes.",
+                    "review": "Great job! You've learned how to maintain the binary search tree property when inserting and removing nodes.",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
-                            "func insert(_ value: Int, into node: TreeNode) {",
-                            "    if value < node.value {",
-                            "        if node.left == nil {",
-                            "            node.left = TreeNode(value)",
-                            "        }",
-                            "    } else {",
-                            "        if node.right == nil {",
-                            "            node.right = TreeNode(value)",
-                            "        }",
-                            "    }"
+                          "def insert(value, node):",
+                            "    if node is None:",
+                            "        return TreeNode(value)",
+                            "",
+                            "    if value < node.value:",
+                            "        node.left = insert(value, node.left)",
+                            "    elif value > node.value:",
+                            "        node.right = insert(value, node.right)",
+                            "",
+                            "    return node",
+                            "",
+                            "insert(7, root)",
+                            "",
+                            "def delete(value, node):",
+                            "    if node is None:",
+                            "        return None",
+                            "",
+                            "    if value < node.value:",
+                            "        node.left = delete(value, node.left)",
+                            "    elif value > node.value:",
+                            "        node.right = delete(value, node.right)",
+                            "    else:",
+                            "        if node.left is None and node.right is None:",
+                            "            return None",
+                            "        if node.left is None:",
+                            "            return node.right",
+                            "        if node.right is None:",
+                            "            return node.left",
+                            "",
+                            "        min_value = find_min(node.right).value",
+                            "        node.value = min_value",
+                            "        node.right = delete(min_value, node.right)",
+                            "",
+                            "    return node",
+                            "",
+                            "def find_min(node):",
+                            "    current = node",
+                            "    while current.left:",
+                            "        current = current.left",
+                            "    return current"
                         ],
                         "dataStructureType": "binaryTree",
                         "steps": [
                             {
-                                "lineNumber": 1,
-                                "comment": "Start with an existing binary search tree",
+                                "lineNumber": 0,
+                                "comment": "We need to first understand that Binary Search Trees are different from Binary Trees. In a Binary Tree, we can have any value in any node, but in a Binary Search Tree, we have a specific ordering property.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -3544,8 +3637,355 @@
                                 ]
                             },
                             {
-                                "lineNumber": 2,
-                                "comment": "Inserting 7: Compare with root (10). Since 7 < 10, go left",
+                                "lineNumber": 0,
+                                "comment": "The rule is that, values that are less than its parent go to the left, and values that are greater than its parent go to the right. You will soon see why this is useful.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "5 < 10"
+                                    },
+                                    {
+                                        "value": "15",
+                                        "label": "15 > 10"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight",
+                                        "label": "left"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight",
+                                        "label": "right"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 11,
+                                "comment": "We can now look at the insert function, let's try to insert the value 7 into the tree. Where do you think it should go?",
+                                "userInputRequired": true,
+                                "availableElements": [
+                                    "7"
+                                ],
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 0,
+                                "comment": "That is correct, 7 is smaller than 10 so it goes to the left, but its larger than 5 so it goes to its right child. However, the code is not as simple.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 12,
+                                "comment": "We start with calling (insert(7, root)) and so (if node is None) is false, so we move to the next line.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 5,
+                                "comment": "Since its not None, we then check if the value is less than the node.value. 7 < 10 so we call the function again with the left child of the root node, or insert(7, root.left).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 0,
+                                "comment": "When we call insert(7, root.left), we ran insert again but this time root is root.left (5). So we enter the cycle again.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"                                    },
+                                    {
+                                        "value": "5",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 0,
+                                "comment": "But this time, 7 is not less than 5, so we go to the else statement where we call insert(7, root.left.right). or insert(7, 5.right).",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -3560,32 +4000,311 @@
                                         "value": "15"
                                     },
                                     {
-                                        "value": "7"
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
                                     }
                                 ],
                                 "connections": [
                                     {
                                         "from": 0,
                                         "to": 1,
-                                        "style": "straight",
-                                        "label": "left",
-                                        "isHighlighted": true
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
                                         "style": "straight",
-                                        "label": "right"
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
                                     }
                                 ]
                             },
                             {
-                                "lineNumber": 4,
-                                "comment": "7 > 5, so it becomes the right child of 5",
+                                "lineNumber": 1,
+                                "comment": "But this time, there is nothing on the right of 5, so node is None and we return a new node with the value 7.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 14,
+                                "comment": "Deleting from the tree is a bit more complex, we need to first understand find_min, which is a helper function that finds the minimum value in a binary tree.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 36,
+                                "comment": "We start with find_min(root).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 39,
+                                "comment": "Because we know that the value on the left will keep getting smaller, the left leaf node will always have the minimum value. Which is the left leaf node in this case?",
                                 "userInputRequired": true,
-                                "availableElements": [
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "10",
+                                    "5",
+                                    "15",
                                     "7"
                                 ],
+                                "multipleChoiceCorrectAnswer": "5",
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 39,
+                                "comment": "That is right! We keep going left until node.left is None, which is the case here.",
+                                "userInputRequired": false,
                                 "nodes": [
                                     {
                                         "value": "10",
@@ -3600,6 +4319,199 @@
                                     },
                                     {
                                         "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 14,
+                                "comment": "Now let's go to the actual delete function. Let's say we are running delete(5, root).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 14,
+                                "comment": "Most of it is very similar to the insert function, we first check if Node is None, then we compare the values, then we will have 3 different cases.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 18,
+                                "comment": "Case 1: value is less than node.value, which means the target is on the left since it is smaller than the root. We enter the cycle again with the left child of the root node, so delete(value, node.left).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
                                     }
                                 ],
                                 "connections": [
@@ -3607,20 +4519,448 @@
                                         "from": 0,
                                         "to": 1,
                                         "style": "straight",
-                                        "label": "left"
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 20,
+                                "comment": "Case 2: value is more than node.value, which means we do the opposite of case 1 as the target is on the right side. We enter the cycle again with the right child of the root node, so delete(value, node.right).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 0,
                                         "to": 2,
                                         "style": "straight",
-                                        "label": "right"
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 22,
+                                "comment": "Case 3: value is equal to node.value, which means we have found the target (5). We then need to check if the node has no children, one child, or two children.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": ""
+                                    },
+                                    {
+                                        "value": ""
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 5,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 2,
+                                        "to": 6,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 23,
+                                "comment": "Subcase 3.1: If the node has no children (is a leaf), we can simply remove it by returning None.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "15"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 25,
+                                "comment": "Subcase 3.2: If the node has only one child (left or right), we can simply replace the target node with its child.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "target",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "7",
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
                                     },
                                     {
                                         "from": 1,
                                         "to": 3,
                                         "style": "straight",
-                                        "label": "right",
                                         "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 25,
+                                "comment": "Now the child (7) is at the target's (5) position.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "7",
+                                        "label": "target (previously 5)",
+                                        "isHighlighted": true
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "previously 7",
+                                        "isHighlighted": true
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 30,
+                                "comment": "Subcase 3.3: If the node has two children, which one do you think will replace the target",
+                                "userInputRequired": true,
+                                "isMultipleChoice": true,
+                                "multipleChoiceAnswers": [
+                                    "5",
+                                    "7",
+                                    "15",
+                                    "3"
+                                ],
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "label": "target"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "3"
+                                    },
+                                    {
+                                        "value": "7"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 30,
+                                "comment": "That is right! We need to find the smallest value in the right subtree (using find_min) to replace the deleted node.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "5",
+                                        "isHighlighted": true,
+                                        "label": "target"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "3"
+                                    },
+                                    {
+                                        "value": "7",
+                                        "isHighlighted": true,
+                                        "label": "successor"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 4,
+                                        "style": "straight",
+                                        "isHighlighted": true
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 31,
+                                "comment": "We copy the successor's value to the target node, then delete the successor (which will fall into case 1 or 2 as it has at most one child).",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "7",
+                                        "isHighlighted": true,
+                                        "label": "replaced"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "3"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 33,
+                                "comment": "Finally, we return the modified node to maintain the tree structure. The BST properties are preserved throughout all cases.",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "root"
+                                    },
+                                    {
+                                        "value": "7"
+                                    },
+                                    {
+                                        "value": "15"
+                                    },
+                                    {
+                                        "value": "3"
+                                    }
+                                ],
+                                "connections": [
+                                    {
+                                        "from": 0,
+                                        "to": 1,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 0,
+                                        "to": 2,
+                                        "style": "straight"
+                                    },
+                                    {
+                                        "from": 1,
+                                        "to": 3,
+                                        "style": "straight"
                                     }
                                 ]
                             }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Protocol defining the core behavior of a data structure cell
+
 protocol DataStructureCell: Identifiable {
     var id: String { get }
     var value: String { get }
@@ -9,21 +9,21 @@ protocol DataStructureCell: Identifiable {
     var position: CGPoint { get set }
     var row: Int { get }
     
-    // Core cell behaviors
+    
     mutating func setValue(_ value: String)
     mutating func highlight()
     mutating func unhighlight()
     mutating func setHighlighted(_ highlighted: Bool)
     mutating func setLabel(_ label: String?)
     
-    // Deep copy
+    
     func deepCopy() -> Self
     
-    // Visual state
+    
     var displayState: CellDisplayState { get }
 }
 
-// Represents the visual state of a cell
+
 struct CellDisplayState {
     let value: String
     let isHighlighted: Bool
@@ -93,14 +93,14 @@ struct CellDisplayState {
     }
 }
 
-// Base implementation of a data structure cell
+
 struct BasicCell: DataStructureCell, Identifiable {
     let id: String
     private var _value: String
     var isHighlighted: Bool
     var label: String?
     var position: CGPoint = .zero
-    var row: Int = 0  // Default to first row
+    var row: Int = 0  
     
     init(id: String = UUID().uuidString, value: String = "", isHighlighted: Bool = false, label: String? = nil, row: Int = 0) {
         self.id = id
@@ -134,7 +134,7 @@ struct BasicCell: DataStructureCell, Identifiable {
         self.label = label
     }
     
-    // Add deep copy function
+    
     func deepCopy() -> BasicCell {
         BasicCell(
             id: self.id,

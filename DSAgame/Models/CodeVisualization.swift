@@ -1,6 +1,5 @@
 import SwiftUI
 
-// Represents a line of code with metadata
 struct CodeLine: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,7 +9,6 @@ struct CodeLine: Identifiable {
     var syntaxTokens: [SyntaxToken] = []
 }
 
-// Represents a syntax highlighted token
 struct SyntaxToken: Identifiable {
     let id = UUID()
     let text: String
@@ -41,7 +39,6 @@ struct SyntaxToken: Identifiable {
     }
 }
 
-// Basic syntax highlighting parser
 struct SyntaxParser {
     static let keywords = Set([
         "func", "var", "let", "if", "else", "for", "while", "return",
@@ -52,7 +49,6 @@ struct SyntaxParser {
     static func parse(_ line: String) -> [SyntaxToken] {
         guard !line.isEmpty else { return [] }
         
-        // Handle comments first
         if line.trimmingCharacters(in: .whitespaces).hasPrefix("//") {
             return [SyntaxToken(text: line, type: .comment)]
         }
@@ -81,22 +77,17 @@ struct SyntaxParser {
             tokens.append(SyntaxToken(text: text, type: type))
         }
         
-        // Process the line character by character
         var index = line.startIndex
         while index < line.endIndex {
             let char = line[index]
             
             if char.isWhitespace {
-                // Add current token if any
                 addToken(currentToken)
                 currentToken = ""
-                // Add whitespace token
                 addToken(String(char))
             } else if "():,{}".contains(char) {
-                // Add current token if any
                 addToken(currentToken)
                 currentToken = ""
-                // Add punctuation token
                 addToken(String(char))
             } else {
                 currentToken.append(char)
@@ -105,7 +96,6 @@ struct SyntaxParser {
             index = line.index(after: index)
         }
         
-        // Add any remaining token
         addToken(currentToken)
         
         return tokens
@@ -114,12 +104,10 @@ struct SyntaxParser {
 
 extension Character {
     var isPunctuation: Bool {
-        // Add specific punctuation characters used in code
         return [".", ":", "=", "?", "(", ")", "{", "}", "[", "]", ",", ";"].contains(self)
     }
 }
 
-// View for displaying a single line of code
 struct CodeLineView: View {
     let line: CodeLine
     let maxLineNumberWidth: CGFloat
@@ -127,7 +115,6 @@ struct CodeLineView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .top, spacing: 0) {
-                // Line number
                 Text("\(line.number)")
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
@@ -135,7 +122,6 @@ struct CodeLineView: View {
                     .lineLimit(1)
                     .padding(.trailing, 8)
                 
-                // Code content with syntax highlighting
                 if !line.syntaxTokens.isEmpty {
                     HStack(spacing: 0) {
                         ForEach(line.syntaxTokens) { token in
@@ -157,20 +143,18 @@ struct CodeLineView: View {
             .padding(.vertical, 2)
             .background(line.isHighlighted ? Color.yellow.opacity(0.2) : Color.clear)
             
-            // Comment on separate line with indent
             if let comment = line.sideComment {
                 Text("// \(comment)")
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.gray)
                     .padding(.leading, maxLineNumberWidth + 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .lineLimit(nil) // Allow wrapping
+                    .lineLimit(nil)
             }
         }
     }
 }
 
-// Main code viewer component
 struct CodeViewer: View {
     let lines: [CodeLine]
     
@@ -179,14 +163,12 @@ struct CodeViewer: View {
         return CGFloat(maxDigits) * 10
     }
     
-    // Find the first highlighted line's number
     private var highlightedLineNumber: Int? {
         lines.first(where: { $0.isHighlighted })?.number
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             HStack {
                 Text("</> python")
                     .font(.system(.subheadline, design: .monospaced))
@@ -195,18 +177,15 @@ struct CodeViewer: View {
             .padding(.horizontal, 15)
             .padding(.vertical, 8)
             
-            // Divider
             Divider()
             
-            // Code content
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(lines) { line in
                             CodeLineView(line: line, maxLineNumberWidth: maxLineNumberWidth)
-                                .id(line.number) // Add id for scrolling
+                                .id(line.number)
                         }
-                        // Add empty space at the bottom
                         Spacer(minLength: 100)
                     }
                     .padding(.horizontal, 15)
@@ -227,20 +206,19 @@ struct CodeViewer: View {
                 .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                 .mask(
                     VStack(spacing: 0) {
-                        Rectangle().frame(height: 1) // Top border
+                        Rectangle().frame(height: 1)
                         HStack(spacing: 0) {
-                            Rectangle().frame(width: 1) // Left border
+                            Rectangle().frame(width: 1)
                             Spacer()
-                            Rectangle().frame(width: 1) // Right border
+                            Rectangle().frame(width: 1)
                         }
-                        Spacer() // No bottom border
+                        Spacer()
                     }
                 )
         )
     }
 }
 
-// Example usage and preview
 struct CodeViewerExample: View {
     let sampleCode: [CodeLine] = [
         CodeLine(
