@@ -591,7 +591,7 @@ struct DataStructureView: View {
                         buttonBackground {
                             Image(systemName: "arrow.counterclockwise.circle.fill")
                                 .font(.title)
-                                .foregroundColor(hasChanges ? .orange : .gray)
+                                .foregroundColor(.orange)
                         }
                     }
                     .buttonStyle(.plain)
