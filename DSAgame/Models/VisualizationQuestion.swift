@@ -100,7 +100,7 @@ struct VisualizationQuestionView: View {
         let firstStep = question.steps[0]
         _originalCellsState = StateObject(wrappedValue: OriginalCellsState(cells: firstStep.cells))
         
-        // Check if guide has been seen before - only show on first app launch
+        
         let defaults = UserDefaults.standard
         let hasSeenGuide = defaults.bool(forKey: "hasSeenDataStructureGuide")
         if !hasSeenGuide {
@@ -420,7 +420,7 @@ struct VisualizationQuestionView: View {
                 }
             }
             
-            // Guide overlay
+            
             if showingGuide {
                 GeometryReader { geometry in
                     ZStack {
@@ -761,11 +761,13 @@ private struct GuideCard: View {
                             Text("You can drag elements between cells or to/from the element list to create the correct data structure:")
                                 .font(.system(.body, design: .monospaced))
                                 .padding(.bottom, 10)
+
                             
-                            VStack(spacing: 50) {
-                                VStack(alignment: .leading, spacing: 25) {
-                                    HStack(spacing: cellSizeManager.size * 0.5) {
-                                        ForEach(0..<2) { i in
+                            HStack(spacing: 50) {
+                                
+                                VStack(spacing: 35) {
+                                    VStack(alignment: .center, spacing: 25) {
+                                        HStack(spacing: cellSizeManager.size * 0.5) {
                                             ZStack {
                                                 Rectangle()
                                                     .fill(Color.black)
@@ -779,14 +781,28 @@ private struct GuideCard: View {
                                                         Rectangle()
                                                             .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
                                                     )
-                                                Text(i == 0 ? "1" : "?")
+                                                Text("1")
+                                                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                            }
+                                            
+                                            ZStack {
+                                                Rectangle()
+                                                    .fill(Color.black)
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .offset(x: 6, y: 6)
+                                                
+                                                Rectangle()
+                                                    .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .overlay(
+                                                        Rectangle()
+                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                    )
+                                                Text("?")
                                                     .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
                                             }
                                         }
-                                    }
-                                    .padding(.bottom, 10)
-                                    
-                                    VStack(alignment: .leading, spacing: 20) {
+                                        
                                         ZStack {
                                             Rectangle()
                                                 .fill(Color.black)
@@ -817,6 +833,55 @@ private struct GuideCard: View {
                                             .padding(.horizontal, cellSizeManager.size * 0.2)
                                         }
                                         .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
+                                    }
+                                    
+                                    Text("Drag cell (3) from the list to the empty cell (?) to make it cell (3). If you drag it to cell (1), it will replace cell (1) and cell (1) will go to the list.")
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                        .frame(width: 300)
+                                }
+                                .frame(maxHeight: .infinity, alignment: .top)
+                                
+                                
+                                VStack(spacing: 35) {
+                                    VStack(alignment: .center, spacing: 25) {
+                                        HStack(spacing: cellSizeManager.size * 0.5) {
+                                            ZStack {
+                                                Rectangle()
+                                                    .fill(Color.black)
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .offset(x: 6, y: 6)
+                                                
+                                                Rectangle()
+                                                    .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .overlay(
+                                                        Rectangle()
+                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                    )
+                                                Text("4")
+                                                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                            }
+                                            
+                                            ZStack {
+                                                Rectangle()
+                                                    .fill(Color.black)
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .offset(x: 6, y: 6)
+                                                
+                                                Rectangle()
+                                                    .fill(Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                    .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                    .overlay(
+                                                        Rectangle()
+                                                            .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                    )
+                                                Text("5")
+                                                    .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                            }
+                                        }
                                         
                                         ZStack {
                                             Rectangle()
@@ -837,49 +902,110 @@ private struct GuideCard: View {
                                         }
                                         .frame(width: cellSizeManager.size * 4, height: cellSizeManager.size * 1.2)
                                     }
+                                    
+                                    Text("Drag any cell to the empty list below to remove it from the structure and add it to the list.")
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                        .frame(width: 300)
                                 }
+                                .frame(maxHeight: .infinity, alignment: .top)
                             }
+                            .padding(.vertical, 30)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 30)
+                    } else if currentStep == 2 {
+                        VStack(alignment: .leading, spacing: 25) {
+                            Text("Multiple Choice Questions")
+                                .font(.system(.title3, design: .monospaced).weight(.bold))
+                                .padding(.bottom, 10)
+                            
+                            Text("Some steps will present multiple choice questions. Select the correct answer to proceed:")
+                                .font(.system(.body, design: .monospaced))
+                                .padding(.bottom, 20)
+                            
+                            VStack(spacing: 25) {
+                                Text("What is the first element?")
+                                    .font(.system(.body, design: .monospaced))
+                                    .padding(.bottom, 20)
+                                
+                                HStack(spacing: cellSizeManager.size * 0.5) {
+                                    ForEach(["1", "2"], id: \.self) { value in
+                                        ZStack {
+                                            Rectangle()
+                                                .fill(Color.black)
+                                                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                .offset(x: 6, y: 6)
+                                            
+                                            Rectangle()
+                                                .fill(value == "1" ? Color.blue : Color(red: 0.96, green: 0.95, blue: 0.91))
+                                                .frame(width: cellSizeManager.size, height: cellSizeManager.size)
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 3.6)
+                                                )
+                                            Text(value)
+                                                .font(.system(size: cellSizeManager.size * 0.4, design: .monospaced))
+                                                .foregroundColor(value == "1" ? .white : .primary)
+                                        }
+                                    }
+                                }
+                                .padding(.bottom, 20)
+                                
+                            }
+                            .padding(.vertical, 20)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                
-                HStack(spacing: 20) {
-                    if currentStep > 0 {
-                        Button(action: onBack) {
-                            buttonBackground {
-                                HStack {
-                                    Image(systemName: "chevron.left")
-                                    Text("Back")
+
+                        HStack(spacing: 100) {  
+                            
+                            if currentStep > 0 {
+                                Button(action: onBack) {
+                                    buttonBackground {
+                                        HStack {
+                                            Image(systemName: "chevron.left")
+                                            Text("Back")
+                                        }
+                                        .foregroundColor(currentStep == 0 ? .gray : .blue)
+                                        .font(.system(.body, design: .monospaced).weight(.bold))
+                                    }
                                 }
-                                .foregroundColor(.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
+                                .buttonStyle(.plain)
+                                .frame(width: 120, height: 40)
+                                .disabled(currentStep == 0)
+                            } else {
+                                Spacer()
+                                    .frame(width: 120, height: 40)
                             }
-                        }
-                        .buttonStyle(.plain)
-                        .frame(width: 120, height: 40)
-                    }
-                    
-                    if currentStep < 1 {
-                        Button(action: {
-                            elementListState.reset(with: [])
-                            onNext()
-                        }) {
-                            buttonBackground {
-                                HStack {
-                                    Text("Next")
-                                    Image(systemName: "chevron.right")
+                            
+                            
+                            Button(action: {
+                                if currentStep == 2 {
+                                    onClose()
+                                } else {
+                                    elementListState.reset(with: [])
+                                    onNext()
                                 }
-                                .foregroundColor(.blue)
-                                .font(.system(.body, design: .monospaced).weight(.bold))
+                            }) {
+                                buttonBackground {
+                                    HStack {
+                                        Text(currentStep == 2 ? "Complete" : "Next")
+                                        if currentStep < 2 {
+                                            Image(systemName: "chevron.right")
+                                        }
+                                    }
+                                    .foregroundColor(.blue)
+                                    .font(.system(.body, design: .monospaced).weight(.bold))
+                                }
                             }
+                            .buttonStyle(.plain)
+                            .frame(width: 120, height: 40)
                         }
-                        .buttonStyle(.plain)
-                        .frame(width: 120, height: 40)
-                    }
-                }
-                .padding(.top, 30)
+                        .padding(.top, 30)
+
             }
             .padding(50)
             .background(
@@ -896,9 +1022,8 @@ private struct GuideCard: View {
                         )
                 }
             )
-            .frame(minWidth: 400, maxWidth: 500)
-            .frame(minHeight: 600)
-            .fixedSize(horizontal: true, vertical: true)
+            .frame(width: 800, height: 800)
+            .fixedSize()
         }
     }
 }

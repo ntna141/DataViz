@@ -67,8 +67,9 @@ struct ReviewScreen: View {
                                         .font(.system(.body, design: .monospaced, weight: .bold))
                                         .multilineTextAlignment(.leading)
                                         .lineSpacing(12)
-                                        .padding(40)
+                                        .padding(20)
                                 }
+                                .padding(40)
                             }
                             .frame(height: geometry.size.height * 0.4)
                             .padding(.top, 30)
