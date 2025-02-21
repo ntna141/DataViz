@@ -950,6 +950,28 @@ struct DataStructureView: View {
                 elementListState.remove(element)
                 renderCycle = UUID()
             }
+        } else if isOverElementList && draggingFromCellIndex != nil {
+            // Handle dropping back to the list
+            if let element = dragState?.element,
+               let fromIndex = draggingFromCellIndex {
+                elementListState.append(element)
+                onElementDropped("", fromIndex)
+                
+                var updatedCells = currentCells
+                var sourceCell = updatedCells[fromIndex]
+                sourceCell.setValue("")
+                updatedCells[fromIndex] = sourceCell
+                currentCells = updatedCells
+                
+                var updatedLayoutCells = layoutCells
+                var sourceLayoutCell = updatedLayoutCells[fromIndex]
+                sourceLayoutCell.setValue("")
+                updatedLayoutCells[fromIndex] = sourceLayoutCell
+                layoutCells = updatedLayoutCells
+                
+                hasChanges = true
+                renderCycle = UUID()
+            }
         }
         
         dragState = nil
@@ -1046,6 +1068,12 @@ struct DataStructureView: View {
         
         // Reset available elements
         elementListState.hardReset(with: availableElements)
+        
+        // Notify parent of reset by calling onElementDropped with original values
+        for index in 0..<currentCells.count {
+            onElementDropped(currentCells[index].value, index)
+        }
+        
         updateLayout()
     }
 
