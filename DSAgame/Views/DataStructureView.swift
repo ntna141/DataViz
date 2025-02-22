@@ -910,13 +910,13 @@ struct DataStructureView: View {
            let element = dragState?.element {
             
             if layoutCells[cellIndex].value.isEmpty || cellIndex != draggingFromCellIndex {
-                // Save the value that's being replaced (if any)
+                
                 let replacedValue = layoutCells[cellIndex].value
                 if !replacedValue.isEmpty {
                     elementListState.append(replacedValue)
                 }
                 
-                // Handle dragging from another cell
+                
                 if let fromIndex = draggingFromCellIndex {
                     onElementDropped("", fromIndex)
                     var updatedCells = currentCells
@@ -932,7 +932,7 @@ struct DataStructureView: View {
                     layoutCells = updatedLayoutCells
                 }
 
-                // Place new element
+                
                 onElementDropped(element, cellIndex)
                 var updatedCells = currentCells
                 var targetCell = updatedCells[cellIndex]
@@ -951,7 +951,7 @@ struct DataStructureView: View {
                 renderCycle = UUID()
             }
         } else if isOverElementList && draggingFromCellIndex != nil {
-            // Handle dropping back to the list
+            
             if let element = dragState?.element,
                let fromIndex = draggingFromCellIndex {
                 elementListState.append(element)
@@ -1063,13 +1063,13 @@ struct DataStructureView: View {
 
     
     private func resetCurrentState() {
-        // Reset cells to original state
+        
         currentCells = originalCellsState.getCells()
         
-        // Reset available elements
+        
         elementListState.hardReset(with: availableElements)
         
-        // Notify parent of reset by calling onElementDropped with original values
+        
         for index in 0..<currentCells.count {
             onElementDropped(currentCells[index].value, index)
         }

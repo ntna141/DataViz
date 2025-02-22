@@ -13,14 +13,14 @@ struct ReviewScreen: View {
             
             GeometryReader { geometry in
                 VStack {
-                    // Main Card
+                    
                     ZStack {
-                        // Shadow layer
+                        
                         Rectangle()
                             .fill(Color.black)
                             .offset(x: 6, y: 6)
                         
-                        // Main background
+                        
                         Rectangle()
                             .fill(Color.white)
                             .overlay(
@@ -28,7 +28,7 @@ struct ReviewScreen: View {
                                     .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                             )
                         
-                        // Content
+                        
                         VStack(spacing: 30) {
                             Text("Great Job!")
                                 .font(.system(.title, design: .monospaced))
@@ -47,15 +47,15 @@ struct ReviewScreen: View {
                                 .font(.system(size: 30, design: .monospaced))
                                 .fontWeight(.bold)
                             
-                            // Review text box
+                            
                             ScrollView {
                                 ZStack {
-                                    // Shadow layer
+                                    
                                     Rectangle()
                                         .fill(Color.black)
                                         .offset(x: 6, y: 6)
                                     
-                                    // Main box
+                                    
                                     Rectangle()
                                         .fill(Color.white)
                                         .overlay(
@@ -77,11 +77,11 @@ struct ReviewScreen: View {
                             
                             Spacer()
                             
-                            // Buttons
+                            
                             HStack(spacing: 25) {
                                 Button(action: onBackToMap) {
                                     ZStack {
-                                        // Shadow
+                                        
                                         Text("Back to Map")
                                             .font(.system(.title3, design: .monospaced))
                                             .foregroundColor(.black)
@@ -90,7 +90,7 @@ struct ReviewScreen: View {
                                             .background(Color.black)
                                             .offset(x: 6, y: 6)
                                         
-                                        // Main button
+                                        
                                         Text("Back to Map")
                                             .font(.system(.title3, design: .monospaced))
                                             .foregroundColor(.black)
@@ -107,7 +107,7 @@ struct ReviewScreen: View {
                                 
                                 Button(action: onNext) {
                                     ZStack {
-                                        // Shadow
+                                        
                                         Text("Start Next Question")
                                             .font(.system(.title3, design: .monospaced))
                                             .foregroundColor(.white)
@@ -116,7 +116,7 @@ struct ReviewScreen: View {
                                             .background(Color.blue)
                                             .offset(x: 6, y: 6)
                                         
-                                        // Main button
+                                        
                                         Text("Start Next Question")
                                             .font(.system(.title3, design: .monospaced))
                                             .foregroundColor(.white)

@@ -1,11 +1,9 @@
 import SwiftUI
 
-public struct ContentView: View {
+struct ContentView: View {
     @State private var isShowingMap = false
     
-    public init() {}
-    
-    public var body: some View {
+    var body: some View {
         NavigationView {
             ZStack {
                 
@@ -75,7 +73,7 @@ public struct ContentView: View {
     }
 }
 
-public struct MapView: View {
+struct MapView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var levels: [LevelData.Level] = []
     @State private var showingVisualization = false
@@ -92,9 +90,7 @@ public struct MapView: View {
         GridItem(.flexible())
     ]
     
-    public init() {}
-    
-    public var body: some View {
+    var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 
@@ -490,18 +486,12 @@ public struct MapView: View {
        }
 }
 
-public struct QuestionRow: View {
-    public let index: Int
-    public let question: LevelData.Question
-    public let isCompleted: Bool
+struct QuestionRow: View {
+    let index: Int
+    let question: LevelData.Question
+    let isCompleted: Bool
     
-    public init(index: Int, question: LevelData.Question, isCompleted: Bool) {
-        self.index = index
-        self.question = question
-        self.isCompleted = isCompleted
-    }
-    
-    public var body: some View {
+    var body: some View {
         ZStack {
             
             Rectangle()
@@ -537,10 +527,8 @@ public struct QuestionRow: View {
 }
 
 
-public struct HexagonalGraphView: View {
-    public init() {}
-    
-    public var body: some View {
+struct HexagonalGraphView: View {
+    var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
                 
