@@ -1,31 +1,33 @@
 import SwiftUI
 
-struct ContentView: View {
+public struct ContentView: View {
     @State private var isShowingMap = false
     
-    var body: some View {
+    public init() {}
+    
+    public var body: some View {
         NavigationView {
             ZStack {
-                // Background color
+                
                 Color.white.ignoresSafeArea()
                 
-                // Add hexagonal graph - now with opacity control
+                
                 HexagonalGraphView()
                     .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                     .opacity(0.2)
                 
                 HStack {
                     VStack {
-                        // Title Card
+                        
                         ZStack {
-                            // Shadow layer
+                            
                             Text("DataViz")
                                 .font(.system(size: 100, weight: .bold, design: .monospaced))
                                 .foregroundColor(.black)
                                 .tracking(10)
                                 .offset(x: 8, y: 8)
                             
-                            // Main text
+                            
                             Text("DataViz")
                                 .font(.system(size: 100, weight: .bold, design: .monospaced))
                                 .foregroundColor(.blue)
@@ -38,10 +40,10 @@ struct ContentView: View {
                             .foregroundColor(.gray)
                             .padding(.bottom, 50)
                         
-                        // Start Journey Button
+                        
                         NavigationLink(destination: MapView(), isActive: $isShowingMap) {
                             ZStack {
-                                // Shadow
+                                
                                 Text("Start Journey")
                                     .font(.system(.title, design: .monospaced))
                                     .foregroundColor(.white)
@@ -49,7 +51,7 @@ struct ContentView: View {
                                     .background(Color.blue)
                                     .offset(x: 8, y: 8)
                                 
-                                // Main button
+                                
                                 Text("Start Journey")
                                     .font(.system(.title, design: .monospaced))
                                     .foregroundColor(.white)
@@ -73,7 +75,7 @@ struct ContentView: View {
     }
 }
 
-struct MapView: View {
+public struct MapView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var levels: [LevelData.Level] = []
     @State private var showingVisualization = false
@@ -83,28 +85,30 @@ struct MapView: View {
     @State private var showingReview = false
     @State private var selectedLevelNumber: Int?
     
-    // Define grid layout with 3 columns
+    
     private let columns = [
         GridItem(.flexible(), spacing: 30),
         GridItem(.flexible(), spacing: 30),
         GridItem(.flexible())
     ]
     
-    var body: some View {
+    public init() {}
+    
+    public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                // Back button
+                
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     ZStack {
-                        // Shadow layer
+                        
                         Rectangle()
                             .fill(Color.black)
                             .frame(width: 150, height: 50)
                             .offset(x: 6, y: 6)
                         
-                        // Main background
+                        
                         Rectangle()
                             .fill(Color.white)
                             .frame(width: 150, height: 50)
@@ -113,7 +117,7 @@ struct MapView: View {
                                     .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                             )
                         
-                        // Content
+                        
                         HStack {
                             Image(systemName: "chevron.left")
                             Text("Back")
@@ -126,18 +130,18 @@ struct MapView: View {
                 .padding(.bottom, 20)
                 .padding(.horizontal, 50)
                 
-                // Levels Grid
+                
                 LazyVGrid(columns: columns, spacing: 80) {
                     ForEach(levels.prefix(10), id: \.number) { level in
                         VStack(spacing: 20) {
-                            // Level Header
+                            
                             ZStack {
-                                // Shadow layer
+                                
                                 Rectangle()
                                     .fill(Color.black)
                                     .offset(x: 6, y: 6)
                                 
-                                // Main background
+                                
                                 Rectangle()
                                     .fill(Color.white)
                                     .overlay(
@@ -145,7 +149,7 @@ struct MapView: View {
                                             .stroke(Color(red: 0.2, green: 0.2, blue: 0.2), lineWidth: 2)
                                     )
                                 
-                                // Content
+                                
                                 VStack(alignment: .leading, spacing: 12) {
                                     HStack(alignment: .top) {
                                         Text("Level \(level.number)")
@@ -170,13 +174,13 @@ struct MapView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .fixedSize(horizontal: false, vertical: true)
                                     
-                                    Spacer()  // Push all content to the top
+                                    Spacer()  
                                 }
                                 .padding(20)
                             }
-                            .frame(height: 200)  // Increased height to accommodate more text
+                            .frame(height: 200)  
                             
-                            // Add decorative background between Header and Questions
+                            
                             decorativeBackground(for: Int32(level.number))
                                 .overlay(
                                     Rectangle()
@@ -184,7 +188,7 @@ struct MapView: View {
                                 )
                                 .padding(.vertical, 10)
                             
-                            // Questions list
+                            
                             VStack(spacing: 30) {
                                 ForEach(level.questions.indices, id: \.self) { index in
                                     let question = level.questions[index]
@@ -211,7 +215,7 @@ struct MapView: View {
                     }
                 }
                 .padding(.horizontal, 50)
-                .padding(.vertical, 60)  // Keep vertical centering
+                .padding(.vertical, 60)  
                 .padding(.bottom, 50)
             }
         }
@@ -238,7 +242,7 @@ struct MapView: View {
             }
         }
         .overlay(
-            // Review overlay
+            
             Group {
                 if showingReview, let visualization = visualization {
                     ReviewScreen(
@@ -294,11 +298,11 @@ struct MapView: View {
            let (color1, color2, color3) = getPastelColors(for: level)
            
            return Canvas { context, size in
-               // Background
+               
                let backgroundRect = CGRect(origin: .zero, size: size)
                context.fill(Path(backgroundRect), with: .color(color1))
                
-               // Calculate safe drawing area (slightly smaller than frame to prevent overflow)
+               
                let padding: CGFloat = 10
                let safeRect = CGRect(x: padding, y: padding,
                                    width: size.width - padding * 2,
@@ -308,8 +312,8 @@ struct MapView: View {
                let maxRadius = min(safeRect.width, safeRect.height) * 0.4
                
                switch Int(level) % 4 {
-               case 0:  // Explosion pattern
-                   // Draw radiating lines
+               case 0:  
+                   
                    for i in 0..<16 {
                        let angle = Double(i) * .pi / 8
                        var path = Path()
@@ -320,7 +324,7 @@ struct MapView: View {
                        context.stroke(path, with: .color(color2.opacity(0.8)), lineWidth: 3)
                    }
                    
-                   // Draw concentric circles
+                   
                    for i in 1...4 {
                        let radius = maxRadius * Double(i) / 4
                        let rect = CGRect(x: centerX - radius, y: centerY - radius,
@@ -328,8 +332,8 @@ struct MapView: View {
                        context.stroke(Path(ellipseIn: rect), with: .color(color3.opacity(0.8)), lineWidth: 2)
                    }
                    
-               case 1:  // Geometric pattern
-                   let gridSize = 4  // Reduced from 5 to make shapes larger
+               case 1:  
+                   let gridSize = 4  
                    let cellWidth = safeRect.width / Double(gridSize)
                    let cellHeight = safeRect.height / Double(gridSize)
                    
@@ -339,13 +343,13 @@ struct MapView: View {
                            let y = safeRect.minY + Double(row) * cellHeight
                            
                            if (row + col) % 2 == 0 {
-                               // Draw circles
+                               
                                let radius = min(cellWidth, cellHeight) * 0.35
                                let rect = CGRect(x: x + cellWidth/2 - radius, y: y + cellHeight/2 - radius,
                                                width: radius * 2, height: radius * 2)
                                context.fill(Path(ellipseIn: rect), with: .color(color2.opacity(0.8)))
                            } else {
-                               // Draw rotated squares
+                               
                                let squareSize = min(cellWidth, cellHeight) * 0.5
                                var path = Path(CGRect(x: -squareSize/2, y: -squareSize/2,
                                                     width: squareSize, height: squareSize))
@@ -357,7 +361,7 @@ struct MapView: View {
                        }
                    }
                    
-               case 2:  // Wave interference pattern
+               case 2:  
                    for i in 0..<3 {
                        var path = Path()
                        let yOffset = safeRect.minY + safeRect.height * (0.25 + Double(i) * 0.25)
@@ -371,7 +375,7 @@ struct MapView: View {
                        context.stroke(path, with: .color(color2.opacity(0.8)), lineWidth: 2.5)
                    }
                    
-                   // Add crossing waves
+                   
                    for i in 0..<3 {
                        var path = Path()
                        let xOffset = safeRect.minX + safeRect.width * (0.25 + Double(i) * 0.25)
@@ -385,26 +389,26 @@ struct MapView: View {
                        context.stroke(path, with: .color(color3.opacity(0.8)), lineWidth: 2.5)
                    }
                    
-               default:  // Root pattern
-                   // Start from center top
+               default:  
+                   
                    let rootOrigin = CGPoint(x: centerX, y: safeRect.minY + padding)
                    
-                   // Create multiple branching roots
+                   
                    let numMainRoots = 4
                    for i in 0..<numMainRoots {
-                       // Wider angle spread (0.4π to 1.3π instead of 0.7π to π)
+                       
                        let angle = 2*Double.pi * (0.4 + Double(i) * 0.9 / Double(numMainRoots-1))
-                       // Increased length by 50%
+                       
                        let mainLength = maxRadius * 2.4
                        
                        var rootPath = Path()
                        rootPath.move(to: rootOrigin)
                        
-                       // Create curved main root
+                       
                        let endX = centerX + cos(angle) * mainLength
                        let endY = rootOrigin.y + sin(angle) * mainLength
                        
-                       // Adjusted control points for longer, more spread out curves
+                       
                        let ctrl1X = centerX + cos(angle) * mainLength * 0.2
                        let ctrl1Y = rootOrigin.y + sin(angle) * mainLength * 0.2
                        let ctrl2X = centerX + cos(angle) * mainLength * 0.6
@@ -418,25 +422,25 @@ struct MapView: View {
                        
                        context.stroke(rootPath, with: .color(color2.opacity(0.8)), lineWidth: 3)
                        
-                       // Add branches
-                       let numBranches = 5  // Increased number of branches
+                       
+                       let numBranches = 5  
                        for j in 1...numBranches {
                            let t = Double(j) / Double(numBranches + 1)
                            let branchStartX = centerX + cos(angle) * (mainLength * t)
                            let branchStartY = rootOrigin.y + sin(angle) * (mainLength * t)
                            
-                           // Create two branches, one on each side
+                           
                            for side in [-1, 1] {
-                               // Increased angle spread for branches
+                               
                                let branchAngle = angle + Double(side) * Double.pi * 0.3
-                               let branchLength = mainLength * (1.0 - t) * 0.7  // Increased branch length
+                               let branchLength = mainLength * (1.0 - t) * 0.7  
                                
                                var branch = Path()
                                branch.move(to: CGPoint(x: branchStartX, y: branchStartY))
                                let branchEndX = branchStartX + cos(branchAngle) * branchLength
                                let branchEndY = branchStartY + sin(branchAngle) * branchLength
                                
-                               // Increased curve intensity for branches
+                               
                                let branchCtrlX = branchStartX + cos(branchAngle) * branchLength * 0.5
                                let branchCtrlY = branchStartY + sin(branchAngle) * branchLength * 0.5
                                
@@ -447,22 +451,22 @@ struct MapView: View {
                                
                                context.stroke(branch, with: .color(color3.opacity(0.7)), lineWidth: 2)
                                
-                               // Add smaller branches with curves
+                               
                                if branchLength > maxRadius * 0.2 {
                                    let numSubBranches = 2
                                    for _ in 1...numSubBranches {
                                        let subStartX = branchStartX + (branchEndX - branchStartX) * 0.5
                                        let subStartY = branchStartY + (branchEndY - branchStartY) * 0.5
-                                       // Increased angle spread for sub-branches
+                                       
                                        let subAngle = branchAngle + Double(side) * Double.pi * 0.25
-                                       let subLength = branchLength * 0.5  // Increased sub-branch length
+                                       let subLength = branchLength * 0.5  
                                        
                                        var subBranch = Path()
                                        subBranch.move(to: CGPoint(x: subStartX, y: subStartY))
                                        let subEndX = subStartX + cos(subAngle) * subLength
                                        let subEndY = subStartY + sin(subAngle) * subLength
                                        
-                                       // Increased curve intensity for sub-branches
+                                       
                                        let subCtrlX = subStartX + cos(subAngle) * subLength * 0.5
                                        let subCtrlY = subStartY + sin(subAngle) * subLength * 0.5
                                        
@@ -479,26 +483,32 @@ struct MapView: View {
                    }
                }
            }
-           .padding(4)  // Add padding to show the full border
+           .padding(4)  
            .frame(maxWidth: .infinity)
-           .frame(height: 192)  // 200 - 8 to account for padding
+           .frame(height: 192)  
            .clipped()
        }
 }
 
-struct QuestionRow: View {
-    let index: Int
-    let question: LevelData.Question
-    let isCompleted: Bool
+public struct QuestionRow: View {
+    public let index: Int
+    public let question: LevelData.Question
+    public let isCompleted: Bool
     
-    var body: some View {
+    public init(index: Int, question: LevelData.Question, isCompleted: Bool) {
+        self.index = index
+        self.question = question
+        self.isCompleted = isCompleted
+    }
+    
+    public var body: some View {
         ZStack {
-            // Shadow layer
+            
             Rectangle()
                 .fill(Color.black)
                 .offset(x: 6, y: 6)
             
-            // Main background
+            
             Rectangle()
                 .fill(isCompleted ? Color(red: 0.9, green: 1.0, blue: 0.9) : Color.white)
                 .overlay(
@@ -522,16 +532,18 @@ struct QuestionRow: View {
             .padding(.horizontal, 15)
             .padding(.vertical, 10)
         }
-        .frame(height: 60)  // Reduced height since we removed description
+        .frame(height: 60)  
     }
 }
 
-// Replace FloatingArrayView, FloatingLinkedListView, and FloatingBinaryTreeView with:
-struct HexagonalGraphView: View {
-    var body: some View {
+
+public struct HexagonalGraphView: View {
+    public init() {}
+    
+    public var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
-                // Debug - fill background to see canvas bounds
+                
                 let background = Path(CGRect(origin: .zero, size: size))
                 
                 let centerX = size.width / 2
@@ -540,9 +552,9 @@ struct HexagonalGraphView: View {
                 let verticalSpacing: CGFloat = 150
                 let horizontalSpacing: CGFloat = 180
                 
-                // Define layers of the graph (now with 7 layers)
+                
                 let layers: [[CGPoint]] = [
-                    // New top outer layer (10 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 4.5, y: -verticalSpacing * 3),
                         CGPoint(x: -horizontalSpacing * 3.5, y: -verticalSpacing * 3),
@@ -555,7 +567,7 @@ struct HexagonalGraphView: View {
                         CGPoint(x: horizontalSpacing * 3.5, y: -verticalSpacing * 3),
                         CGPoint(x: horizontalSpacing * 4.5, y: -verticalSpacing * 3),
                     ],
-                    // Previous top outer layer (8 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 3.5, y: -verticalSpacing * 2),
                         CGPoint(x: -horizontalSpacing * 2.5, y: -verticalSpacing * 2),
@@ -566,7 +578,7 @@ struct HexagonalGraphView: View {
                         CGPoint(x: horizontalSpacing * 2.5, y: -verticalSpacing * 2),
                         CGPoint(x: horizontalSpacing * 3.5, y: -verticalSpacing * 2),
                     ],
-                    // Top middle layer (6 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 2.5, y: -verticalSpacing),
                         CGPoint(x: -horizontalSpacing * 1.5, y: -verticalSpacing),
@@ -575,14 +587,14 @@ struct HexagonalGraphView: View {
                         CGPoint(x: horizontalSpacing * 1.5, y: -verticalSpacing),
                         CGPoint(x: horizontalSpacing * 2.5, y: -verticalSpacing),
                     ],
-                    // Center layer (4 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 1.5, y: 0),
                         CGPoint(x: -horizontalSpacing * 0.5, y: 0),
                         CGPoint(x: horizontalSpacing * 0.5, y: 0),
                         CGPoint(x: horizontalSpacing * 1.5, y: 0),
                     ],
-                    // Bottom middle layer (6 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 2.5, y: verticalSpacing),
                         CGPoint(x: -horizontalSpacing * 1.5, y: verticalSpacing),
@@ -591,7 +603,7 @@ struct HexagonalGraphView: View {
                         CGPoint(x: horizontalSpacing * 1.5, y: verticalSpacing),
                         CGPoint(x: horizontalSpacing * 2.5, y: verticalSpacing),
                     ],
-                    // Previous bottom outer layer (8 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 3.5, y: verticalSpacing * 2),
                         CGPoint(x: -horizontalSpacing * 2.5, y: verticalSpacing * 2),
@@ -602,7 +614,7 @@ struct HexagonalGraphView: View {
                         CGPoint(x: horizontalSpacing * 2.5, y: verticalSpacing * 2),
                         CGPoint(x: horizontalSpacing * 3.5, y: verticalSpacing * 2),
                     ],
-                    // New bottom outer layer (10 nodes)
+                    
                     [
                         CGPoint(x: -horizontalSpacing * 4.5, y: verticalSpacing * 3),
                         CGPoint(x: -horizontalSpacing * 3.5, y: verticalSpacing * 3),
@@ -617,12 +629,12 @@ struct HexagonalGraphView: View {
                     ]
                 ]
                 
-                // Draw connections with alternating colors
+                
                 for (index, layerIndex) in (0..<(layers.count - 1)).enumerated() {
                     let currentLayer = layers[layerIndex]
                     let nextLayer = layers[layerIndex + 1]
                     
-                    let connectionColor: Color = index % 2 == 0 ? Color.blue.opacity(0.7) : .blue  // Changed from dark blue
+                    let connectionColor: Color = index % 2 == 0 ? Color.blue.opacity(0.7) : .blue  
                     
                     for i in 0..<currentLayer.count {
                         for j in 0..<nextLayer.count {
@@ -643,9 +655,9 @@ struct HexagonalGraphView: View {
                     }
                 }
                 
-                // Draw nodes with alternating colors
+                
                 for (layerIndex, layer) in layers.enumerated() {
-                    let borderColor: Color = layerIndex % 2 == 0 ? Color.blue.opacity(0.7) : .blue  // Changed from dark blue
+                    let borderColor: Color = layerIndex % 2 == 0 ? Color.blue.opacity(0.7) : .blue  
                     
                     for (nodeIndex, point) in layer.enumerated() {
                         let nodeRect = CGRect(
@@ -655,7 +667,7 @@ struct HexagonalGraphView: View {
                             height: cellSize
                         )
                         
-                        let fillColor: Color = nodeIndex % 2 == 0 ? .white : Color.blue.opacity(0.7)  // Changed from dark blue
+                        let fillColor: Color = nodeIndex % 2 == 0 ? .white : Color.blue.opacity(0.7)  
                         
                         let circlePath = Path(ellipseIn: nodeRect)
                         context.fill(circlePath, with: .color(fillColor))
