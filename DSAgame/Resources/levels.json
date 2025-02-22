@@ -3,14 +3,14 @@
         {
             "number": 1,
             "topic": "Arrays",
-            "description": "Learn the basics of arrays",
+            "description": "Arrays under the hood, everything you need to know",
             "requiredStars": 0,
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Understanding Array Access Patterns",
+                    "title": "Structure and Access",
                     "description": "Learn the difference between direct array access and sequential search operations",
-                    "review": "Key concepts: \n 1) Storing data in an array means we can jump straight to a position in the array \n 2) Array is limited when we don't know the index of the item we are looking for",
+                    "review": "Key concepts: \n1) Storing data in an array means we can jump straight to a position in the array \n2) Array is not good for retrieving data when we don't know the index of the item we are looking for",
                     "hint": "None",
                     "difficulty": 1,
                     "visualization": {
@@ -506,10 +506,10 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Contiguous Memory in Arrays",
+                    "title": "Insertions and Deletions",
                     "description": "Learn why arrays require continuous memory and the implications for insertions and deletions",
                     "hint": "",
-                    "review": "Key concepts: \n 1) Array elements must stay together in memory \n2) Inserting/deleting requires shifting elements \n3) Array size must be declared in advance",
+                    "review": "Key concepts: \n1) Array elements must stay together in memory \n2) Inserting/deleting requires shifting elements \n3) Array size must be declared when creating the array",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -1065,10 +1065,10 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Dynamic Arrays",
+                    "title": "Dynamic Arrays",
                     "description": "Learn how dynamic arrays automatically resize to accommodate new elements",
                     "hint": "",
-                    "review": "Key concepts:\n 1) Arrays double in size when full \n2) Amortized O(1) insertion time \n3) Memory is allocated in advance \n4) Arrays shrink when mostly empty",
+                    "review": "Key concepts: \n1) Dynamic arrays automatically increase in size when full \n2) Dynamic arrays generally have O(1) insertion time (except for when it needs to resize) \n3) Dynamic arrays shrink when mostly empty",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -1094,7 +1094,7 @@
                             "    value = arr[len(arr) - 1]",
                             "    arr[len(arr) - 1] = None",
                             "    # Shrink array if using less than 25% of capacity",
-                            "    if len(arr) < arr.capacity // 4:",
+                            "    if len(arr) <= arr.capacity // 4:",
                             "        new_capacity = arr.capacity // 2",
                             "        new_arr = [None] * new_capacity",
                             "        for i in range(len(arr)):",
@@ -1144,7 +1144,7 @@
                             },
                             {
                                 "lineNumber": 2,
-                                "comment": "When we try to append 40, first we check if we're at capacity",
+                                "comment": "When we try to append 30, first we check if we're at capacity",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1156,19 +1156,15 @@
                                         "label": "1"
                                     },
                                     {
-                                        "value": "30",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
                                         "isHighlighted": true,
-                                        "label": "3"
+                                        "value": "",
+                                        "label": "2"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 13,
-                                "comment": "Since we still have space, we can directly append 40",
+                                "comment": "Since we still have space, we can directly append 30",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1182,17 +1178,12 @@
                                     {
                                         "value": "30",
                                         "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "isHighlighted": true,
-                                        "label": "3"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 3,
-                                "comment": "Now when we try to append 50, the array is full as we already have 4 elements. Time to resize!",
+                                "comment": "Now when we try to append 40, the array is full as we already have 3 elements. Time to resize!",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1209,17 +1200,12 @@
                                         "value": "30",
                                         "isHighlighted": true,
                                         "label": "2"
-                                    },
-                                    {
-                                        "value": "40",
-                                        "isHighlighted": true,
-                                        "label": "3"
-                                    }
+                                    }                                
                                 ]
                             },
                             {
                                 "lineNumber": 5,
-                                "comment": "We create a new array with double the capacity (8 spaces)",
+                                "comment": "We create a new array with double the capacity (6 spaces)",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1245,14 +1231,6 @@
                                     {
                                         "value": "",
                                         "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
                                     }
                                 ]
                             },
@@ -1277,8 +1255,7 @@
                                         "label": "2"
                                     },
                                     {
-                                        "value": "40",
-                                        "isHighlighted": true,
+                                        "value": "",
                                         "label": "3"
                                     },
                                     {
@@ -1288,20 +1265,12 @@
                                     {
                                         "value": "",
                                         "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 13,
-                                "comment": "Finally, we can append 50 to the resized array",
+                                "comment": "Finally, we can append 40 to the resized array",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1318,24 +1287,16 @@
                                     },
                                     {
                                         "value": "40",
+                                        "isHighlighted": true,
                                         "label": "3"
                                     },
                                     {
-                                        "value": "50",
-                                        "isHighlighted": true,
+                                        "value": "",
                                         "label": "4"
                                     },
                                     {
                                         "value": "",
                                         "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
                                     }
                                 ]
                             },
@@ -1359,28 +1320,12 @@
                                     {
                                         "value": "",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 21,
-                                "comment": "Pop removes the last element (30)",
+                                "comment": "Pop removes the last element (20)",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1388,39 +1333,23 @@
                                         "label": "0"
                                     },
                                     {
-                                        "value": "20",
+                                        "value": "",
+                                        "isHighlighted": true,
                                         "label": "1"
                                     },
                                     {
                                         "value": "",
-                                        "isHighlighted": true,
                                         "label": "2"
                                     },
                                     {
                                         "value": "",
                                         "label": "3"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "4"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "5"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "6"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "7"
                                     }
                                 ]
                             },
                             {
                                 "lineNumber": 23,
-                                "comment": "Now we're using < 25% of capacity (2/8), so we'll shrink the array to save memory",
+                                "comment": "Now we're using <= 25% of capacity (1/4), so we'll shrink the array to save memory",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -1429,17 +1358,47 @@
                                         "label": "0"
                                     },
                                     {
-                                        "value": "20",
+                                        "value": "",
                                         "isHighlighted": true,
+                                        "label": "not needed"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "not needed"
+                                    },
+                                    {
+                                        "value": "",
+                                        "label": "not needed"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 24,
+                                "comment": "We will first create a new array with half the capacity (2 spaces)",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "",
+                                        "label": "0"
+                                    },
+                                    {
+                                        "value": "",
                                         "label": "1"
+                                    }
+                                ]
+                            },
+                            {
+                                "lineNumber": 26,
+                                "comment": "We will then copy all the elements from the old array to the new one",
+                                "userInputRequired": false,
+                                "nodes": [
+                                    {
+                                        "value": "10",
+                                        "label": "0"
                                     },
                                     {
                                         "value": "",
-                                        "label": "2"
-                                    },
-                                    {
-                                        "value": "",
-                                        "label": "3"
+                                        "label": "1"
                                     }
                                 ]
                             },
@@ -1560,15 +1519,15 @@
         {
             "number": 2,
             "topic": "Linked Lists",
-            "description": "Everything you need to know about linked lists, from single nodes to entire list traversal.",
+            "description": "Linked lists, from single nodes to entire list traversal.",
             "requiredStars": 0,
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Understanding Node Structure",
+                    "title": "Linked List Node Structure",
                     "description": "Learn how nodes are connected and labeled in data structures",
                     "hint": "Look at how nodes can be connected to each other with arrows",
-                    "review": "Key concepts:\n1) Nodes are like boxes with 2 compartments, one for the value and one for the address of the next node\n 2) We can access the next node by accessing the address stored in the pointer compartment",
+                    "review": "Key concepts: \n1) Nodes are like boxes with 2 compartments, one for the value and one for the address of the next node\n2) We can access the next node by accessing the address stored in the pointer compartment",
                     "difficulty": 1,
                     "visualization": {
                         "code": [
@@ -1747,9 +1706,9 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Linked List Traversal",
+                    "title": "Traversing a Linked List",
                     "description": "Learn how linked lists store and access data through node connections",
-                    "review": "Key concepts: \n 1) Linked lists connect nodes through references/pointers \n 2) We must traverse from the head to access any node \n 3) Direct access is not possible like in arrays",
+                    "review": "Key concepts: \n1) Linked lists connect nodes through references/pointers \n2) Traversing the list means accessing each node and then the node connected to it until we find the target \n3) We must traverse from the head to access any node, direct access is not possible like in arrays",
                     "hint": "None",
                     "difficulty": 1,
                     "visualization": {
@@ -2744,10 +2703,10 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Understanding Linked List Operations",
+                    "title": "Inserting and Deleting Nodes",
                     "description": "Learn how to insert and delete nodes from a linked list",
                     "hint": "Remember: When modifying a linked list, you need to carefully update the next pointers to maintain the chain of nodes",
-                    "review": "Key concepts:\n1) Inserting into and deleting from a linked list is efficient, traverse to the right position and just update two pointers\n 2) Compared to arrays:\n   - Arrays require shifting all elements after insertion/deletion point\n   - Linked lists only require updating nearby pointers but you still have to traverse it every time O(n)\n   - Linked list operations are O(1) once you find the position",
+                    "review": "Key concepts:\n1) Inserting into and deleting from a linked list is efficient, we just need to traverse to the right position update two pointers\n2) Compared to arrays:\n   - Arrays require shifting all elements after insertion/deletion point\n   - Linked lists only require updating nearby pointers but you still have to traverse it every time O(n)\n   - Linked list operations are O(1) once you find the position",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -3159,16 +3118,16 @@
         },
         {
             "number": 3,
-            "topic": "Binary Trees",
-            "description": "Learn about binary trees and how they organize data hierarchically.",
+            "topic": "Binary Search Trees",
+            "description": "Understanding the construction and properties of binary search trees",
             "requiredStars": 3,
             "questions": [
                 {
                     "type": "visualization",
-                    "title": "Understanding Binary Tree Structure",
+                    "title": "Binary Tree Node Structure",
                     "description": "Learn how to construct a basic binary tree by adding nodes as left and right children",
                     "hint": "Each node in a binary tree can have up to two children: a left child and a right child.",
-                    "review": "Excellent! You've learned how to create a basic binary tree structure. Remember that each node can have at most two children.",
+                    "review": "Key concepts: \n1) Similar to linked lists, a node in a binary tree are also like compartments, but with 2 instead of 1 \n2) A Binary Tree is a tree where each node has at most 2 children, other trees can have more \n3) We can traverse the tree by going from the root to the right child and then the left child",
                     "difficulty": 1,
                     "visualization": {
                         "code": [
@@ -3555,10 +3514,10 @@
                 },
                 {
                     "type": "visualization",
-                    "title": "Inserting and removing nodes from a Binary Search Tree",
+                    "title": "Binary Search Tree Insertion",
                     "description": "Learn how to insert and remove nodes from a binary search tree while maintaining the ordering property",
                     "hint": "In a binary search tree, values less than a node go to the left, greater values go to the right.",
-                    "review": "Great job! You've learned how to maintain the binary search tree property when inserting and removing nodes.",
+                    "review": "Key concepts: \n1) Binary Search Trees are a type of binary tree where each node has a specific ordering property \n2) Values that are less than a node go to the left, greater values go to the right \n3) We can insert a value into the tree by comparing the value to the node and then going to the left or right depending on whether the value is less than or greater than the node",
                     "difficulty": 2,
                     "visualization": {
                         "code": [
@@ -3574,34 +3533,7 @@
                             "    return node",
                             "",
                             "insert(7, root)",
-                            "",
-                            "def delete(value, node):",
-                            "    if node is None:",
-                            "        return None",
-                            "",
-                            "    if value < node.value:",
-                            "        node.left = delete(value, node.left)",
-                            "    elif value > node.value:",
-                            "        node.right = delete(value, node.right)",
-                            "    else:",
-                            "        if node.left is None and node.right is None:",
-                            "            return None",
-                            "        if node.left is None:",
-                            "            return node.right",
-                            "        if node.right is None:",
-                            "            return node.left",
-                            "",
-                            "        min_value = find_min(node.right).value",
-                            "        node.value = min_value",
-                            "        node.right = delete(min_value, node.right)",
-                            "",
-                            "    return node",
-                            "",
-                            "def find_min(node):",
-                            "    current = node",
-                            "    while current.left:",
-                            "        current = current.left",
-                            "    return current"
+                            ""
                         ],
                         "dataStructureType": "binaryTree",
                         "steps": [
@@ -3927,7 +3859,8 @@
                                 "nodes": [
                                     {
                                         "value": "10",
-                                        "label": "root"                                    },
+                                        "label": "root"                                    
+                                    },
                                     {
                                         "value": "5",
                                         "isHighlighted": true
@@ -4108,9 +4041,52 @@
                                         "style": "straight"
                                     }
                                 ]
-                            },
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "visualization",
+                    "title": "Binary Search Tree Deletion",
+                    "description": "Learn how to search for a target value in a sorted array using binary search.",
+                    "hint": "Binary search works by repeatedly dividing the search interval in half. If the value of the search key is less than the item in the middle of the interval, narrow the interval to the lower half. Otherwise, narrow it to the upper half.",
+                    "review": "Key concepts: \n1) To find the target to delete, we compare the value to the node and then go to the left or right depending on whether the value is less than or greater than the node \n3) After we find the node, we have some options: \n   - If the node has no children, we can just delete it \n   - If the node has one child, we can replace the node with its child \n   - If the node has two children, we can replace the node with the minimum value in the right subtree",
+                    "difficulty": 2,
+                    "visualization": {
+                        "code": [
+                            "def find_min(node):",
+                            "    current = node",
+                            "    while current.left:",
+                            "        current = current.left",
+                            "    return current",
+                            "",
+                            "def delete(value, node):",
+                            "    if node is None:",
+                            "        return None",
+                            "",
+                            "    if value < node.value:",
+                            "        node.left = delete(value, node.left)",
+                            "    elif value > node.value:",
+                            "        node.right = delete(value, node.right)",
+                            "    else:",
+                            "        if node.left is None and node.right is None:",
+                            "            return None",
+                            "        if node.left is None:",
+                            "            return node.right",
+                            "        if node.right is None:",
+                            "            return node.left",
+                            "",
+                            "        min_value = find_min(node.right).value",
+                            "        node.value = min_value",
+                            "        node.right = delete(min_value, node.right)",
+                            "    return node",
+                            "",
+                            "delete(5, root)"
+                        ],
+                        "dataStructureType": "binaryTree",
+                        "steps": [
                             {
-                                "lineNumber": 14,
+                                "lineNumber": 1,
                                 "comment": "Deleting from the tree is a bit more complex, we need to first understand find_min, which is a helper function that finds the minimum value in a binary tree.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4171,7 +4147,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 36,
+                                "lineNumber": 1,
                                 "comment": "We start with find_min(root).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4233,8 +4209,8 @@
                                 ]
                             },
                             {
-                                "lineNumber": 39,
-                                "comment": "Because we know that the value on the left will keep getting smaller, the left leaf node will always have the minimum value. Which is the left leaf node in this case?",
+                                "lineNumber": 4,
+                                "comment": "current.left means we keep going left until that node's left is None. Which do you think is the left leaf node in this case?",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
                                 "multipleChoiceAnswers": [
@@ -4302,8 +4278,8 @@
                                 ]
                             },
                             {
-                                "lineNumber": 39,
-                                "comment": "That is right! We keep going left until node.left is None, which is the case here.",
+                                "lineNumber": 4,
+                                "comment": "That is right! Because the node at the left is always smaller than its parent, the left leaf node will always have the minimum value.",
                                 "userInputRequired": false,
                                 "nodes": [
                                     {
@@ -4364,7 +4340,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 14,
+                                "lineNumber": 7,
                                 "comment": "Now let's go to the actual delete function. Let's say we are running delete(5, root).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4425,7 +4401,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 14,
+                                "lineNumber": 8,
                                 "comment": "Most of it is very similar to the insert function, we first check if Node is None, then we compare the values, then we will have 3 different cases.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4487,7 +4463,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 18,
+                                "lineNumber": 11,
                                 "comment": "Case 1: value is less than node.value, which means the target is on the left since it is smaller than the root. We enter the cycle again with the left child of the root node, so delete(value, node.left).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4549,7 +4525,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 20,
+                                "lineNumber": 13,
                                 "comment": "Case 2: value is more than node.value, which means we do the opposite of case 1 as the target is on the right side. We enter the cycle again with the right child of the root node, so delete(value, node.right).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4611,7 +4587,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 22,
+                                "lineNumber": 15,
                                 "comment": "Case 3: value is equal to node.value, which means we have found the target (5). We then need to check if the node has no children, one child, or two children.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4673,7 +4649,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 23,
+                                "lineNumber": 16,
                                 "comment": "Subcase 3.1: If the node has no children (is a leaf), we can simply remove it by returning None.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4703,7 +4679,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 25,
+                                "lineNumber": 18,
                                 "comment": "Subcase 3.2: If the node has only one child (left or right), we can simply replace the target node with its child.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4744,7 +4720,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 25,
+                                "lineNumber": 20,
                                 "comment": "Now the child (7) is at the target's (5) position.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4786,7 +4762,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 30,
+                                "lineNumber": 23,
                                 "comment": "Subcase 3.3: If the node has two children, which one do you think will replace the target",
                                 "userInputRequired": true,
                                 "isMultipleChoice": true,
@@ -4839,7 +4815,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 30,
+                                "lineNumber": 23,
                                 "comment": "That is right! We need to find the smallest value in the right subtree (using find_min) to replace the deleted node.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4889,7 +4865,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 31,
+                                "lineNumber": 24,
                                 "comment": "We copy the successor's value to the target node, then delete the successor (which will fall into case 1 or 2 as it has at most one child).",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4928,7 +4904,7 @@
                                 ]
                             },
                             {
-                                "lineNumber": 33,
+                                "lineNumber": 26,
                                 "comment": "Finally, we return the modified node to maintain the tree structure. The BST properties are preserved throughout all cases.",
                                 "userInputRequired": false,
                                 "nodes": [
@@ -4961,187 +4937,6 @@
                                         "from": 1,
                                         "to": 3,
                                         "style": "straight"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "visualization",
-                    "title": "Tree Traversal",
-                    "description": "Learn how to traverse a binary tree in-order",
-                    "hint": "In-order traversal visits the left subtree, then the current node, then the right subtree.",
-                    "review": "Excellent! You've learned how to perform an in-order traversal of a binary tree.",
-                    "difficulty": 2,
-                    "visualization": {
-                        "code": [
-                            "func inorderTraversal(_ node: TreeNode) {",
-                            "    if let left = node.left {",
-                            "        inorderTraversal(left)",
-                            "    }",
-                            "    print(node.value)",
-                            "    if let right = node.right {",
-                            "        inorderTraversal(right)",
-                            "    }",
-                            "}"
-                        ],
-                        "dataStructureType": "binaryTree",
-                        "steps": [
-                            {
-                                "lineNumber": 1,
-                                "comment": "Start with a binary tree",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "8",
-                                        "label": "root"
-                                    },
-                                    {
-                                        "value": "4"
-                                    },
-                                    {
-                                        "value": "12"
-                                    },
-                                    {
-                                        "value": "2"
-                                    },
-                                    {
-                                        "value": "6"
-                                    }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight",
-                                        "label": "left"
-                                    },
-                                    {
-                                        "from": 0,
-                                        "to": 2,
-                                        "style": "straight",
-                                        "label": "right"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 3,
-                                        "style": "straight",
-                                        "label": "left"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 4,
-                                        "style": "straight",
-                                        "label": "right"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 3,
-                                "comment": "Visit the leftmost path first",
-                                "userInputRequired": false,
-                                "nodes": [
-                                    {
-                                        "value": "8",
-                                        "label": "root"
-                                    },
-                                    {
-                                        "value": "4"
-                                    },
-                                    {
-                                        "value": "12"
-                                    },
-                                    {
-                                        "value": "2",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "value": "6"
-                                    }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight",
-                                        "label": "left",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "from": 0,
-                                        "to": 2,
-                                        "style": "straight",
-                                        "label": "right"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 3,
-                                        "style": "straight",
-                                        "label": "left",
-                                        "isHighlighted": true
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 4,
-                                        "style": "straight",
-                                        "label": "right"
-                                    }
-                                ]
-                            },
-                            {
-                                "lineNumber": 5,
-                                "comment": "Process nodes in-order: 2, 4, 6, 8, 12",
-                                "userInputRequired": true,
-                                "availableElements": [
-                                    "2",
-                                    "4",
-                                    "6",
-                                    "8",
-                                    "12"
-                                ],
-                                "nodes": [
-                                    {
-                                        "value": "8",
-                                        "label": "root"
-                                    },
-                                    {
-                                        "value": "4"
-                                    },
-                                    {
-                                        "value": "12"
-                                    },
-                                    {
-                                        "value": "2"
-                                    },
-                                    {
-                                        "value": "6"
-                                    }
-                                ],
-                                "connections": [
-                                    {
-                                        "from": 0,
-                                        "to": 1,
-                                        "style": "straight",
-                                        "label": "left"
-                                    },
-                                    {
-                                        "from": 0,
-                                        "to": 2,
-                                        "style": "straight",
-                                        "label": "right"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 3,
-                                        "style": "straight",
-                                        "label": "left"
-                                    },
-                                    {
-                                        "from": 1,
-                                        "to": 4,
-                                        "style": "straight",
-                                        "label": "right"
                                     }
                                 ]
                             }

@@ -714,7 +714,7 @@ private struct GuideCard: View {
                             }
                             .padding(.bottom, 5)
                             
-                            Text("Autoplay will automatically move through steps (the pause is based on the length of the text) until it reaches a question")
+                            Text("Autoplay will automatically (slowly) move through steps (the pause is based on the length of the text) until it reaches a question")
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundColor(.gray)
                                 .padding(.leading)
@@ -924,11 +924,14 @@ private struct GuideCard: View {
                             Text("Some steps will present multiple choice questions. Select the correct answer to proceed:")
                                 .font(.system(.body, design: .monospaced))
                                 .padding(.bottom, 20)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
                             
                             VStack(spacing: 25) {
                                 Text("What is the first element?")
                                     .font(.system(.body, design: .monospaced))
                                     .padding(.bottom, 20)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                 
                                 HStack(spacing: cellSizeManager.size * 0.5) {
                                     ForEach(["1", "2"], id: \.self) { value in
@@ -951,8 +954,8 @@ private struct GuideCard: View {
                                         }
                                     }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .padding(.bottom, 20)
-                                
                             }
                             .padding(.vertical, 20)
                         }
